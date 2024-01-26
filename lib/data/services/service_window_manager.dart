@@ -8,14 +8,14 @@ import 'package:flutter/widgets.dart';
 import 'package:bitsdojo_window_platform_interface/bitsdojo_window_platform_interface.dart';
 
 class ServiceWindowManager extends WindowListener {
-  final win = appWindow;
+  static final win = appWindow;
+  static bool isIgnoreMouseEvent = false;
 
   init() {
     setWindowsSize();
     setWindowOnTop();
     setListener();
     test();
-
     windowManager.ensureInitialized();
   }
 
@@ -24,20 +24,31 @@ class ServiceWindowManager extends WindowListener {
   }
 
   @override
-  void onWindowEvent(String eventName) {
-    print(eventName);
-  }
+  void onWindowEvent(String eventName) {}
 
   @override
-  void onWindowBlur() {
-    print('blur');
+  void onWindowBlur() {}
+
+  static changeFocus() {
+    isIgnoreMouseEvent = !isIgnoreMouseEvent;
+    windowManager.setIgnoreMouseEvents(isIgnoreMouseEvent);
+    windowManager.ensureInitialized();
+    print('im change');
+  }
+
+  forceHide() {
+    windowManager.setIgnoreMouseEvents(true);
+    windowManager.ensureInitialized();
+  }
+
+  forceShow() {
     windowManager.setIgnoreMouseEvents(true);
     windowManager.ensureInitialized();
   }
 
   @override
   void onWindowFocus() {
-    print('focus');
+    // print('focus');
     windowManager.setIgnoreMouseEvents(false);
     windowManager.ensureInitialized();
   }
