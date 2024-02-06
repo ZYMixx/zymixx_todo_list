@@ -30,12 +30,12 @@ class AppDatabase extends _$AppDatabase {
 }
 
 class TodoItemDB extends Table {
-  IntColumn get id => integer().autoIncrement()();
+  IntColumn get id => integer().nullable().autoIncrement()();
   TextColumn get title => text().withLength(min: 6, max: 32)();
   TextColumn get content => text().named('body')();
-  IntColumn get category => integer().nullable()();
-  IntColumn get secondsTimer => integer().nullable()();
-  IntColumn get secondsStopwatch => integer().nullable()();
+  IntColumn get category => integer().withDefault(const Constant(0))();
+  IntColumn get timerSeconds => integer().withDefault(const Constant(0))();
+  IntColumn get stopwatchSeconds => integer().withDefault(const Constant(0))();
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
 }
 

@@ -13,6 +13,8 @@ class MapperDatabase {
     return TodoItem.fromJson(dbModel.toJson());
   }
 
-  static List<TodoItem> listToEntityTodoItem(List<TodoItemDBData> dbList) =>
-      dbList.map((e) => toEntityTodoItem(e)).toList();
+  static List<TodoItem> listToEntityTodoItem(List<TodoItemDBData> dbList) {
+    print('dbList $dbList');
+    return dbList.map((e) => toEntityTodoItem(e)).toList();
+  }
 }
