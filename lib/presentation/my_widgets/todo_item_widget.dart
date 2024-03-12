@@ -1,12 +1,16 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
+import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 
 import '../../data/tools/tool_time_string_converter.dart';
 import '../../domain/todo_item.dart';
 import '../bloc/todo_item_bloc.dart';
 
 class TodoItemWidget extends StatelessWidget {
-  TodoItem intTodoItem;
+  final TodoItem intTodoItem;
 
   TodoItemWidget({Key? key, required this.intTodoItem}) : super(key: key);
 
@@ -19,88 +23,148 @@ class TodoItemWidget extends StatelessWidget {
   }
 }
 
-class TodoItemBody extends StatelessWidget {
+class TodoItemBody extends StatefulWidget {
   const TodoItemBody({
     super.key,
   });
 
   @override
+  State<TodoItemBody> createState() => _TodoItemBodyState();
+}
+
+class _TodoItemBodyState extends State<TodoItemBody> {
+  @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-
-    return Dismissible(
-      key: UniqueKey(),
-      onDismissed: (DismissDirection direction) {
-        bloc.add(DismissEvent(direction: direction));
-      },
-      child: Container(
-        width: 400,
-        height: 50,
-        padding: EdgeInsets.symmetric(horizontal: 3),
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          border: Border.all(
-            color: Colors.red,
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        child: Row(
-          children: [
-            Flexible(
-              flex: 4,
-              fit: FlexFit.tight,
-              child: TitleWidget(),
-            ),
-            VerticalDivider(
-              width: 6,
-              thickness: 2,
-              indent: 4,
-              endIndent: 4,
+    bool isChangeTextMod = context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
+    AllItemControlBloc allItemBloc = context.read<AllItemControlBloc>();
+    return AnimatedContainer(
+      width: ToolThemeData.itemWidth,
+      curve: Curves.easeInOut,
+      height: isChangeTextMod ? ToolThemeData.itemOpenHeight : ToolThemeData.itemHeight,
+      duration: Duration(milliseconds: 250),
+      child: Dismissible(
+        key: UniqueKey(),
+        onDismissed: (DismissDirection direction) {
+          bloc.add(DismissEvent(direction: direction));
+          Future.delayed(Duration.zero, () {
+            Log.i('srat reload');
+            allItemBloc.add(LoadAllItemEvent());
+          });
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 3),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent,
+            border: Border.all(
               color: Colors.red,
             ),
-            Flexible(flex: 1, child: TimerWorkWidget())
-          ],
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          child: Row(
+            children: [
+              Flexible(
+                flex: 5,
+                fit: FlexFit.tight,
+                child: GestureDetector(
+                  onLongPress: (){},
+                  onTap: (){},
+                  child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
+                ),
+              ),
+              VerticalDivider(
+                width: 6,
+                thickness: 2,
+                indent: 4,
+                endIndent: 4,
+                color: Colors.red,
+              ),
+              Flexible(flex: 3, child: TimerWorkWidget())
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class TitleWidget extends StatefulWidget {
-  const TitleWidget({Key? key}) : super(key: key);
+class TitlePresentWidget extends StatelessWidget {
+  const TitlePresentWidget({Key? key}) : super(key: key);
 
   @override
-  State<TitleWidget> createState() => _TitleWidgetState();
+  Widget build(BuildContext context) {
+    var bloc = context.select((TodoItemBloc bloc) => bloc);
+    String title = bloc.state.todoItem.title ?? 'no title';
+    return InkWell(
+      onTap: () {
+        bloc.add(ChangeModEvent(isChangeMod: true));
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _TitleWidgetState extends State<TitleWidget> {
-  late TextEditingController controller;
+class TitleChangeWidget extends StatefulWidget {
+  const TitleChangeWidget({Key? key}) : super(key: key);
+
+  @override
+  State<TitleChangeWidget> createState() => _TitleChangeWidgetState();
+}
+
+class _TitleChangeWidgetState extends State<TitleChangeWidget> {
+  late TextEditingController _controllerTitle;
+  late TextEditingController _controllerDescription;
 
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController();
+    _controllerTitle = TextEditingController();
+    _controllerDescription = TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-
-    controller.text = bloc.state.todoItem.title ?? '';
+    _controllerTitle.text = bloc.state.todoItem.title ?? '';
+    _controllerDescription.text = bloc.state.todoItem.content ?? '';
     return Padding(
-      padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
-      child: Focus(
-        onFocusChange: (focus) {
-          if (!focus) {
-            print('focus locc add Event ${controller.text.trim()}');
-            bloc.add(LoseFocusEvent(titleText: controller.text.trim()));
-          }
-        },
-        child: TextField(
-          controller: controller,
-        ),
-      ),
-    );
+        padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
+        child: Focus(
+          onFocusChange: (focus) {
+            if (!focus) {
+              print('focus locc add Event ${_controllerTitle.text.trim()}');
+              Future.delayed(Duration.zero, () {
+                bloc.add(LoseFocusEvent(titleText: _controllerTitle.text.trim(), descriptionText: _controllerDescription.text.trim(),),);
+                bloc.add(ChangeModEvent(isChangeMod: false));
+              });
+            }
+          },
+          child: Column(
+            children: [
+              TextField(
+                controller: _controllerTitle,
+                autofocus: true,
+                maxLines: 1,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              TextField(
+                controller: _controllerDescription,
+                maxLines: 4,
+                minLines: 2,
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+              ),
+            ],
+          ),
+        ));
   }
 }
 
@@ -112,6 +176,9 @@ class TimerWorkWidget extends StatefulWidget {
 }
 
 class _TimerWorkWidgetState extends State<TimerWorkWidget> {
+
+  TimeModEnum? lastTimeMod;
+
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
@@ -122,13 +189,22 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
         Offset animateOffset;
         if (child is StopwatchWidget) {
           animateOffset = Offset(-0.4, 0.0);
+          lastTimeMod = TimeModEnum.stopwatch;
         } else if (child is TimerWidget) {
           animateOffset = Offset(0.4, 0.0);
+          lastTimeMod = TimeModEnum.timer;
         } else {
           if (timerMod == TimeModEnum.timer) {
             animateOffset = Offset(-0.4, 0.0);
           } else {
-            animateOffset = Offset(0.4, 0.0);
+            if (lastTimeMod == TimeModEnum.timer ) {
+              animateOffset = Offset(-0.4, 0.0);
+              lastTimeMod= null;
+            } else {
+              animateOffset = Offset(0.4, 0.0);
+              lastTimeMod= null;
+
+            }
           }
         }
         var slideAnimation = Tween<Offset>(
@@ -221,11 +297,16 @@ class TimerWidget extends StatelessWidget {
               bloc.add(ResumeTimerEvent());
             },
             iconSize: 140,
-            icon: Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                child: Text(
-                  timerString,
+            icon: InkWell(
+              onSecondaryTap: (){
+                bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
+              },
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Text(
+                    timerString,
+                  ),
                 ),
               ),
             ),
@@ -264,11 +345,16 @@ class StopwatchWidget extends StatelessWidget {
         bloc.add(ResumeStopwatchEvent());
       },
       iconSize: 140,
-      icon: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
-          child: Text(
-            stopwatchString,
+      icon: InkWell(
+        onSecondaryTap: (){
+          bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
+        },
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15),
+            child: Text(
+              stopwatchString,
+            ),
           ),
         ),
       ),

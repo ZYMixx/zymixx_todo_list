@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:keyboard_event/keyboard_event.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 abstract class ServiceBackgroundKeyListener {
   static List<CodeCallBack> userCallBacks = [];
@@ -40,6 +41,7 @@ abstract class ServiceBackgroundKeyListener {
   static checkUserCode(dynamic keyEvent) {
     //print('cheak ${keyEvent}');
     //print('keyEvent.vkName ${keyEvent.vkName}');
+    //Log.i('${keyEvent.vkName}');
     for (var item in userCallBacks) {
       if (keyEvent.isReleased && keyEvent.vkName == item.codeKey) {
         if (item.needAltDown && !keyEvent.isAltDown) {

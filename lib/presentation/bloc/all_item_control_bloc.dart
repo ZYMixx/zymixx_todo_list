@@ -5,7 +5,7 @@ import '../../domain/todo_item.dart';
 
 class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState> {
   final DaoDatabase _daoDB = DaoDatabase();
-
+// fsdfe
   AllItemControlBloc() : super(ItemControlBlocState(todoItemList: [])) {
     on<LoadAllItemEvent>((event, emit) async {
       var itemList = await _daoDB.getAllTodoItem();
@@ -46,5 +46,7 @@ class ItemControlBlocEvent {}
 class LoadAllItemEvent extends ItemControlBlocEvent {}
 
 class AddNewItemEvent extends ItemControlBlocEvent {}
+
+class DeleteItemEvent extends ItemControlBlocEvent {}
 
 class DellAllItemEvent extends ItemControlBlocEvent {}

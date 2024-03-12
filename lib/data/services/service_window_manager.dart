@@ -6,17 +6,37 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:bitsdojo_window_platform_interface/bitsdojo_window_platform_interface.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 class ServiceWindowManager extends WindowListener {
   static final win = appWindow;
   static bool isIgnoreMouseEvent = false;
+  static bool isHide = false;
+
+  Future<void> testHideBG() async{
+    Log.i('triger');
+    if (isHide){
+      await windowManager.setIgnoreMouseEvents(false);
+      isHide = false;
+    } else {
+     await windowManager.setIgnoreMouseEvents(true);
+     await windowManager.setBackgroundColor(Colors.transparent);
+      isHide = true;
+    }
+    await windowManager.ensureInitialized();
+  }
 
   init() {
-    setWindowsSize();
     setWindowOnTop();
-    setListener();
-    test();
+    //setListener();
+    position();
+    windowManager.setBackgroundColor(Colors.transparent);
     windowManager.ensureInitialized();
+    Future.delayed(Duration(milliseconds: 500)).then((_) {
+      windowManager.setAsFrameless();
+      windowManager.setAlwaysOnTop(true);
+      windowManager.ensureInitialized();
+    });
   }
 
   setListener() {
@@ -29,43 +49,16 @@ class ServiceWindowManager extends WindowListener {
   @override
   void onWindowBlur() {}
 
-  static changeFocus() {
-    isIgnoreMouseEvent = !isIgnoreMouseEvent;
-    windowManager.setIgnoreMouseEvents(isIgnoreMouseEvent);
-    windowManager.ensureInitialized();
-    print('im change');
-  }
-
-  forceHide() {
-    windowManager.setIgnoreMouseEvents(true);
-    windowManager.ensureInitialized();
-  }
-
-  forceShow() {
-    windowManager.setIgnoreMouseEvents(true);
-    windowManager.ensureInitialized();
-  }
-
-  @override
-  void onWindowFocus() {
-    // print('focus');
-    windowManager.setIgnoreMouseEvents(false);
-    windowManager.ensureInitialized();
-  }
-
-  setWindowsSize() {
-    windowManager.setResizable(false);
-    // windowManager.setAsFrameless();
-  }
-
   setWindowOnTop() {
     windowManager.setAlwaysOnTop(true);
   }
 
-  test() {
-    const initialSize = Size(200, 180);
+  position() {
+    const initialSize = Size(500, 320);
     win.size = initialSize;
+    win.position = Offset(1350, 30);
     win.show();
+    windowManager.setResizable(false);
   }
 }
 
