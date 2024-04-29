@@ -3,38 +3,69 @@ import 'package:flutter/material.dart';
 import '../../presentation/App.dart';
 
 class ToolNavigator {
-  static void set(Widget screen) {
+  static void set(
+      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
     Navigator.pushAndRemoveUntil(
-        App.navigatorKey.currentContext!, _createFadeRoute(screen), (route) => route.isFirst);
+      context ?? App.navigatorKey.currentContext!,
+      root.getRoute(screen),
+      (route) => route.isFirst,
+    );
   }
 
-  static void pushReplacement(Widget screen) {
-    Navigator.pushReplacement(App.navigatorKey.currentContext!, _createFadeRoute(screen));
+  static void pushReplacement(
+      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
+    Navigator.pushReplacement(App.navigatorKey.currentContext!, root.getRoute(screen));
   }
 
-  static void push(Widget screen) {
+  static void push(
+      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
     Navigator.push(
-      App.navigatorKey.currentContext!,
-      _createFadeRoute(
+      context ?? App.navigatorKey.currentContext!,
+      root.getRoute(
+        //УБРАТЬ
+          screen
+      ),
+    );
+  }
+
+  static void pushSecond(
+      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
+    Navigator.push(
+      context ?? App.navigatorKey.currentContext!,
+      root.getRoute(
         screen,
       ),
     );
   }
 
-  static popAndReplace(Widget screen) async {
+  static popAndReplace(
+      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
     Navigator.pop(App.navigatorKey.currentContext!);
-    Navigator.of(App.navigatorKey.currentContext!).pushReplacement(_createFadeRoute(screen));
-  }
-
-  static void pushAlert(Widget screen) {
-    Navigator.push(
-      App.navigatorKey.currentContext!,
-      _createAlertRoute(screen),
-    );
+    Navigator.of(App.navigatorKey.currentContext!).pushReplacement(root.getRoute(screen));
   }
 
   static void pop() {
     Navigator.pop(App.navigatorKey.currentContext!);
+  }
+}
+
+enum PageRootEnum {
+  fade,
+  slide,
+  alert,
+  empty;
+
+  Route getRoute(Widget widget) {
+    switch (this) {
+      case PageRootEnum.fade:
+        return _createFadeRoute(widget);
+      case PageRootEnum.slide:
+        return _createSlideRoute(widget);
+      case PageRootEnum.alert:
+        return _createAlertRoute(widget);
+      case PageRootEnum.empty:
+        return _createEmptyRoute(widget);
+    }
   }
 
   static Route _createFadeRoute(Widget widget) {
@@ -47,6 +78,26 @@ class ToolNavigator {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
+          child: child,
+        );
+      },
+    );
+  }
+
+  static Route _createSlideRoute(Widget widget) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => widget,
+      barrierDismissible: true,
+      opaque: false,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 200),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = const Offset(1.0, 0.0);
+        const end = Offset(0.0, 0.0);
+        const curve = Curves.easeIn;
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        return SlideTransition(
+          position: tween.animate(animation),
           child: child,
         );
       },
@@ -71,6 +122,22 @@ class ToolNavigator {
             opacity: animation,
             child: child,
           ),
+        );
+      },
+    );
+  }
+
+  static Route _createEmptyRoute(Widget widget) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => widget,
+      barrierDismissible: true,
+      opaque: false,
+      transitionDuration: const Duration(milliseconds: 10),
+      reverseTransitionDuration: const Duration(milliseconds: 10),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
         );
       },
     );

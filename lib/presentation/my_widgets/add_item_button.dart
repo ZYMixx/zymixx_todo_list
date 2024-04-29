@@ -5,22 +5,30 @@ import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 
 class AddItemButton extends StatelessWidget {
-  const AddItemButton({Key? key}) : super(key: key);
 
+  VoidCallback onTapAction;
+  VoidCallback onLongTapAction;
+  Color? bgColor;
+
+  AddItemButton({
+    required this.onTapAction,
+    required this.onLongTapAction,
+    this.bgColor,
+  });
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Get.find<AllItemControlBloc>().add(AddNewItemEvent());
+        onTapAction.call();
       },
       onLongPress: () {
-        Get.find<AllItemControlBloc>().add(DellAllItemEvent());
+        onLongTapAction.call();
       },
       child: Container(
         width: ToolThemeData.itemWidth,
         height: 30,
         decoration: BoxDecoration(
-          color: Colors.green,
+          color: bgColor ?? Colors.green,
           border: Border.all(
             color: Colors.red,
           ),
@@ -34,4 +42,6 @@ class AddItemButton extends StatelessWidget {
       ),
     );
   }
+
+
 }

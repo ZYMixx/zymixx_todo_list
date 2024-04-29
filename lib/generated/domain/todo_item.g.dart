@@ -10,10 +10,13 @@ TodoItem _$TodoItemFromJson(Map<String, dynamic> json) => TodoItem(
       id: json['id'] as int,
       title: json['title'] as String?,
       content: json['content'] as String?,
-      category: json['category'] as int,
+      category: json['category'] as String,
       timerSeconds: json['timerSeconds'] as int,
       stopwatchSeconds: json['stopwatchSeconds'] as int,
       isDone: json['isDone'] as bool,
+      targetDateTime: json['targetDateTime'] == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(json['targetDateTime'] ),
     );
 
 Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
@@ -24,4 +27,5 @@ Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
       'timerSeconds': instance.timerSeconds,
       'stopwatchSeconds': instance.stopwatchSeconds,
       'isDone': instance.isDone,
+      'targetDateTime': instance.targetDateTime?.toIso8601String(),
     };

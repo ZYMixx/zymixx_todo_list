@@ -14,7 +14,6 @@ class MapperDatabase {
   }
 
   static List<TodoItem> listToEntityTodoItem(List<TodoItemDBData> dbList) {
-    print('dbList $dbList');
     return dbList.map((e) => toEntityTodoItem(e)).toList();
   }
 }

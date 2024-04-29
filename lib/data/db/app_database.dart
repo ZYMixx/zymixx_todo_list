@@ -31,12 +31,13 @@ class AppDatabase extends _$AppDatabase {
 
 class TodoItemDB extends Table {
   IntColumn get id => integer().nullable().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
+  TextColumn get title => text().withLength(min: 6, max: 60)();
   TextColumn get content => text().named('body')();
-  IntColumn get category => integer().withDefault(const Constant(0))();
+  TextColumn get category => text().withDefault(const Constant('active'))();
   IntColumn get timerSeconds => integer().withDefault(const Constant(0))();
   IntColumn get stopwatchSeconds => integer().withDefault(const Constant(0))();
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get targetDateTime => dateTime().nullable()();
 }
 
 // dependencies:

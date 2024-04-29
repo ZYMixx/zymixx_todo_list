@@ -1,34 +1,54 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/services/service_background_key_listener.dart';
+import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
+import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
+import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
+import 'package:zymixx_todo_list/presentation/my_bottom_navigator_screen.dart';
 import '../data/services/service_get_time.dart';
 import '../data/services/service_window_manager.dart';
 import 'bloc/all_item_control_bloc.dart';
-import 'launch_screen.dart';
 
 class App {
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static void start() async {
     navigatorKey = GlobalKey<NavigatorState>();
-    await _initGet();
-    runZonedGuarded(() {
+    runZonedGuarded(() async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await _initGet();
       runApp(
-        MaterialApp(
+      MaterialApp(
             debugShowCheckedModeBanner: false,
             navigatorKey: navigatorKey,
             theme: ThemeData.light(),
             debugShowMaterialGrid: false,
-            home: LaunchScreen()),
+            localizationsDelegates: [
+              ...GlobalMaterialLocalizations.delegates,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            supportedLocales: [
+              const Locale('ru'),
+            ],
+            home: MyBottomNavigatorScreen()),
       );
     }, (error, stackTrace) {
       print('Error occurred: $error');
+      if ( error is InvalidDataException) {
+        InvalidDataException e = error as InvalidDataException;
+        ToolShowToast.showError(
+            e.message.split('cannot be used for that because:')[1].trim(), duration: 4);
+      }
       print('Stack trace: $stackTrace');
     });
     //_configWindows();
     //_setUpKeyListener();
+    ToolDateFormatter().testData();
+
   }
 
   static _configWindows() {
@@ -49,7 +69,8 @@ class App {
 
   static _initGet() {
     Get.put<ServiceGetTime>(ServiceGetTime());
-    Get.put<AllItemControlBloc>(AllItemControlBloc());
+    Get.put<AllItemControlBloc>(AllItemControlBloc()..add(LoadAllItemEvent()));
+    Get.put<ListTodoScreenBloc>(ListTodoScreenBloc());
   }
 
 }

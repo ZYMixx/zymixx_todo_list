@@ -23,7 +23,7 @@ class $TodoItemDBTable extends TodoItemDB
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
       'title', aliasedName, false,
       additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 32),
+          GeneratedColumn.checkTextLength(minTextLength: 6, maxTextLength: 60),
       type: DriftSqlType.string,
       requiredDuringInsert: true);
   static const VerificationMeta _contentMeta =
@@ -35,11 +35,11 @@ class $TodoItemDBTable extends TodoItemDB
   static const VerificationMeta _categoryMeta =
       const VerificationMeta('category');
   @override
-  late final GeneratedColumn<int> category = GeneratedColumn<int>(
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
       'category', aliasedName, false,
-      type: DriftSqlType.int,
+      type: DriftSqlType.string,
       requiredDuringInsert: false,
-      defaultValue: const Constant(0));
+      defaultValue: const Constant('active'));
   static const VerificationMeta _timerSecondsMeta =
       const VerificationMeta('timerSeconds');
   @override
@@ -65,9 +65,23 @@ class $TodoItemDBTable extends TodoItemDB
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_done" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _targetDateTimeMeta =
+      const VerificationMeta('targetDateTime');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, content, category, timerSeconds, stopwatchSeconds, isDone];
+  late final GeneratedColumn<DateTime> targetDateTime =
+      GeneratedColumn<DateTime>('target_date_time', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        title,
+        content,
+        category,
+        timerSeconds,
+        stopwatchSeconds,
+        isDone,
+        targetDateTime
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -113,6 +127,12 @@ class $TodoItemDBTable extends TodoItemDB
       context.handle(_isDoneMeta,
           isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta));
     }
+    if (data.containsKey('target_date_time')) {
+      context.handle(
+          _targetDateTimeMeta,
+          targetDateTime.isAcceptableOrUnknown(
+              data['target_date_time']!, _targetDateTimeMeta));
+    }
     return context;
   }
 
@@ -129,13 +149,15 @@ class $TodoItemDBTable extends TodoItemDB
       content: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}body'])!,
       category: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}category'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
       timerSeconds: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}timer_seconds'])!,
       stopwatchSeconds: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}stopwatch_seconds'])!,
       isDone: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_done'])!,
+      targetDateTime: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}target_date_time']),
     );
   }
 
@@ -149,10 +171,11 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
   final int? id;
   final String title;
   final String content;
-  final int category;
+  final String category;
   final int timerSeconds;
   final int stopwatchSeconds;
   final bool isDone;
+  final DateTime? targetDateTime;
   const TodoItemDBData(
       {this.id,
       required this.title,
@@ -160,7 +183,8 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
       required this.category,
       required this.timerSeconds,
       required this.stopwatchSeconds,
-      required this.isDone});
+      required this.isDone,
+      this.targetDateTime});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -169,10 +193,13 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
     }
     map['title'] = Variable<String>(title);
     map['body'] = Variable<String>(content);
-    map['category'] = Variable<int>(category);
+    map['category'] = Variable<String>(category);
     map['timer_seconds'] = Variable<int>(timerSeconds);
     map['stopwatch_seconds'] = Variable<int>(stopwatchSeconds);
     map['is_done'] = Variable<bool>(isDone);
+    if (!nullToAbsent || targetDateTime != null) {
+      map['target_date_time'] = Variable<DateTime>(targetDateTime);
+    }
     return map;
   }
 
@@ -185,6 +212,9 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
       timerSeconds: Value(timerSeconds),
       stopwatchSeconds: Value(stopwatchSeconds),
       isDone: Value(isDone),
+      targetDateTime: targetDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetDateTime),
     );
   }
 
@@ -195,10 +225,11 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
       id: serializer.fromJson<int?>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
-      category: serializer.fromJson<int>(json['category']),
+      category: serializer.fromJson<String>(json['category']),
       timerSeconds: serializer.fromJson<int>(json['timerSeconds']),
       stopwatchSeconds: serializer.fromJson<int>(json['stopwatchSeconds']),
       isDone: serializer.fromJson<bool>(json['isDone']),
+      targetDateTime: serializer.fromJson<DateTime?>(json['targetDateTime']),
     );
   }
   @override
@@ -208,10 +239,11 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
       'id': serializer.toJson<int?>(id),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
-      'category': serializer.toJson<int>(category),
+      'category': serializer.toJson<String>(category),
       'timerSeconds': serializer.toJson<int>(timerSeconds),
       'stopwatchSeconds': serializer.toJson<int>(stopwatchSeconds),
       'isDone': serializer.toJson<bool>(isDone),
+      'targetDateTime': serializer.toJson<DateTime?>(targetDateTime),
     };
   }
 
@@ -219,10 +251,11 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
           {Value<int?> id = const Value.absent(),
           String? title,
           String? content,
-          int? category,
+          String? category,
           int? timerSeconds,
           int? stopwatchSeconds,
-          bool? isDone}) =>
+          bool? isDone,
+          Value<DateTime?> targetDateTime = const Value.absent()}) =>
       TodoItemDBData(
         id: id.present ? id.value : this.id,
         title: title ?? this.title,
@@ -231,6 +264,8 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
         timerSeconds: timerSeconds ?? this.timerSeconds,
         stopwatchSeconds: stopwatchSeconds ?? this.stopwatchSeconds,
         isDone: isDone ?? this.isDone,
+        targetDateTime:
+            targetDateTime.present ? targetDateTime.value : this.targetDateTime,
       );
   @override
   String toString() {
@@ -241,14 +276,15 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
           ..write('category: $category, ')
           ..write('timerSeconds: $timerSeconds, ')
           ..write('stopwatchSeconds: $stopwatchSeconds, ')
-          ..write('isDone: $isDone')
+          ..write('isDone: $isDone, ')
+          ..write('targetDateTime: $targetDateTime')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, title, content, category, timerSeconds, stopwatchSeconds, isDone);
+  int get hashCode => Object.hash(id, title, content, category, timerSeconds,
+      stopwatchSeconds, isDone, targetDateTime);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -259,17 +295,19 @@ class TodoItemDBData extends DataClass implements Insertable<TodoItemDBData> {
           other.category == this.category &&
           other.timerSeconds == this.timerSeconds &&
           other.stopwatchSeconds == this.stopwatchSeconds &&
-          other.isDone == this.isDone);
+          other.isDone == this.isDone &&
+          other.targetDateTime == this.targetDateTime);
 }
 
 class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
   final Value<int?> id;
   final Value<String> title;
   final Value<String> content;
-  final Value<int> category;
+  final Value<String> category;
   final Value<int> timerSeconds;
   final Value<int> stopwatchSeconds;
   final Value<bool> isDone;
+  final Value<DateTime?> targetDateTime;
   const TodoItemDBCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -278,6 +316,7 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
     this.timerSeconds = const Value.absent(),
     this.stopwatchSeconds = const Value.absent(),
     this.isDone = const Value.absent(),
+    this.targetDateTime = const Value.absent(),
   });
   TodoItemDBCompanion.insert({
     this.id = const Value.absent(),
@@ -287,16 +326,18 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
     this.timerSeconds = const Value.absent(),
     this.stopwatchSeconds = const Value.absent(),
     this.isDone = const Value.absent(),
+    this.targetDateTime = const Value.absent(),
   })  : title = Value(title),
         content = Value(content);
   static Insertable<TodoItemDBData> custom({
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? content,
-    Expression<int>? category,
+    Expression<String>? category,
     Expression<int>? timerSeconds,
     Expression<int>? stopwatchSeconds,
     Expression<bool>? isDone,
+    Expression<DateTime>? targetDateTime,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -306,6 +347,7 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
       if (timerSeconds != null) 'timer_seconds': timerSeconds,
       if (stopwatchSeconds != null) 'stopwatch_seconds': stopwatchSeconds,
       if (isDone != null) 'is_done': isDone,
+      if (targetDateTime != null) 'target_date_time': targetDateTime,
     });
   }
 
@@ -313,10 +355,11 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
       {Value<int?>? id,
       Value<String>? title,
       Value<String>? content,
-      Value<int>? category,
+      Value<String>? category,
       Value<int>? timerSeconds,
       Value<int>? stopwatchSeconds,
-      Value<bool>? isDone}) {
+      Value<bool>? isDone,
+      Value<DateTime?>? targetDateTime}) {
     return TodoItemDBCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -325,6 +368,7 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
       timerSeconds: timerSeconds ?? this.timerSeconds,
       stopwatchSeconds: stopwatchSeconds ?? this.stopwatchSeconds,
       isDone: isDone ?? this.isDone,
+      targetDateTime: targetDateTime ?? this.targetDateTime,
     );
   }
 
@@ -341,7 +385,7 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
       map['body'] = Variable<String>(content.value);
     }
     if (category.present) {
-      map['category'] = Variable<int>(category.value);
+      map['category'] = Variable<String>(category.value);
     }
     if (timerSeconds.present) {
       map['timer_seconds'] = Variable<int>(timerSeconds.value);
@@ -351,6 +395,9 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
     }
     if (isDone.present) {
       map['is_done'] = Variable<bool>(isDone.value);
+    }
+    if (targetDateTime.present) {
+      map['target_date_time'] = Variable<DateTime>(targetDateTime.value);
     }
     return map;
   }
@@ -364,7 +411,8 @@ class TodoItemDBCompanion extends UpdateCompanion<TodoItemDBData> {
           ..write('category: $category, ')
           ..write('timerSeconds: $timerSeconds, ')
           ..write('stopwatchSeconds: $stopwatchSeconds, ')
-          ..write('isDone: $isDone')
+          ..write('isDone: $isDone, ')
+          ..write('targetDateTime: $targetDateTime')
           ..write(')'))
         .toString();
   }
