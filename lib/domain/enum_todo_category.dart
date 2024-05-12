@@ -4,5 +4,4 @@ enum EnumTodoCategory{
   social,
   history,
   complete_daily
-
 }

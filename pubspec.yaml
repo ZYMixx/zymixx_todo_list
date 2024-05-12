@@ -26,6 +26,7 @@ dependencies:
   logger: ^1.4.0
   syncfusion_flutter_datepicker: 24.2.6
   gap: ^3.0.1
+  fl_chart: ^0.67.0
 
 dev_dependencies:
   flutter_test:

@@ -35,9 +35,13 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
     on<SetStoryCalendarItemEvent>((event, emit) async {
-      await _daoDatabase.insertTodoItem(event.todoItem.copyWith(category: EnumTodoCategory.social.name));
-      Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
-
+      if (event.todoItem.category == EnumTodoCategory.social.name){
+        await _daoDatabase.editTodoItemById(id: event.todoItem.id, category:EnumTodoCategory.active.name );
+        Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+      } else {
+        await _daoDatabase.editTodoItemById(id: event.todoItem.id, category:EnumTodoCategory.social.name );
+        Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+      }
     });
   }
 

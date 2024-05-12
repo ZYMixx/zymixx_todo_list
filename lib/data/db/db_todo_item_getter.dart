@@ -22,6 +22,7 @@ class DbTodoItemGetter {
   Future<bool> get isDone => _getIsDone();
   Future<DateTime?> get targetDateTime => _getTargetDateTime();
   Future<TodoItem?> get todoItem => _getTodoItem();
+  Future<int> get secondSpent => _getSecondSpent();
 
 
 
@@ -59,6 +60,10 @@ class DbTodoItemGetter {
 
   Future<DateTime?> _getTargetDateTime() async {
     return (await _dao.getTodoItem(id: itemId))?.targetDateTime;
+  }
+
+  Future<int> _getSecondSpent() async {
+    return (await _dao.getTodoItem(id: itemId))?.secondsSpent ?? 0;
   }
 
 

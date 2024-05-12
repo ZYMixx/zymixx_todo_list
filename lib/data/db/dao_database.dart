@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
+import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
 
 import 'app_database.dart';
 import 'mapper_database.dart';
@@ -15,27 +16,27 @@ class DaoDatabase {
   // Future<List<TodoItem>> getAllTodoItem() async =>
   //     MapperDatabase.listToEntityTodoItem(await db.select(db.todoItemDB).get());
 
-  Future<List<TodoItem>> getActiveTodoItem() async =>
+  Future<List<TodoItem>> getActiveTodoItems() async =>
     MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) =>
     tbl.category.equals(EnumTodoCategory.active.name) |
     tbl.category.equals(EnumTodoCategory.social.name)
     )).get());
 
-  Future<List<TodoItem>> getDailyTodoItem() async =>
+  Future<List<TodoItem>> getDailyTodoItems() async =>
       MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) => tbl.category.equals(EnumTodoCategory.daily.name))).get());
 
+  Future<List<TodoItem>> getTodayDailyTodoItems() async {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    return MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) {
+      return  tbl.category.equals(EnumTodoCategory.daily.name) & tbl.targetDateTime.isBetweenValues(todayStart, todayEnd);
+    }
+        )).get());
+  }
 
-  // Future<Stream<List<TodoItem>>> getAllTodoItemStream() async {
-  //   final query = db.select(db.todoItemDB).watch();
-  //   final streamController = StreamController<List<TodoItem>>();
-  //   final subscription = query.listen((data) {
-  //     streamController.add(MapperDatabase.listToEntityTodoItem(data));
-  //   });
-  //   streamController.onCancel = () {
-  //     subscription.cancel();
-  //   };
-  //   return streamController.stream;
-  // }
+  Future<List<TodoItem>> getHistoryTodoItems() async =>
+      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) => tbl.category.equals(EnumTodoCategory.history.name))).get());
 
 
   Future<TodoItem?> getTodoItem({required int id}) async {
@@ -49,22 +50,53 @@ class DaoDatabase {
   Future insertTodoItem(TodoItem todoItem) =>
       db.into(db.todoItemDB).insertOnConflictUpdate(MapperDatabase.toDBTodoItem(todoItem));
 
-  Future insertDailyItem({required String title, int? timer}) async {
+  Future insertDuplicateTodoItem(TodoItem todoItem) async {
+    Log.i(' duplicate $todoItem');
+    await db.into(db.todoItemDB).insert(TodoItemDBCompanion.insert(
+      id: Value<int?>(null),
+      title: todoItem.title!,
+      content: todoItem.content?? '',
+      category: Value(todoItem.category),
+      timerSeconds: Value(todoItem.timerSeconds),
+      stopwatchSeconds: Value(todoItem.stopwatchSeconds),
+      secondsSpent: Value(todoItem.secondsSpent),
+      isDone: Value(todoItem.isDone),
+      targetDateTime: Value(todoItem.targetDateTime),
+    ));
+  }
+
+
+  Future insertDailyItem({required String title, int? timer, required int autoPauseSeconds}) async {
+    DateTime today = DateTime.now();
+
     final todoDailyItem = TodoItemDBCompanion.insert(
       title: title,
       content: '',
       category: Value(EnumTodoCategory.daily.name),
+      autoPauseSeconds: Value(autoPauseSeconds),
       timerSeconds: Value(timer ?? 0),
+      targetDateTime: Value<DateTime?>(DateTime(today.year, today.month, today.day)),
     );
     await db.into(db.todoItemDB).insert(todoDailyItem);
   }
 
-    Future insertEmptyItem({bool isDaily = false}) async {
+    Future insertEmptyItem({bool isDaily = false, DateTime? userDateTime}) async {
+    DateTime finalDateTime;
+    DateTime today = DateTime.now();
+    if (userDateTime == null){
+      if (today.hour >= 21){
+        finalDateTime = DateTime(today.year, today.month, today.day + 1);
+      } else{
+        finalDateTime = today;
+      }
+    } else{
+      finalDateTime = userDateTime;
+    }
       final todoItem = TodoItemDBCompanion.insert(
         title: 'New Title',
         content: '',
         category: Value(EnumTodoCategory.active.name),
-        targetDateTime: Value<DateTime?>(DateTime.now()),
+        targetDateTime: Value<DateTime?>(finalDateTime),
       );
       await db.into(db.todoItemDB).insert(todoItem);
   }
@@ -79,6 +111,16 @@ class DaoDatabase {
     }
   }
 
+  Future<void> updateContentByTitle({required String title, required String newContent}) async {
+    List<TodoItemDBData> itemsToUpdate = await (db.select(db.todoItemDB)..where((tbl) => tbl.title.equals(title))).get();
+     if (itemsToUpdate.isNotEmpty) {
+       for (TodoItemDBData item in itemsToUpdate) {
+         db.update(db.todoItemDB).replace(item.copyWith(content: newContent,));
+       }
+     }
+  }
+
+
   Future deleteAll() async {
     var list = await db.select(db.todoItemDB).get();
     try {
@@ -90,12 +132,14 @@ class DaoDatabase {
   }
 
   Future<void> editTodoItemById({
-    required id,
+    required int id,
     String? title,
     String? content,
     String? category,
     int? timerSeconds,
     int? stopwatchSeconds,
+    int? secondsSpent,
+    int? autoPauseSeconds,
     bool? isDone,
     DateTime? targetDateTime,
   }) async {
@@ -108,19 +152,21 @@ class DaoDatabase {
         ..write(TodoItemDBCompanion(
           id: Value(id),
           title: title != null ? Value(title) : const Value.absent(),
-          content: content != null ? Value(content) : const Value.absent(),
+          content: content != null ? Value(content) : const Value.absent() ,
           category: category != null ? Value(category) : const Value.absent(),
           timerSeconds: timerSeconds != null ? Value(timerSeconds) : const Value.absent(),
           stopwatchSeconds: stopwatchSeconds != null ? Value(stopwatchSeconds) : const Value
               .absent(),
           isDone: isDone != null ? Value(isDone) : const Value.absent(),
           targetDateTime: targetDateTime != null ? Value(targetDateTime) : const Value.absent(),
+          autoPauseSeconds: autoPauseSeconds != null ? Value(autoPauseSeconds) : const Value.absent(),
+          secondsSpent: secondsSpent != null ? Value(secondsSpent) : const Value.absent(),
         ));
 
   }
 
 
   editTodoItem(TodoItem todoItem) {
-    db.update(db.todoItemDB).write(MapperDatabase.toDBTodoItem(todoItem));
+    db.update(db.todoItemDB).replace(MapperDatabase.toDBTodoItem(todoItem));
   }
 }

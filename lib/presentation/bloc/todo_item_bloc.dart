@@ -55,8 +55,14 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: 0)));
     });
     on<SetItemDateEvent>((event, emit) async {
-      await _daoDatabase.editTodoItemById(id: state.todoItemId, targetDateTime: event.userDateTime!);
+      await _daoDatabase.editTodoItemById(
+          id: state.todoItemId, targetDateTime: event.userDateTime!);
       emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
+    });
+    on<SetAutoPauseSeconds>((event, emit) async {
+      await _daoDatabase.editTodoItemById(
+          id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
+      emit(state.copyWith(todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
     });
   }
 
@@ -119,22 +125,22 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: remainSeconds)));
   }
 
-  Function() finishCallBack = () {
-    Log.e('call finish caall back');
-  };
+  //Function() finishCallBack =  _onTimerEnd;
 
   Future<void> _onStopStartTimerEvent(
       StopStartTimerEvent event, Emitter<TodoItemBlocState> emit) async {
+    //ii
     if (StreamControllerService.stopStream(timerIdentifier)) {
       return;
     }
     Future<bool> Function() callBack = () async {
       int remainSeconds = await state.dbTodoItemGetter.timerSeconds;
+      int secondSpent = await state.dbTodoItemGetter.secondSpent;
       if (remainSeconds == 0) {
         StreamControllerService.stopStream(timerIdentifier);
         return false;
       } else {
-        _daoDatabase.editTodoItemById(id: state.todoItemId, timerSeconds: remainSeconds - 1);
+        _daoDatabase.editTodoItemById(id: state.todoItemId, timerSeconds: remainSeconds - 1, secondsSpent: secondSpent +1);
         return true;
       }
     };
@@ -142,7 +148,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Stream timerStream = StreamControllerService.addStreamItem(
         identifier: timerIdentifier,
         callBack: callBack,
-        finishCallBack: finishCallBack,
+        finishCallBack: _onTimerEnd,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
       if (event) {
@@ -151,7 +157,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     });
     StreamControllerService.addListener(
         subscription: streamSubscription, identifier: timerIdentifier);
-    StreamControllerService.stopStream(stopwatchIdentifier);
+    StreamControllerService.stopStream(stopwatchIdentifier); //останавливаем секундомер если он был
   }
 
   void _onStopStartStopwatchEvent(StopStartStopwatchEvent event, Emitter<TodoItemBlocState> emit) {
@@ -160,11 +166,13 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     }
     Future<bool> Function() callBack = () async {
       int crntSeconds = await state.dbTodoItemGetter.stopwatchSeconds;
-      if (crntSeconds == 7200) {
+      if (crntSeconds == 2400) {
         StreamControllerService.stopStream(stopwatchIdentifier);
+        _onTimerEnd();
         return false;
       } else {
-        _daoDatabase.editTodoItemById(id: state.todoItemId, stopwatchSeconds: crntSeconds + 1);
+        int secondSpent = await state.dbTodoItemGetter.secondSpent;
+        _daoDatabase.editTodoItemById(id: state.todoItemId, stopwatchSeconds: crntSeconds + 1, secondsSpent: secondSpent+1);
         return true;
       }
     };
@@ -172,7 +180,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Stream timerStream = StreamControllerService.addStreamItem(
         identifier: stopwatchIdentifier,
         callBack: callBack,
-        finishCallBack: finishCallBack,
+        finishCallBack: _onTimerEnd,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
       if (event) {
@@ -221,7 +229,11 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     if (event.direction == DismissDirection.startToEnd) {
       //right
       await _daoDatabase.editTodoItemById(
-          id: state.todoItemId, category: EnumTodoCategory.history.name, isDone: true);
+        id: state.todoItemId,
+        category: EnumTodoCategory.history.name,
+        isDone: true,
+        targetDateTime: DateTime.now(),
+      );
     }
     if (event.direction == DismissDirection.endToStart) {
       //left
@@ -329,4 +341,10 @@ class SetItemDateEvent extends TodoItemBlocEvent {
   DateTime userDateTime;
 
   SetItemDateEvent({required this.userDateTime});
+}
+
+class SetAutoPauseSeconds extends TodoItemBlocEvent {
+  int autoPauseSeconds;
+
+  SetAutoPauseSeconds({required this.autoPauseSeconds});
 }

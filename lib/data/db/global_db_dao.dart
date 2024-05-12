@@ -14,6 +14,8 @@ class GlobalDbDao{
   static  Stream<List<TodoItem>> get broadcastActiveTodoStream => _broadcastActiveTodoStream ??= initActiveStream();
   static  Stream<List<TodoItem>>? _broadcastActiveTodoStream;
 
+  static final  StreamController<List<TodoItem>> streamAllOtherEvent = StreamController<List<TodoItem>>();
+
   //static  Stream<List<TodoItem>> get broadcastDailyTodoStream => _broadcastDailyTodoStream ??= initDailyStream();
   //static  Stream<List<TodoItem>>? _broadcastDailyTodoStream;
 
@@ -27,11 +29,19 @@ class GlobalDbDao{
       tbl.category.equals(EnumTodoCategory.social.name)
       )).watch();
     final streamController = StreamController<List<TodoItem>>();
+    //final streamAllOtherEvent = StreamController<List<TodoItem>>();
     query.listen((data) {
       if ( lastUpdateTodoItemListSize == null || lastUpdateTodoItemListSize != data.length ) {
+        //for (TodoItemDBData item in data){
+        //  _db.update(_db.todoItemDB).replace(item.copyWith(secondsSpent: 0));
+       // }
+
         List<TodoItem> mappedList = MapperDatabase.listToEntityTodoItem(data);
         streamController.add(mappedList);
         lastUpdateTodoItemListSize =  mappedList.length;
+      } else {
+        List<TodoItem> mappedList = MapperDatabase.listToEntityTodoItem(data);
+        streamAllOtherEvent.add(mappedList);
       }
     });
     return streamController.stream.asBroadcastStream();
@@ -65,6 +75,16 @@ class GlobalDbDao{
       tbl.category.equals(EnumTodoCategory.active.name) |
       tbl.category.equals(EnumTodoCategory.social.name)
       )).get());
+
+
+
+
+  static Future<List<TodoItem>> getHistoryTodoItem() async =>
+      MapperDatabase.listToEntityTodoItem(await (_db.select(_db.todoItemDB)..where((tbl) => tbl.category.equals(EnumTodoCategory.history.name))).get());
+
+
+  static Future<List<TodoItem>> getAllTodoItem() async =>
+      MapperDatabase.listToEntityTodoItem(await (_db.select(_db.todoItemDB)).get());
 
 
   // Future<List<TodoItem>> getDailyTodoItem() async =>

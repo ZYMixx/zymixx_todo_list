@@ -8,15 +8,17 @@ part of '../../domain/todo_item.dart';
 
 TodoItem _$TodoItemFromJson(Map<String, dynamic> json) => TodoItem(
       id: json['id'] as int,
-      title: json['title'] as String?,
-      content: json['content'] as String?,
+      title: json['title'] as String,
+      content: json['content'] as String,
       category: json['category'] as String,
       timerSeconds: json['timerSeconds'] as int,
       stopwatchSeconds: json['stopwatchSeconds'] as int,
       isDone: json['isDone'] as bool,
+      secondsSpent: json['secondsSpent'] as int,
+      autoPauseSeconds: json['autoPauseSeconds'] as int,
       targetDateTime: json['targetDateTime'] == null
           ? null
-          : DateTime.fromMillisecondsSinceEpoch(json['targetDateTime'] ),
+          : DateTime.fromMillisecondsSinceEpoch(json['targetDateTime']),
     );
 
 Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
@@ -26,6 +28,8 @@ Map<String, dynamic> _$TodoItemToJson(TodoItem instance) => <String, dynamic>{
       'category': instance.category,
       'timerSeconds': instance.timerSeconds,
       'stopwatchSeconds': instance.stopwatchSeconds,
+      'secondsSpent': instance.secondsSpent,
+      'autoPauseSeconds': instance.autoPauseSeconds,
       'isDone': instance.isDone,
       'targetDateTime': instance.targetDateTime?.toIso8601String(),
     };

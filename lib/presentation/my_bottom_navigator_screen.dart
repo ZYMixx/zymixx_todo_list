@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/presentation/calendar_screen.dart';
 import 'package:zymixx_todo_list/presentation/daily_todo_screen.dart';
+import 'package:zymixx_todo_list/presentation/history_screen.dart';
 import 'package:zymixx_todo_list/presentation/main_todo_list_screen.dart';
+import 'package:zymixx_todo_list/presentation/statistic_screen.dart';
 
 class MyBottomNavigatorScreen extends StatefulWidget {
   MyBottomNavigatorScreen({super.key});
@@ -22,8 +24,8 @@ class _MyBottomNavigatorScreenState extends State<MyBottomNavigatorScreen> {
   List<Widget> listScreens = [
     MainTodoListScreen(),
     CalendarScreen(),
-    FlutterLogo(  ),
-    Center(child: FlutterLogo(  )),
+    StatisticScreen(),
+    HistoryScreen(),
     DailyTodoScreen(),
   ];
 

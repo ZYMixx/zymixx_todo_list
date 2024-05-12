@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 import '../../presentation/App.dart';
 
@@ -28,7 +29,7 @@ class ToolShowOverlay {
   }
 
   static submitUserData(dynamic) {
-    print('send $dynamic');
+    Log.i('send $dynamic');
     _completer?.complete(dynamic);
     _hideOverlay();
   }

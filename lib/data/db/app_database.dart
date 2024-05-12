@@ -36,6 +36,8 @@ class TodoItemDB extends Table {
   TextColumn get category => text().withDefault(const Constant('active'))();
   IntColumn get timerSeconds => integer().withDefault(const Constant(0))();
   IntColumn get stopwatchSeconds => integer().withDefault(const Constant(0))();
+  IntColumn get secondsSpent => integer().nullable().withDefault(const Constant(0))();
+  IntColumn get autoPauseSeconds => integer().nullable().withDefault(const Constant(0))();
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
   DateTimeColumn get targetDateTime => dateTime().nullable()();
 }

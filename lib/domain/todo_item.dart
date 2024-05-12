@@ -1,15 +1,18 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 
 part '../generated/domain/todo_item.g.dart';
 
 @JsonSerializable()
 class TodoItem {
   int id;
-  String? title;
-  String? content;
+  String title;
+  String content;
   String category;
   int timerSeconds;
   int stopwatchSeconds;
+  int secondsSpent;
+  int autoPauseSeconds;
   bool isDone;
   DateTime? targetDateTime;
 
@@ -21,6 +24,8 @@ class TodoItem {
     required this.timerSeconds,
     required this.stopwatchSeconds,
     required this.isDone,
+    required this.secondsSpent,
+    required this.autoPauseSeconds,
     this.targetDateTime,
   });
 
@@ -32,8 +37,10 @@ class TodoItem {
       category: todoItem.category,
       timerSeconds: todoItem.timerSeconds,
       stopwatchSeconds: todoItem.stopwatchSeconds,
+      secondsSpent: todoItem.secondsSpent,
       isDone: todoItem.isDone,
       targetDateTime: todoItem.targetDateTime,
+      autoPauseSeconds: todoItem.autoPauseSeconds,
     );
   }
 
@@ -43,7 +50,7 @@ class TodoItem {
 
   @override
   String toString() {
-    return 'TodoItem{id: $id, title: $title, content: $content, category $category}';
+    return 'TodoItem{id: $id, title: $title, content: $content, category $category, targetDateTime ${ToolDateFormatter.formatToMonthDay(targetDateTime)} }\n';
   }
 
   TodoItem copyWith({
@@ -53,8 +60,10 @@ class TodoItem {
     String? category,
     int? timerSeconds,
     int? stopwatchSeconds,
+    int? secondsSpent,
     bool? isDone,
     DateTime? targetDateTime,
+    int? autoPauseSeconds,
   }) {
     return TodoItem(
       id: id ?? this.id,
@@ -64,7 +73,9 @@ class TodoItem {
       timerSeconds: timerSeconds ?? this.timerSeconds,
       stopwatchSeconds: stopwatchSeconds ?? this.stopwatchSeconds,
       isDone: isDone ?? this.isDone,
+      secondsSpent: secondsSpent ?? this.secondsSpent,
       targetDateTime: targetDateTime ?? this.targetDateTime,
+      autoPauseSeconds: autoPauseSeconds ?? this.autoPauseSeconds,
     );
   }
 
@@ -80,6 +91,8 @@ class TodoItem {
           timerSeconds == other.timerSeconds &&
           stopwatchSeconds == other.stopwatchSeconds &&
           isDone == other.isDone &&
+          secondsSpent == other.secondsSpent &&
+          autoPauseSeconds == other.autoPauseSeconds &&
           targetDateTime == other.targetDateTime;
 
   @override
@@ -90,33 +103,11 @@ class TodoItem {
       category.hashCode ^
       timerSeconds.hashCode ^
       stopwatchSeconds.hashCode ^
+      secondsSpent.hashCode ^
+      autoPauseSeconds.hashCode ^
       isDone.hashCode ^
       targetDateTime.hashCode;
-
-// @override
-  // bool operator ==(Object other) =>
-  //     identical(this, other) ||
-  //     other is TodoItem &&
-  //         runtimeType == other.runtimeType &&
-  //         id == other.id &&
-  //         title == other.title &&
-  //         content == other.content &&
-  //         category == other.category &&
-  //         timerSeconds == other.timerSeconds &&
-  //         stopwatchSeconds == other.stopwatchSeconds &&
-  //         isDone == other.isDone;
-  //
-  // @override
-  // int get hashCode =>
-  //     id.hashCode ^
-  //     title.hashCode ^
-  //     content.hashCode ^
-  //     category.hashCode ^
-  //     timerSeconds.hashCode ^
-  //     stopwatchSeconds.hashCode ^
-  //     isDone.hashCode;
 }
-
 //      targetDateTime: json['targetDateTime'] == null
 //           ? null
 //           : DateTime.fromMillisecondsSinceEpoch(json['targetDateTime']),

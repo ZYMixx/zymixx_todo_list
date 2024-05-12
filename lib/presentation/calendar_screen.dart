@@ -218,7 +218,9 @@ class DayDataBlockWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 4),
           child: InkWell(
             onTap: (){
-              //ii add new event on this date
+              if (selectDate != null) {
+                Get.find<AllItemControlBloc>().add(AddNewItemEvent(dateTime: selectDate));
+              }
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 1.0),
@@ -257,6 +259,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
   late TextEditingController _controllerDescription;
   late TodoItem tempTodoItem;
 
+
   @override
   void initState() {
     super.initState();
@@ -275,13 +278,14 @@ class _DataTodoItemState extends State<DataTodoItem> {
 
   @override
   Widget build(BuildContext context) {
+    bool isStoryItem = widget.todoItem.category == EnumTodoCategory.social.name;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 2),
       child: Container(
         padding: EdgeInsets.all(4),
         height: 140,
         decoration: BoxDecoration(
-          color: widget.todoItem.category == EnumTodoCategory.social.name ? Colors.orange: Colors.deepPurpleAccent,
+          color: isStoryItem ? Colors.orange: Colors.deepPurpleAccent,
             boxShadow: [
               BoxShadow(
                 color: Colors.black26,
@@ -379,6 +383,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                       children: [
                         Expanded(
                           child: MaterialButton(
+                            focusNode: FocusNode(skipTraversal: true),
                             onPressed: () {
                               context.read<CalendarBloc>().add(SaveEvent(todoItem: tempTodoItem));
                             },
@@ -388,6 +393,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                         ),
                         Expanded(
                           child: MaterialButton(
+                            focusNode: FocusNode(skipTraversal: true),
                             onPressed: () {
                               context.read<CalendarBloc>().add(ChangeTodoDateEvent(context: context, todoItemId: widget.todoItem.id,));
                             },
@@ -396,16 +402,42 @@ class _DataTodoItemState extends State<DataTodoItem> {
                           ),
                         ),
                         Expanded(
-                          child: MaterialButton(
-                            onPressed: () {
-                              context.read<CalendarBloc>().add(SetStoryCalendarItemEvent(todoItem: tempTodoItem));
-                            },
-                            color: Colors.orangeAccent,
-                            child: Text('Story',),
+                          child: DecoratedBox(
+                            decoration: isStoryItem ? BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Colors.orangeAccent[200]!, Colors.purple[800]!],
+                                stops: [0.5,0.5],
+                                transform: GradientRotation(0.7),
+                              ),
+                            )  : BoxDecoration(
+                                color: Colors.orangeAccent
+                            ),
+                            child: MaterialButton(
+                              focusNode: FocusNode(skipTraversal: true),
+                              onPressed: () {
+                                context.read<CalendarBloc>().add(SetStoryCalendarItemEvent(todoItem: tempTodoItem));
+                              },
+                              child: isStoryItem ? ShaderMask(
+                                blendMode: BlendMode.srcIn,
+                                shaderCallback: (bounds) => LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [Colors.purple[900]!, Colors.white],
+                                  stops: [0.5,0.5],
+                                  transform: GradientRotation(0.7),
+                                ).createShader(
+                                  Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                                ),
+                                child: Text('Story', style: TextStyle(fontSize: 16, letterSpacing: 1.5),),
+                              ) : Text('Story', style: TextStyle(fontSize: 16, letterSpacing: 1.5),),
+                            ),
                           ),
                         ),
                         Expanded(
                           child: MaterialButton(
+                            focusNode: FocusNode(skipTraversal: true),
                             onPressed: () {
                               context.read<CalendarBloc>().add(DoneCalendarItemEvent(todoItem: tempTodoItem));
                             },
@@ -415,6 +447,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                         ),
                         Expanded(
                           child: MaterialButton(
+                            focusNode: FocusNode(skipTraversal: true),
                             onPressed: () {
                               context.read<CalendarBloc>().add(DeleteCalendarItemEvent(todoItem: tempTodoItem));
                             },
@@ -423,7 +456,8 @@ class _DataTodoItemState extends State<DataTodoItem> {
                           ),
                         ),
                       ],
-                    ),
+                    )
+                    ,
                   ),
                 ))
           ],

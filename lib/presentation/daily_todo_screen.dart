@@ -20,7 +20,7 @@ class DailyTodoScreen extends StatelessWidget {
         return Get.find<AllItemControlBloc>();
       },
       child: BlocProvider(
-        create: (_) => DailyTodoBloc(),
+        create: (_) => Get.find<DailyTodoBloc>(),
         child: DailyTodoWidget(),
       ),
     );
@@ -32,8 +32,12 @@ class DailyTodoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<TodoItem> dailyTodoList =
-        context.select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList);
+    var now = DateTime.now();
+    List<TodoItem> dailyTodoList = context
+        .select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList)
+        .where(
+            (element) => element.targetDateTime != null && element.targetDateTime!.isSameDay(now))
+        .toList();
     return Column(
       children: [
         Expanded(
@@ -41,9 +45,7 @@ class DailyTodoWidget extends StatelessWidget {
             itemCount: dailyTodoList.length,
             itemBuilder: (context, itemId) {
               return DailyTodoItem(
-                isComplete: dailyTodoList[itemId].isDone,
-                name: dailyTodoList[itemId]?.title ?? '',
-                itemId: dailyTodoList[itemId].id,
+                dailyTodoItem: dailyTodoList[itemId],
               );
             },
           ),
@@ -54,13 +56,8 @@ class DailyTodoWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
             child: AddItemButton(
               onTapAction: () {
-                // ToolShowOverlay.showUserInputOverlay(
-                //   context: context,
-                //   child: CreateDailyWidget(),
-                // );
                 context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
               },
-              //onTapAction: () => Get.find<AllItemControlBloc>().add(AddNewItemEvent(category: EnumTodoCategory.daily)),
               onLongTapAction: () => Get.find<AllItemControlBloc>().add(DellAllItemEvent()),
               bgColor: Colors.grey,
             ),
@@ -71,13 +68,41 @@ class DailyTodoWidget extends StatelessWidget {
   }
 }
 
-class DailyTodoItem extends StatelessWidget {
-  final bool isComplete;
-  final String name;
-  final int itemId;
+class DailyTodoItem extends StatefulWidget {
+  final TodoItem dailyTodoItem;
 
-  const DailyTodoItem(
-      {required bool this.isComplete, required String this.name, required int this.itemId});
+  //final bool dailyTodoItem.isDone;
+  //final String name;
+  //final int itemId;
+  //final int? timerSeconds;
+
+  const DailyTodoItem({
+    required this.dailyTodoItem
+  });
+
+  @override
+  State<DailyTodoItem> createState() => _DailyTodoItemState();
+}
+
+class _DailyTodoItemState extends State<DailyTodoItem> {
+  bool timerIsRun = false;
+  int? remainTimer;
+
+  @override
+  void initState() {
+    remainTimer = widget.dailyTodoItem.timerSeconds;
+    Get.find<DailyTodoBloc>().checkOnActiveTimer(
+        itemId: widget.dailyTodoItem.id, updateCallBack: secondUpdate);
+    super.initState();
+  }
+
+  void secondUpdate(int second) {
+    if (mounted) {
+      setState(() {
+        remainTimer = second;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +113,7 @@ class DailyTodoItem extends StatelessWidget {
         width: double.infinity,
         height: 60,
         decoration: BoxDecoration(
-          color: isComplete ? Colors.greenAccent : Colors.white70,
+          color: widget.dailyTodoItem.isDone ? Colors.greenAccent : Colors.white70,
           border: Border.all(
             width: 1.5,
             color: Colors.white,
@@ -97,60 +122,132 @@ class DailyTodoItem extends StatelessWidget {
         ),
         child: InkWell(
           onTap: () {
+            context.read<DailyTodoBloc>().add(CompleteDailyEvent(
+                isComplete: !widget.dailyTodoItem.isDone,
+                itemId: widget.dailyTodoItem.id,
+                remainSeconds: remainTimer ?? 0,
+                timerUpdateCB: secondUpdate));
+          },
+          onLongPress: () {
             context
                 .read<DailyTodoBloc>()
-                .add(CompleteDailyEvent(isComplete: !isComplete, itemId: itemId));
+                .add(DeleteDailyEvent(itemId: widget.dailyTodoItem.id,
+                context: context,
+                title: widget.dailyTodoItem.title));
           },
-          onLongPress: (){
-            context
-                .read<DailyTodoBloc>()
-                .add(DeleteDailyEvent(itemId: itemId));
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: Stack(
             children: [
-              AnimatedScale(
-                duration: Duration(milliseconds: 200),
-                scale: isComplete ? 1.2 : 0,
-                child: AnimatedOpacity(
-                  duration: Duration(milliseconds: 150),
-                  opacity: isComplete ? 1 : 0,
-                  child: Icon(
-                    Icons.check_outlined,
-                    color: Colors.purpleAccent,
-                    size: 30,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  AnimatedScale(
+                    duration: Duration(milliseconds: 200),
+                    scale: widget.dailyTodoItem.isDone ? 1.2 : 0,
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: 150),
+                      opacity: widget.dailyTodoItem.isDone ? 1 : 0,
+                      child: Icon(
+                        Icons.check_outlined,
+                        color: Colors.purpleAccent,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Text(
+                      widget.dailyTodoItem.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        letterSpacing: -0.5,
+                        wordSpacing: -1.0,
+                        height: 0.9,
+                      ),
+                    ),
+                  ),
+                  AnimatedScale(
+                    duration: Duration(milliseconds: 200),
+                    scale: widget.dailyTodoItem.isDone ? 1.2 : 0,
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: 100),
+                      opacity: widget.dailyTodoItem.isDone ? 1 : 0,
+                      child: Icon(
+                        Icons.check_outlined,
+                        color: Colors.purpleAccent,
+                        size: 30,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (widget.dailyTodoItem.timerSeconds > 0) Padding(
+                padding: const EdgeInsets.only(right: 60.0, top: 5),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: DecoratedBox(
+                    position: DecorationPosition.background,
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 2.0,
+                          spreadRadius: 1.0,
+                          offset: Offset(0, 0), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(0.5),
+                      child: CircleAvatar(
+                          radius: 6.0,
+                          backgroundColor: widget.dailyTodoItem.autoPauseSeconds == 0
+                              ? Colors.grey[400]
+                              : widget.dailyTodoItem.autoPauseSeconds == 60 ? Colors.yellowAccent
+                              : Colors.redAccent,
+                      ),
+                    ),
                   ),
                 ),
               ),
-              Center(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    letterSpacing: -0.5,
-                    wordSpacing: -1.0,
-                    height: 0.9,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    remainTimer == 0 ? '' : '$remainTimer',
+                    style: TextStyle(
+                      fontSize: 21.1,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                      shadows: timerIsRun
+                          ? [
+                        Shadow(
+                          color: Colors.greenAccent,
+                          offset: Offset(1, 1.5),
+                          blurRadius: 1.6,
+                        )
+                      ]
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-              AnimatedScale(
-                duration: Duration(milliseconds: 200),
-                scale: isComplete ? 1.2 : 0,
-                child: AnimatedOpacity(
-                  duration: Duration(milliseconds: 100),
-                  opacity: isComplete ? 1 : 0,
-                  child: Icon(
-                    Icons.check_outlined,
-                    color: Colors.purpleAccent,
-                    size: 30,
-                  ),
-                ),
-              ),
+              )
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+extension DateTimeExtension on DateTime {
+  bool isSameDay(DateTime date) {
+    if (date.day == this.day && date.month == this.month && date.year == this.year) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

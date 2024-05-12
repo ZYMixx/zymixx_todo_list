@@ -35,6 +35,12 @@ class ToolDateFormatter {
     return dateFormat.format(dateTime);
   }
 
+  static String? formatToMonthDayWeek(DateTime? dateTime, {String locale = 'ru'}) {
+    if (dateTime == null) return null;
+    DateFormat dateFormat = DateFormat("EEE/dd/MMM ", 'ru');
+    return dateFormat.format(dateTime);
+  }
+
   static String? formatToYear(DateTime? dateTime, {String locale = 'ru'}) {
     if (dateTime == null) return null;
     return DateFormat.y(locale).format(dateTime);
@@ -42,7 +48,6 @@ class ToolDateFormatter {
 
   void testData() {
     DateTime now = DateTime.now();
-    initializeDateFormatting('ru');
 
     print('Formatted DateTime: ${ToolDateFormatter.formatDateTime(now, "EEE, MMM d HH:mm:ss")}');
     print('Formatted to Locale DateTime: ${ToolDateFormatter.formatToLocaleDateTime(now)}');

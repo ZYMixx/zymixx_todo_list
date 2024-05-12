@@ -20,7 +20,6 @@ class ServiceGetTime {
   }
 
   static Stream<String> _getNowTimeStream() async* {
-    initializeDateFormatting('ru');
     print(DateFormat.allLocalesWithSymbols());
     while (true) {
       await Future.delayed(Duration(milliseconds: 1000));

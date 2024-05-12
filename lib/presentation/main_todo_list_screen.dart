@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
+import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_radio_icon.dart';
@@ -13,19 +15,14 @@ import 'package:intl/intl.dart';
 import '../domain/todo_item.dart';
 import 'my_widgets/add_item_button.dart';
 
-class MainTodoListScreen extends StatefulWidget {
+class MainTodoListScreen extends StatelessWidget {
   MainTodoListScreen({Key? key}) : super(key: key);
 
   @override
-  State<MainTodoListScreen> createState() => _MainTodoListScreenState();
-}
-
-class _MainTodoListScreenState extends State<MainTodoListScreen> {
-  @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
-    });
+    //WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    //  Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+    //});
     return BlocProvider(
         create: (_) {
           return Get.find<AllItemControlBloc>();
@@ -59,7 +56,7 @@ class ItemBoxWidget extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Expanded(
+            todoItemList.isNotEmpty ? Expanded(
               child: ReorderableListView.builder(
                 onReorder: (oldItem, newItem) {
                   if (newItem < oldItem) {
@@ -73,10 +70,12 @@ class ItemBoxWidget extends StatelessWidget {
                 itemCount: posItemList.length,
                 padding: EdgeInsets.only(bottom: 15),
                 itemBuilder: (context, itemId) {
-                  var orderedItem =
-                      todoItemList.firstWhere((item) => item.id == posItemList[itemId]);
-                  return todoItemList.isNotEmpty
-                      ? BlocProvider(
+                  var orderedItem;
+                  if (todoItemList.isNotEmpty) {
+                    orderedItem =
+                    todoItemList.firstWhere((item) => item.id == posItemList[itemId]);
+                  }
+                  return  BlocProvider(
                           create: (_) => Get.find<AllItemControlBloc>(),
                           key: ValueKey(orderedItem),
                           child: Material(
@@ -89,11 +88,12 @@ class ItemBoxWidget extends StatelessWidget {
                             ),
                           ),
                         )
-                      : Center(
-                          child: Text('No Deal'),
-                        );
+                      ;
                 },
               ),
+            ) : Expanded(
+              child: Center(
+                  child: Text('No Deal At All', style: TextStyle(color: Colors.white),)),
             ),
             Container(
               height: 26,
@@ -101,17 +101,26 @@ class ItemBoxWidget extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  MyRadioIcon(
-                    onSelect: () {
-                      context.read<ListTodoScreenBloc>().add(ChangeTodayOnlyModEvent(true));
-                    },
-                    onDeselect: () {
-                      context.read<ListTodoScreenBloc>().add(ChangeTodayOnlyModEvent(false));
-                    },
-                    iconData: Icons.today,
-                    size: 26,
-                    initStatus: isShowTodayOnlyMod,
-                  )
+                  InkWell(
+                    onTap: () => context
+                        .read<ListTodoScreenBloc>()
+                        .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                    splashColor: Colors.transparent,
+                    child: Text(
+                      '${ToolDateFormatter.formatToMonthDayWeek(DateTime.now())}',
+                      style: TextStyle(
+                        color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
+                      ),
+                    ),
+                  )    ,
+                  InkWell(
+                    onTap: () => context
+                        .read<ListTodoScreenBloc>()
+                        .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                    splashColor: Colors.transparent,
+                    child: Icon(Icons.today, color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,),
+                  ),
+
                 ],
               ),
             ),

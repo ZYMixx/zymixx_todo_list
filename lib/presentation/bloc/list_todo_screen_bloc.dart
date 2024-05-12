@@ -13,16 +13,11 @@ import 'package:intl/intl.dart';
 class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState>{
 
   ListTodoScreenBloc() : super(ListTodoState(primaryPositionList: [])) {
-
-    //GlobalDbDao.getAllTodoItemStream().then((value) async {
-    //  emit(state.copyWith(primaryPositionList: await state.initPositionList()));
-    //});
     GlobalDbDao.broadcastActiveTodoStream.listen((newList) {
         if (newList.isNotEmpty) {
           this.add(NeedUpdateEvent(todoItemList: newList));
         }
       });
-
     on<NeedUpdateEvent>((event, emit) async {
       Log.i('call ned Update');
       Log.i('event.todoItemList ${event.todoItemList}');

@@ -34,17 +34,17 @@ class ToolShowToast {
     });
   }
 
-  static void showWithCallBack({required String message, required  VoidCallback callback}) {
+  static void showWithCallBack({required String message, required  VoidCallback callback, Color? bgColor, String? labelCallback}) {
     ScaffoldMessenger.of(App.navigatorKey.currentContext!).removeCurrentSnackBar();
     ScaffoldMessenger.of(App.navigatorKey.currentContext!).showSnackBar(
       SnackBar(
-        action: SnackBarAction(onPressed: ()=>callback.call(), label: 'Вернуть?', backgroundColor: Colors.white, textColor: Colors.black,),
+        action: SnackBarAction(onPressed: ()=>callback.call(), label: labelCallback ?? 'Вернуть?' , backgroundColor: Colors.white, textColor: Colors.black,),
         content: Text(
           message,
           style: TextStyle(color: Colors.white, fontSize: 18),
         ),
         margin: EdgeInsets.only(bottom: 30),
-        backgroundColor: Colors.purple.withOpacity(0.9),
+        backgroundColor: bgColor ?? Colors.purple.withOpacity(0.9),
         duration: Duration(milliseconds: 3500),
         elevation: 5,
         behavior: SnackBarBehavior.floating,

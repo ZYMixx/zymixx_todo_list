@@ -3,6 +3,7 @@ import 'app_database.dart';
 
 class MapperDatabase {
   static TodoItemDBData toDBTodoItem(TodoItem todoEntity) {
+
     return TodoItemDBData.fromJson(todoEntity.toJson());
   }
 

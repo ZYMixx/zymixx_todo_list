@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,7 +8,9 @@ import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
+import 'package:zymixx_todo_list/presentation/App.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
+import 'dart:math' as math;
 
 import '../../data/tools/tool_time_string_converter.dart';
 import '../../domain/todo_item.dart';
@@ -63,7 +67,6 @@ class _TodoItemBodyState extends State<TodoItemBody> {
             : ToolThemeData.itemHeight,
       ),
       duration: Duration(milliseconds: 250),
-      //ii
       child: Dismissible(
         key: UniqueKey(),
         background: ListView.builder(
@@ -129,6 +132,7 @@ class _TodoItemBodyState extends State<TodoItemBody> {
             ),
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
+          //? начало фронт-графики
           child: Row(
             children: [
               Flexible(
@@ -140,16 +144,18 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                   child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
-                child: DecoratedBox(
-                  decoration: ToolThemeData.defShadowBox,
-                  child: ColoredBox(
-                      color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
-                      child: SizedBox(
-                        width: 3,
-                        height: double.infinity,
-                      )),
+              AnimatedCirclesWidget(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
+                  child: DecoratedBox(
+                    decoration: ToolThemeData.defShadowBox,
+                    child: ColoredBox(
+                        color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                        child: SizedBox(
+                          width: 3,
+                          height: double.infinity,
+                        )),
+                  ),
                 ),
               ),
               Flexible(flex: 6, child: TimerWorkWidget()),
@@ -168,7 +174,7 @@ class TitlePresentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bloc = context.select((TodoItemBloc bloc) => bloc);
-    String title = bloc.state.todoItem.title ?? 'no title';
+    String title = bloc.state.todoItem.title;
     DateTime? targetDateTime =
         context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
     return Stack(
@@ -299,7 +305,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               child: TextField(
                 controller: _controllerDescription,
                 minLines: 2,
-                maxLines: 5,
+                maxLines: 8,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
@@ -336,42 +342,77 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
+    int autoPauseSeconds = bloc.state.todoItem.autoPauseSeconds;
     TimeModEnum timerMod = context.select((TodoItemBloc bloc) => bloc.state.timerMod);
-    String targetDataString =
-        ToolDateFormatter.formatToMonthDay(bloc.state.todoItem.targetDateTime) ?? '';
-    return Center(
-      child: AnimatedSwitcher(
-        duration: Duration(milliseconds: 250),
-        transitionBuilder: (child, animation) {
-          Offset animateOffset;
-          if (child is StopwatchWidget) {
-            animateOffset = Offset(-0.4, 0.0);
-            lastTimeMod = TimeModEnum.stopwatch;
-          } else if (child is TimerWidget) {
-            animateOffset = Offset(0.4, 0.0);
-            lastTimeMod = TimeModEnum.timer;
-          } else {
-            if (timerMod == TimeModEnum.timer) {
-              animateOffset = Offset(-0.4, 0.0);
-            } else {
-              if (lastTimeMod == TimeModEnum.timer) {
+    // String targetDataString =
+    //     ToolDateFormatter.formatToMonthDay(bloc.state.todoItem.targetDateTime) ?? '';
+    return Stack(
+      children: [
+        if (autoPauseSeconds > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4.0, left: 5.0),
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: DecoratedBox(
+                position: DecorationPosition.background,
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 2.0,
+                      spreadRadius: 1.0,
+                      offset: Offset(0, 0), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(0.5),
+                  child: CircleAvatar(
+                      radius: 5.0,
+                      backgroundColor:
+                          autoPauseSeconds == 30 ? Colors.yellowAccent[400] : Colors.redAccent),
+                ),
+              ),
+            ),
+          ),
+        Center(
+          child: AnimatedSwitcher(
+            duration: Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) {
+              Offset animateOffset;
+              if (child is StopwatchWidget) {
                 animateOffset = Offset(-0.4, 0.0);
-                lastTimeMod = null;
-              } else {
+                lastTimeMod = TimeModEnum.stopwatch;
+              } else if (child is TimerWidget) {
                 animateOffset = Offset(0.4, 0.0);
-                lastTimeMod = null;
+                lastTimeMod = TimeModEnum.timer;
+              } else {
+                if (timerMod == TimeModEnum.timer) {
+                  animateOffset = Offset(-0.4, 0.0);
+                } else {
+                  if (lastTimeMod == TimeModEnum.timer) {
+                    animateOffset = Offset(-0.4, 0.0);
+                    lastTimeMod = null;
+                  } else {
+                    animateOffset = Offset(0.4, 0.0);
+                    lastTimeMod = null;
+                  }
+                }
               }
-            }
-          }
-          var slideAnimation = Tween<Offset>(
-            begin: animateOffset,
-            end: Offset(0.0, 0.0),
-          ).animate(animation);
-          return FadeTransition(
-              opacity: animation, child: SlideTransition(position: slideAnimation, child: child));
-        },
-        child: buildCrntWidget(bloc: bloc, timerMod: timerMod),
-      ),
+              var slideAnimation = Tween<Offset>(
+                begin: animateOffset,
+                end: Offset(0.0, 0.0),
+              ).animate(animation);
+              return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(position: slideAnimation, child: child));
+            },
+            child: buildCrntWidget(bloc: bloc, timerMod: timerMod),
+          ),
+        ),
+      ],
     );
   }
 
@@ -576,5 +617,152 @@ extension HilightData on DateTime {
       // Это только ещё будет
       return Colors.grey;
     }
+  }
+}
+
+class AnimatedCirclesWidget extends StatefulWidget {
+  final Widget child;
+
+  const AnimatedCirclesWidget({Key? key, required this.child}) : super(key: key);
+
+  @override
+  _AnimatedCirclesWidgetState createState() => _AnimatedCirclesWidgetState();
+}
+
+class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  Offset? _tapPosition;
+  List<OverlayEntry> _overlayEntries = [];
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: Duration(milliseconds: 120), vsync: this);
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _overlayEntries.forEach((entry) => entry.remove());
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    _tapPosition = details.globalPosition;
+    _timer?.cancel();
+    if (_overlayEntries.isNotEmpty) {
+      _handleTapUp();
+    } else {
+      _controller.forward(from: 0.0);
+      _showCircles();
+    }
+    _timer = Timer(Duration(milliseconds: 1500), () {
+      if (mounted) {
+        if (!_controller.isAnimating) {
+          _handleTapUp();
+          _timer = null;
+        }
+      }
+    });
+  }
+
+  void _handleTapUp() {
+    _timer?.cancel();
+    _controller.reverse()..then((value) => _hideCircles());
+  }
+
+  void _showCircles() {
+    _overlayEntries = List.generate(3, (index) {
+      return OverlayEntry(
+        builder: (context) {
+          return AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return AnimatedPositioned(
+                duration: Duration(milliseconds: 120),
+                left: calculateX(index, _scaleAnimation.value) - 10,
+                top: calculateY(index, _scaleAnimation.value),
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Card(
+                    child: InkWell(
+                      onTap: () {
+                        context
+                            .read<TodoItemBloc>()
+                            .add(SetAutoPauseSeconds(autoPauseSeconds: 30 * index));
+                        Log.i('set auto pause on ${30 * index}');
+                      },
+                      child: Container(
+                        width: 20.0,
+                        height: 20.0,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red.withOpacity(0.5),
+                          border: Border.all(color: Colors.purple[100]!.withOpacity(1), width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    });
+
+    _overlayEntries.forEach((entry) {
+      Overlay.of(context)?.insert(entry);
+    });
+  }
+
+  double calculateX(int index, double animation) {
+    double rangeX = 30;
+    switch (index) {
+      case 0:
+        return (-rangeX * animation) + _tapPosition!.dx;
+      case 1:
+        return _tapPosition!.dx;
+      case 2:
+        return (rangeX * animation) + _tapPosition!.dx;
+    }
+    return 0;
+  }
+
+  double calculateY(int index, double animation) {
+    double rangeY = 20;
+    double dif = 20;
+
+    switch (index) {
+      case 0:
+        return ((rangeY - dif) * animation) + _tapPosition!.dy;
+      case 1:
+        return (rangeY * animation) + _tapPosition!.dy;
+      case 2:
+        return ((rangeY - dif) * animation) + _tapPosition!.dy;
+    }
+    return 0;
+  }
+
+  void _hideCircles() {
+    _overlayEntries.forEach((entry) => entry.remove());
+    _overlayEntries.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapCancel: _handleTapUp,
+      child: widget.child,
+    );
   }
 }
