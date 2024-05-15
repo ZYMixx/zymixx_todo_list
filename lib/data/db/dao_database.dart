@@ -4,7 +4,6 @@ import 'package:drift/drift.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
-import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
 
 import 'app_database.dart';
 import 'mapper_database.dart';
@@ -13,8 +12,6 @@ import '../../domain/todo_item.dart';
 class DaoDatabase {
   AppDatabase db = AppDatabase.instance;
 
-  // Future<List<TodoItem>> getAllTodoItem() async =>
-  //     MapperDatabase.listToEntityTodoItem(await db.select(db.todoItemDB).get());
 
   Future<List<TodoItem>> getActiveTodoItems() async =>
     MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) =>
@@ -36,7 +33,7 @@ class DaoDatabase {
   }
 
   Future<List<TodoItem>> getHistoryTodoItems() async =>
-      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) => tbl.category.equals(EnumTodoCategory.history.name))).get());
+      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)..where((tbl) => tbl.category.equals(EnumTodoCategory.history.name) |  tbl.category.equals(EnumTodoCategory.history_social.name))).get());
 
 
   Future<TodoItem?> getTodoItem({required int id}) async {
@@ -66,12 +63,12 @@ class DaoDatabase {
   }
 
 
-  Future insertDailyItem({required String title, int? timer, required int autoPauseSeconds}) async {
+  Future insertDailyItem({required String title, int? timer, String? content,required int autoPauseSeconds}) async {
     DateTime today = DateTime.now();
 
     final todoDailyItem = TodoItemDBCompanion.insert(
       title: title,
-      content: '',
+      content: content ?? '',
       category: Value(EnumTodoCategory.daily.name),
       autoPauseSeconds: Value(autoPauseSeconds),
       timerSeconds: Value(timer ?? 0),

@@ -92,12 +92,20 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
   late Animation<double> _animation3;
   late Animation<double> _animation4;
 
-  String? name;
-  int? timer;
+  String name = '';
+  int prise = 0;
+  int timer = 0;
   int autoPauseSeconds = 0;
+  List<int> dailyDayList = [];
+  int period = 0;
+
 
   @override
   void initState() {
+    // 'prise'
+    // 'period'
+    // 'dayOfWeak'
+
     super.initState();
     _controller = AnimationController(
       vsync: this,
@@ -182,73 +190,133 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
               ),
             ),
           ),
-          SizedBox(height: 20.0),
+          SizedBox(height: 15.0),
           FadeTransition(
             opacity: _animation2,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.45),
-                    blurRadius: 4.0,
-                    spreadRadius: 2.0,
-                    offset: Offset(0, 0), // changes position of shadow
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: MyAnimatedCard(
-                intensity: 0.007,
-                child: TextField(
-                  onChanged: (value) {
-                    timer = int.tryParse(value) ?? 0;
-                  },
-                  maxLines: 1,
-                  inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    hintText: 'Минуты в день',
-                    prefixIcon: Icon(Icons.timelapse),
-                    suffixText: 'min',
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
+            child: Row(
+              children: [
+                Flexible(
+                  flex: 5,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.45),
+                          blurRadius: 4.0,
+                          spreadRadius: 2.0,
+                          offset: Offset(0, 0), // changes position of shadow
+                        ),
+                      ],
                       borderRadius: BorderRadius.circular(10.0),
                     ),
+                    child: MyAnimatedCard(
+                      intensity: 0.007,
+                      child: TextField(
+                        onChanged: (value) {
+                          timer = int.tryParse(value) ?? 0;
+                        },
+                        maxLines: 1,
+                        maxLength: 3,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          hintText: 'Минуты в день',
+                          prefixIcon: Icon(Icons.timelapse),
+                          hintStyle: TextStyle(fontSize: 14),
+                          suffixText: 'min',
+                          counterText: '',
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
                 ),
-              ),
+                SizedBox(width: 10),
+                Flexible(
+                  flex: 2,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.45),
+                          blurRadius: 4.0,
+                          spreadRadius: 2.0,
+                          offset: Offset(0, 0), // changes position of shadow
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: MyAnimatedCard(
+                      intensity: 0.007,
+                      child: TextField(
+                        onChanged: (value) {
+                          prise = int.tryParse(value) ?? 0;
+                        },
+                        maxLength: 2,
+                        maxLines: 1,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          suffixIcon: Icon(Icons.emoji_events),
+                          filled: true,
+                          counterText: '',
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 20.0),
+          SizedBox(height: 5.0),
           FadeTransition(
             opacity: _animation3,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.20),
-                    blurRadius: 2.5,
-                    spreadRadius: 1.5,
-                    offset: Offset(0, 2), // changes position of shadow
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: MyAnimatedCard(
-                  intensity: 0.005,
-                  child: RadioButtonWidget(valueCallBack: (int value) {
-                    this.autoPauseSeconds = value;
-                  }),
-                ),
-              ),
+            child: MyAnimatedCard(
+              intensity: 0.005,
+              child: RadioButtonWidget(valueCallBack: (int value) {
+                this.autoPauseSeconds = value;
+              }),
             ),
           ),
-          SizedBox(height: 20.0),
+          SizedBox(height: 3.0),
+          FadeTransition(
+            opacity: _animation3,
+            child: MyAnimatedCard(
+              intensity: 0.005,
+              child: WeekdayRadioButtonWidget(valueCallBack: (List<int> value) {
+                this.dailyDayList = value;
+              }),
+            ),
+          ),
+          SizedBox(height: 3.0),
+
+          FadeTransition(
+            opacity: _animation3,
+            child: MyAnimatedCard(
+              intensity: 0.005,
+              child: PeriodicRadioButtonWidget(valueCallBack: (int value) {
+                this.period = value;
+              }),
+            ),
+          ),
+          SizedBox(height: 5.0),
+
           FadeTransition(
             opacity: _animation4,
             child: DecoratedBox(
@@ -271,6 +339,9 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                       'name': name,
                       'timer': timer,
                       'autoPauseSeconds': autoPauseSeconds,
+                      'prise': prise,
+                      'dailyDayList': dailyDayList,
+                      'period': period,
                     });
                   },
                   child: Text(
@@ -375,5 +446,172 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
         ),
       ],
     );
+  }
+}
+
+class WeekdayRadioButtonWidget extends StatefulWidget {
+  final Function(List<int>) valueCallBack;
+
+  const WeekdayRadioButtonWidget({
+    required this.valueCallBack,
+  });
+
+  @override
+  _WeekdayRadioButtonWidgetState createState() => _WeekdayRadioButtonWidgetState();
+}
+
+class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
+  List<int> _dailyDayList = [];
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        for (int i = 1; i < 8; i++)
+          InkWell(
+            overlayColor: MaterialStateProperty.all(Colors.transparent),
+            onTap: () {
+              setState(() {
+                if (_dailyDayList.contains(i)){
+                  _dailyDayList.remove(i);
+                } else {
+                  _dailyDayList.add(i);
+                }
+                widget.valueCallBack(_dailyDayList);
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+              decoration: BoxDecoration(
+                color: _dailyDayList.contains(i) ? Colors.blueAccent : Colors.transparent,
+                borderRadius: BorderRadius.circular(8.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 2), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: Text(
+                _getWeekday(i),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: _dailyDayList.contains(i)  ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _getWeekday(int index) {
+    switch (index) {
+      case 1:
+        return 'Пн';
+      case 2:
+        return 'Вт';
+      case 3:
+        return 'Ср';
+      case 4:
+        return 'Чт';
+      case 5:
+        return 'Пт';
+      case 6:
+        return 'Сб';
+      case 7:
+        return 'Вс';
+      default:
+        return '';
+    }
+  }
+}
+
+class PeriodicRadioButtonWidget extends StatefulWidget {
+  final Function(int) valueCallBack;
+
+  const PeriodicRadioButtonWidget({
+    required this.valueCallBack,
+  });
+
+  @override
+  _PeriodicRadioButtonWidgetState createState() => _PeriodicRadioButtonWidgetState();
+}
+
+class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
+  int _selectedValue = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: 30,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(' Период:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (int i = 1; i < 4; i++)
+              InkWell(
+                overlayColor: MaterialStateProperty.all(Colors.transparent),
+                onTap: () {
+                  setState(() {
+                    if (_selectedValue == i) {
+                      _selectedValue = 0;
+                      widget.valueCallBack(_selectedValue);
+                    } else {
+                      _selectedValue = i;
+                      widget.valueCallBack(_selectedValue);
+                    }
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+                  decoration: BoxDecoration(
+                    color: _selectedValue == i ? Colors.blueAccent : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 2), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _getWeekday(i),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: _selectedValue == i ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  String _getWeekday(int index) {
+    switch (index) {
+      case 1:
+        return '1';
+      case 2:
+        return '2';
+      case 3:
+        return '3';
+      default:
+        return '';
+    }
   }
 }

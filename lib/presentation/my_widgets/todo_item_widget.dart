@@ -10,6 +10,7 @@ import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/presentation/App.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
 import 'dart:math' as math;
 
 import '../../data/tools/tool_time_string_converter.dart';
@@ -54,113 +55,116 @@ class _TodoItemBodyState extends State<TodoItemBody> {
     if (lines > 5) {
       lines = 5;
     }
-    return AnimatedContainer(
-      width: ToolThemeData.itemWidth,
-      curve: Curves.easeInOut,
-      //height: isChangeTextMod ? 300 : 100,
-      height: isChangeTextMod
-          ? (25 * lines).toDouble() + (ToolThemeData.itemHeight + 10)
-          : (ToolThemeData.itemHeight),
-      constraints: BoxConstraints(
-        minHeight: isChangeTextMod
-            ? (25 * lines).toDouble() + ToolThemeData.itemHeight
-            : ToolThemeData.itemHeight,
-      ),
-      duration: Duration(milliseconds: 250),
-      child: Dismissible(
-        key: UniqueKey(),
-        background: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            return Opacity(
-              opacity: 0.80,
-              child: SizedBox(
-                width: 35,
-                child: Icon(
-                  Icons.keyboard_double_arrow_right,
-                  color: Colors.greenAccent,
-                  size: 50,
-                ),
-              ),
-            );
-          },
-          itemCount: 12, // Количество стрелок в узоре
+    return MyAnimatedCard(
+      intensity: 0.003,
+      child: AnimatedContainer(
+        width: ToolThemeData.itemWidth,
+        curve: Curves.easeInOut,
+        //height: isChangeTextMod ? 300 : 100,
+        height: isChangeTextMod
+            ? (25 * lines).toDouble() + (ToolThemeData.itemHeight + 10)
+            : (ToolThemeData.itemHeight),
+        constraints: BoxConstraints(
+          minHeight: isChangeTextMod
+              ? (25 * lines).toDouble() + ToolThemeData.itemHeight
+              : ToolThemeData.itemHeight,
         ),
-        secondaryBackground: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.only(right: 30),
-          reverse: true,
-          itemBuilder: (context, index) {
-            return Opacity(
-              opacity: 0.85,
-              child: SizedBox(
-                width: 35,
-                child: Icon(
-                  Icons.keyboard_double_arrow_left,
-                  color: Colors.redAccent,
-                  size: 50,
-                ),
-              ),
-            );
-          },
-          itemCount: 12, // Количество стрелок в узоре
-        ),
-        //right
-        onDismissed: (DismissDirection direction) {
-          bloc.add(DismissEvent(direction: direction));
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                ? Colors.orangeAccent
-                : Colors.blueAccent,
-            gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                ? LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.orangeAccent,
-                      Colors.blueAccent,
-                    ],
-                    transform: GradientRotation(-0.04),
-                    stops: [0.5, 1],
-                  )
-                : null,
-            border: Border.all(
-              color: Colors.red,
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          //? начало фронт-графики
-          child: Row(
-            children: [
-              Flexible(
-                flex: 12,
-                fit: FlexFit.tight,
-                child: GestureDetector(
-                  onLongPress: () {},
-                  onTap: () {},
-                  child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
-                ),
-              ),
-              AnimatedCirclesWidget(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
-                  child: DecoratedBox(
-                    decoration: ToolThemeData.defShadowBox,
-                    child: ColoredBox(
-                        color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
-                        child: SizedBox(
-                          width: 3,
-                          height: double.infinity,
-                        )),
+        duration: Duration(milliseconds: 250),
+        child: Dismissible(
+          key: UniqueKey(),
+          background: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              return Opacity(
+                opacity: 0.80,
+                child: SizedBox(
+                  width: 35,
+                  child: Icon(
+                    Icons.keyboard_double_arrow_right,
+                    color: Colors.greenAccent,
+                    size: 50,
                   ),
                 ),
+              );
+            },
+            itemCount: 12, // Количество стрелок в узоре
+          ),
+          secondaryBackground: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.only(right: 30),
+            reverse: true,
+            itemBuilder: (context, index) {
+              return Opacity(
+                opacity: 0.85,
+                child: SizedBox(
+                  width: 35,
+                  child: Icon(
+                    Icons.keyboard_double_arrow_left,
+                    color: Colors.redAccent,
+                    size: 50,
+                  ),
+                ),
+              );
+            },
+            itemCount: 12, // Количество стрелок в узоре
+          ),
+          //right
+          onDismissed: (DismissDirection direction) {
+            bloc.add(DismissEvent(direction: direction));
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              color: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                  ? Colors.orangeAccent
+                  : Colors.blueAccent,
+              gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                  ? LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.orangeAccent,
+                        Colors.blueAccent,
+                      ],
+                      transform: GradientRotation(-0.04),
+                      stops: [0.5, 1],
+                    )
+                  : null,
+              border: Border.all(
+                color: Colors.red,
               ),
-              Flexible(flex: 6, child: TimerWorkWidget()),
-              //SizedBox(width: 10),
-            ],
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            //? начало фронт-графики
+            child: Row(
+              children: [
+                Flexible(
+                  flex: 12,
+                  fit: FlexFit.tight,
+                  child: GestureDetector(
+                    onLongPress: () {},
+                    onTap: () {},
+                    child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
+                  ),
+                ),
+                AnimatedCirclesWidget(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
+                    child: DecoratedBox(
+                      decoration: ToolThemeData.defShadowBox,
+                      child: ColoredBox(
+                          color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                          child: SizedBox(
+                            width: 3.5,
+                            height: double.infinity,
+                          )),
+                    ),
+                  ),
+                ),
+                Flexible(flex: 6, child: TimerWorkWidget()),
+                //SizedBox(width: 10),
+              ],
+            ),
           ),
         ),
       ),
@@ -284,6 +288,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                     focusNode: FocusNode(skipTraversal: true),
                     onTap: () => bloc.add(RequestChangeItemDateEvent(buildContext: context)),
                     onLongPress: () => bloc.add(SetItemDateEvent(userDateTime: DateTime.now())),
+                    onSecondaryTap: () =>bloc.add(IncreaseItemDateEvent()),
                     child: Text(
                       formattedTargetDateTime,
                       style: TextStyle(
@@ -342,7 +347,8 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    int autoPauseSeconds = bloc.state.todoItem.autoPauseSeconds;
+    TodoItem todoItem = context.select((TodoItemBloc bloc) => bloc.state.todoItem);
+    int autoPauseSeconds = todoItem.autoPauseSeconds;
     TimeModEnum timerMod = context.select((TodoItemBloc bloc) => bloc.state.timerMod);
     // String targetDataString =
     //     ToolDateFormatter.formatToMonthDay(bloc.state.todoItem.targetDateTime) ?? '';
@@ -356,7 +362,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
               child: DecoratedBox(
                 position: DecorationPosition.background,
                 decoration: BoxDecoration(
-                  border: Border.all(width: 1),
+                  border: Border.all(width: 1.5, color: Colors.black),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -369,10 +375,13 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(0.5),
-                  child: CircleAvatar(
-                      radius: 5.0,
-                      backgroundColor:
-                          autoPauseSeconds == 30 ? Colors.yellowAccent[400] : Colors.redAccent),
+                  child: Opacity(
+                    opacity: 1,
+                    child: CircleAvatar(
+                        radius: 4.5,
+                        backgroundColor:
+                            autoPauseSeconds == 30 ? Colors.yellowAccent[400]!.withOpacity(0.8) : Colors.redAccent!.withOpacity(0.8)),
+                  ),
                 ),
               ),
             ),
@@ -468,15 +477,15 @@ class TimerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     int timer = context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    ToolTimeStringConverter.formatSecondsToTime(timer);
-    String timerString = ToolTimeStringConverter.formatSecondsToTime(timer);
+    ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
+    String timerString = ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
     return Material(
       color: Colors.transparent,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            padding: const EdgeInsets.only(left: 16.0),
             child: InkWell(
               onTap: () {
                 bloc.add(ChangeTimerEvent(changeNum: -60));
@@ -505,7 +514,7 @@ class TimerWidget extends StatelessWidget {
                 Text(
                   timerString,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 17.5,
                     fontWeight: FontWeight.w500,
                     shadows: ToolThemeData.defTextShadow,
                   ),
@@ -547,7 +556,7 @@ class StopwatchWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     int stopwatch = context.select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    String stopwatchString = ToolTimeStringConverter.formatSecondsToTime(stopwatch);
+    String stopwatchString = ToolTimeStringConverter.formatSecondsToTimeMinute(stopwatch);
     return IconButton(
       onPressed: null,
       icon: InkWell(
@@ -561,7 +570,7 @@ class StopwatchWidget extends StatelessWidget {
           bloc.add(StopwatchResetTimeEvent());
         },
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15),
+          padding: EdgeInsets.only(left: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -569,7 +578,7 @@ class StopwatchWidget extends StatelessWidget {
                 child: Text(
                   stopwatchString,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 17.5,
                     fontWeight: FontWeight.w500,
                     shadows: ToolThemeData.defTextShadow,
                   ),
@@ -655,14 +664,14 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
     super.dispose();
   }
 
-  void _handleTapDown(TapDownDetails details) {
+  void _handleTapDown(TapDownDetails details, BuildContext parentContext) {
     _tapPosition = details.globalPosition;
     _timer?.cancel();
     if (_overlayEntries.isNotEmpty) {
       _handleTapUp();
     } else {
       _controller.forward(from: 0.0);
-      _showCircles();
+      _showCircles(parentContext);
     }
     _timer = Timer(Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -679,8 +688,20 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
     _controller.reverse()..then((value) => _hideCircles());
   }
 
-  void _showCircles() {
+  void _showCircles(BuildContext parentContext) {
     _overlayEntries = List.generate(3, (index) {
+      Color circleColor = Colors.white;
+      switch (index) {
+        case 0:
+          circleColor = Colors.grey[300]!;
+          break;
+        case 1:
+          circleColor = Colors.amberAccent!;
+          break;
+        case 2:
+          circleColor = Colors.pinkAccent;
+          break;
+      }
       return OverlayEntry(
         builder: (context) {
           return AnimatedBuilder(
@@ -695,7 +716,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                   child: Card(
                     child: InkWell(
                       onTap: () {
-                        context
+                        parentContext
                             .read<TodoItemBloc>()
                             .add(SetAutoPauseSeconds(autoPauseSeconds: 30 * index));
                         Log.i('set auto pause on ${30 * index}');
@@ -705,8 +726,8 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                         height: 20.0,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.red.withOpacity(0.5),
-                          border: Border.all(color: Colors.purple[100]!.withOpacity(1), width: 2),
+                          color: circleColor.withOpacity(0.8),
+                          border: Border.all(color: Colors.white!, width: 1, ),
                         ),
                       ),
                     ),
@@ -760,7 +781,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: _handleTapDown,
+      onTapDown: (details) => _handleTapDown(details, context),
       onTapCancel: _handleTapUp,
       child: widget.child,
     );

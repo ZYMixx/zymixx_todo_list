@@ -8,6 +8,7 @@ import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_radio_icon.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/todo_item_widget.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -101,24 +102,32 @@ class ItemBoxWidget extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  InkWell(
-                    onTap: () => context
-                        .read<ListTodoScreenBloc>()
-                        .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                    splashColor: Colors.transparent,
-                    child: Text(
-                      '${ToolDateFormatter.formatToMonthDayWeek(DateTime.now())}',
-                      style: TextStyle(
-                        color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
+                  MyAnimatedCard(
+                    intensity: 0.005,
+                    directionUp: false,
+                    child: InkWell(
+                      onTap: () => context
+                          .read<ListTodoScreenBloc>()
+                          .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                      splashColor: Colors.transparent,
+                      child: Text(
+                        '${ToolDateFormatter.formatToMonthDayWeek(DateTime.now())}',
+                        style: TextStyle(
+                          color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
+                        ),
                       ),
                     ),
                   )    ,
-                  InkWell(
-                    onTap: () => context
-                        .read<ListTodoScreenBloc>()
-                        .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                    splashColor: Colors.transparent,
-                    child: Icon(Icons.today, color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,),
+                  MyAnimatedCard(
+                    intensity: 0.005,
+                    directionUp: false,
+                    child: InkWell(
+                      onTap: () => context
+                          .read<ListTodoScreenBloc>()
+                          .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                      splashColor: Colors.transparent,
+                      child: Icon(Icons.today, color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,),
+                    ),
                   ),
 
                 ],

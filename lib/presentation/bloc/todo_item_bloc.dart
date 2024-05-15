@@ -59,6 +59,13 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
           id: state.todoItemId, targetDateTime: event.userDateTime!);
       emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
     });
+    on<IncreaseItemDateEvent>((event, emit) async {
+      DateTime tDate = (await state.dbTodoItemGetter.targetDateTime)!;
+      DateTime increasedTargetDate = DateTime(tDate.year, tDate.month, tDate.day + 1);
+      await _daoDatabase.editTodoItemById(
+          id: state.todoItemId, targetDateTime: increasedTargetDate);
+      emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: increasedTargetDate)));
+    });
     on<SetAutoPauseSeconds>((event, emit) async {
       await _daoDatabase.editTodoItemById(
           id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
@@ -228,12 +235,21 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   Future<void> _onDismissEvent(DismissEvent event, Emitter<TodoItemBlocState> emit) async {
     if (event.direction == DismissDirection.startToEnd) {
       //right
-      await _daoDatabase.editTodoItemById(
-        id: state.todoItemId,
-        category: EnumTodoCategory.history.name,
-        isDone: true,
-        targetDateTime: DateTime.now(),
-      );
+      if (state.todoItem.category == EnumTodoCategory.social.name){
+        await _daoDatabase.editTodoItemById(
+          id: state.todoItemId,
+          category: EnumTodoCategory.history_social.name,
+          isDone: true,
+          targetDateTime: DateTime.now(),
+        );
+      } else {
+        await _daoDatabase.editTodoItemById(
+          id: state.todoItemId,
+          category: EnumTodoCategory.history.name,
+          isDone: true,
+          targetDateTime: DateTime.now(),
+        );
+      }
     }
     if (event.direction == DismissDirection.endToStart) {
       //left
@@ -341,6 +357,11 @@ class SetItemDateEvent extends TodoItemBlocEvent {
   DateTime userDateTime;
 
   SetItemDateEvent({required this.userDateTime});
+}
+
+class IncreaseItemDateEvent extends TodoItemBlocEvent {
+
+  IncreaseItemDateEvent();
 }
 
 class SetAutoPauseSeconds extends TodoItemBlocEvent {

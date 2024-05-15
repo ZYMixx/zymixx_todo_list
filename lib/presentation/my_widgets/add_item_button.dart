@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
 
 class AddItemButton extends StatelessWidget {
 
@@ -17,26 +18,29 @@ class AddItemButton extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        onTapAction.call();
-      },
-      onLongPress: () {
-        onLongTapAction.call();
-      },
-      child: Container(
-        width: ToolThemeData.itemWidth,
-        height: 30,
-        decoration: BoxDecoration(
-          color: bgColor ?? Colors.green,
-          border: Border.all(
-            color: Colors.red,
+    return MyAnimatedCard(
+      intensity: 0.005,
+      child: InkWell(
+        onTap: () {
+          onTapAction.call();
+        },
+        onLongPress: () {
+          onLongTapAction.call();
+        },
+        child: Container(
+          width: ToolThemeData.itemWidth,
+          height: 30,
+          decoration: BoxDecoration(
+            color: bgColor ?? Colors.green,
+            border: Border.all(
+              color: Colors.red,
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        child: MoveWindow(
-          child: Center(
-            child: Icon(Icons.add),
+          child: MoveWindow(
+            child: Center(
+              child: Icon(Icons.add),
+            ),
           ),
         ),
       ),

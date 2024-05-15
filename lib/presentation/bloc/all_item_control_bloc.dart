@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
@@ -38,10 +40,10 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       // for (var item in itemList){
       //   await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
       // }
-       //for (var item in todoDailyList){
-       //  await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
-       //  await _daoDB.deleteTodoItemById(itemId: item.id);
-       //}
+      //for (var item in todoDailyList){
+      //  await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
+      //  await _daoDB.deleteTodoItemById(itemId: item.id);
+      //}
       // for (var item in todoHistoryItemList){
       //   await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
       // }
@@ -58,7 +60,18 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       await _daoDB.insertEmptyItem(userDateTime: event.dateTime);
     });
     on<AddNewDailyItemEvent>((event, emit) async {
-      await _daoDB.insertDailyItem(title: event.name ?? '', timer: event.timer, autoPauseSeconds: event.autoPauseSeconds);
+      Map<String, dynamic> contentMap = {
+        'prise': event.prise,
+        'dailyDayList': event.dailyDayList,
+        'period': event.period,
+        '${DailyTodoBloc.delDataBaseKey}': true
+      };
+      await _daoDB.insertDailyItem(
+        title: event.name ?? '',
+        timer: event.timer,
+        autoPauseSeconds: event.autoPauseSeconds,
+        content: jsonEncode(contentMap),
+      );
       var todoDailyList = await _daoDB.getDailyTodoItems();
       emit(state.copyWith(todoDailyItemList: todoDailyList));
     });
@@ -69,8 +82,13 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       this.add(LoadAllItemEvent());
     });
     on<ChangeItemEvent>((event, emit) async {
-      await _daoDB.editTodoItemById(
-          id: event.todoItem.id, isDone: false, category: EnumTodoCategory.active.name);
+      if (event.category != null) {
+        await _daoDB.editTodoItemById(
+            id: event.todoItem.id, isDone: false, category: event.category?.name);
+      } else {
+        await _daoDB.editTodoItemById(
+            id: event.todoItem.id, isDone: false, category: EnumTodoCategory.active.name);
+      }
       this.add(LoadAllItemEvent());
     });
   }
@@ -81,12 +99,60 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
     if (todayDailyList.isNotEmpty) {
       return;
     }
+    // List<TodoItem> dailyList = (await _daoDB.getDailyTodoItems())
+    //     .where((element) => jsonDecode(element.content)[ DailyTodoBloc.delDataBaseKey] != true)
+    //     .toList(growable: false);
+    // Set<String> uniqueDailyTitleList = dailyList.map((e) => e.title!).toSet();
+    // for (var uniqueTitle in uniqueDailyTitleList) {
+    //   var dailyItem = dailyList.firstWhere((element) => element.title == uniqueTitle);
+    //   _daoDB.insertDuplicateTodoItem(
+    //       dailyItem.copyWith(targetDateTime: DateTime.now(), isDone: false, secondsSpent: 0));
+    // }
+
     List<TodoItem> dailyList = (await _daoDB.getDailyTodoItems())
-        .where((element) => element.content != DailyTodoBloc.delDataBaseKey).toList(growable: false);
+        .where((element) => jsonDecode(element.content)[DailyTodoBloc.delDataBaseKey] != true)
+        .toList(growable: false);
+
     Set<String> uniqueDailyTitleList = dailyList.map((e) => e.title!).toSet();
+
     for (var uniqueTitle in uniqueDailyTitleList) {
       var dailyItem = dailyList.firstWhere((element) => element.title == uniqueTitle);
-      _daoDB.insertDuplicateTodoItem(dailyItem.copyWith(targetDateTime: DateTime.now(), isDone: false, secondsSpent: 0));
+      var contentMap = jsonDecode(dailyItem.content);
+
+      int period = contentMap['period'] ?? 0;
+      List<int> dailyDayList = List<int>.from(contentMap['dailyDayList'] ?? []);
+
+      if (shouldCreateDaily(period, dailyDayList, dailyList, dailyItem.title)) {
+        _daoDB.insertDuplicateTodoItem(
+          dailyItem.copyWith(
+            targetDateTime: DateTime.now(),
+            isDone: false,
+            secondsSpent: 0,
+          ),
+        );
+      }
+    }
+  }
+
+  bool shouldCreateDaily(int period, List<int> dailyDayList, List<TodoItem> dailyList, String? title) {
+    if (period > 0 && period <= 3) {
+      DateTime now = DateTime.now();
+      for (int i = 1; i <= period; i++) {
+        DateTime pastDate = now.subtract(Duration(days: i));
+        if (dailyList.any((item) => item.title == title && item.targetDateTime!.isAtSameMomentAs(pastDate))) {
+          return false;
+        }
+      }
+    }
+    int todayWeekday = DateTime.now().weekday;
+    if (dailyList.isNotEmpty) {
+      if (dailyDayList.contains(todayWeekday)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
     }
   }
 
@@ -138,14 +204,20 @@ class AddNewItemEvent extends ItemControlBlocEvent {
 }
 
 class AddNewDailyItemEvent extends ItemControlBlocEvent {
-  String? name;
-  int? timer;
+  String name;
+  int prise;
+  int timer;
   int autoPauseSeconds;
+  List<int> dailyDayList;
+  int period;
 
   AddNewDailyItemEvent({
     required this.name,
+    required this.prise,
     required this.autoPauseSeconds,
-    this.timer,
+    required this.timer,
+    required this.dailyDayList,
+    required this.period,
   });
 }
 
@@ -159,9 +231,11 @@ class DeleteItemEvent extends ItemControlBlocEvent {
 
 class ChangeItemEvent extends ItemControlBlocEvent {
   TodoItem todoItem;
+  EnumTodoCategory? category;
 
   ChangeItemEvent({
     required this.todoItem,
+    this.category,
   });
 }
 

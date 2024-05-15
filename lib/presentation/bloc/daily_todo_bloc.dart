@@ -33,8 +33,16 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     on<DeleteDailyEvent>((event, emit) async {
       deleteDailyItem(context: event._context, itemId: event.itemId, title: event.title);
     });
+    on<ChangeYesterdayModEvent>((event, emit) async {
+      emit(state.copyWith(yesterdayDailyMod: !state.yesterdayDailyMod));
+    });
     on<RequestAddNewDailyEvent>((event, emit) async {
-      //{'name' : name, 'timer': timer, 'autoPauseSeconds' : autoPauseSeconds}
+      //'name': name,
+      //'timer': timer,
+      //'autoPauseSeconds': autoPauseSeconds,
+      //'prise': prise,
+      //'dailyDayList': dailyDayList,
+      //'period': period,
       try {
         Map<String, dynamic> userInputDataMap = await ToolShowOverlay.showUserInputOverlay(
           context: event._context,
@@ -42,8 +50,11 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
         );
         Get.find<AllItemControlBloc>().add(AddNewDailyItemEvent(
           name: userInputDataMap['name'],
-          timer: userInputDataMap['timer'],
+          timer: userInputDataMap['timer'] * 60,
           autoPauseSeconds: userInputDataMap['autoPauseSeconds'],
+          prise: userInputDataMap['prise'],
+          dailyDayList: userInputDataMap['dailyDayList'],
+          period: userInputDataMap['period'],
         ));
       } catch (e) {
         Log.i('eror $e');
@@ -154,6 +165,26 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
 class DailyTodoState {
   DbTodoItemGetter? activeDailyItemGetter;
   String? activeTimerIdentifier;
+  bool yesterdayDailyMod;
+
+  DailyTodoState({
+    this.activeDailyItemGetter,
+    this.activeTimerIdentifier,
+    this.yesterdayDailyMod = false,
+  });
+
+  DailyTodoState copyWith({
+    DbTodoItemGetter? activeDailyItemGetter,
+    String? activeTimerIdentifier,
+    bool? yesterdayDailyMod,
+  }) {
+    return DailyTodoState(
+      activeDailyItemGetter: activeDailyItemGetter ?? this.activeDailyItemGetter,
+      activeTimerIdentifier: activeTimerIdentifier ?? this.activeTimerIdentifier,
+      yesterdayDailyMod: yesterdayDailyMod ?? this.yesterdayDailyMod,
+    );
+  }
+
 }
 
 class DailyTodoEvent {}
@@ -203,4 +234,8 @@ class RequestAddNewDailyEvent extends DailyTodoEvent {
 
 class ChangeDailyEvent extends DailyTodoEvent {
   ChangeDailyEvent();
+}
+
+class ChangeYesterdayModEvent extends DailyTodoEvent {
+  ChangeYesterdayModEvent();
 }

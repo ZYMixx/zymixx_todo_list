@@ -27,7 +27,7 @@ class App {
       await _initGet();
       runApp(
       MaterialApp(
-            debugShowCheckedModeBanner: false,
+            debugShowCheckedModeBanner: true,
             navigatorKey: navigatorKey,
             theme: ThemeData.light(),
             debugShowMaterialGrid: false,
