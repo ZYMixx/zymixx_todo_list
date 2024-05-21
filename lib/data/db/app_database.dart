@@ -42,14 +42,3 @@ class TodoItemDB extends Table {
   DateTimeColumn get targetDateTime => dateTime().nullable()();
 }
 
-// dependencies:
-// flutter pub add drift
-// flutter pub add sqlite3_flutter_libs
-// flutter pub add path_provider
-// flutter pub add path
-//
-// dev_dependencies:
-// flutter pub add dev:drift_dev
-// flutter pub add dev:build_runner
-
-// dart run build_runner build

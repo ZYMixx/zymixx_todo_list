@@ -1,21 +1,22 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:zymixx_todo_list/data/services/service_image_plugin_work.dart';
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
-import 'package:zymixx_todo_list/presentation/App.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
-import 'dart:math' as math;
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 import '../../data/tools/tool_time_string_converter.dart';
 import '../../domain/todo_item.dart';
 import '../bloc/todo_item_bloc.dart';
+
+// основной виджет со всеми активностями
 
 class TodoItemWidget extends StatelessWidget {
   final TodoItem todoItem;
@@ -45,10 +46,9 @@ class _TodoItemBodyState extends State<TodoItemBody> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     bool isChangeTextMod = context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
-    int lines = ((bloc.state.todoItem.content?.length ?? 100) / 38).toInt();
+    int lines = ((bloc.state.todoItem.content?.length ?? 100) / 30).toInt();
     DateTime? targetDateTime =
         context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
-
     if (lines < 2) {
       lines = 2;
     }
@@ -147,17 +147,21 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                     child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
                   ),
                 ),
-                AnimatedCirclesWidget(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
-                    child: DecoratedBox(
-                      decoration: ToolThemeData.defShadowBox,
-                      child: ColoredBox(
-                          color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
-                          child: SizedBox(
-                            width: 3.5,
-                            height: double.infinity,
-                          )),
+                MyAnimatedCard(
+                  intensity: 0.01,
+                  child: AnimatedCirclesWidget(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
+                      child: DecoratedBox(
+                        decoration: ToolThemeData.defShadowBox,
+                        child: ColoredBox(
+                            color:
+                                targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                            child: SizedBox(
+                              width: 3.5,
+                              height: double.infinity,
+                            )),
+                      ),
                     ),
                   ),
                 ),
@@ -178,31 +182,18 @@ class TitlePresentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var bloc = context.select((TodoItemBloc bloc) => bloc);
+    File? todoImageFile = bloc.state.imageFile;
     String title = bloc.state.todoItem.title;
     DateTime? targetDateTime =
         context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
     return Stack(
       children: [
-        Align(
-            alignment: Alignment.bottomRight,
-            child: Text(
-              ToolDateFormatter.formatToMonthDay(targetDateTime) ?? '',
-              style: TextStyle(
-                color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                    ? Colors.greenAccent
-                    : Colors.black,
-                fontWeight: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                    ? FontWeight.w700
-                    : FontWeight.w600,
-                fontSize: bloc.state.todoItem.category == EnumTodoCategory.social.name ? 13 : 11,
-              ),
-            )),
         InkWell(
           onTap: () {
             bloc.add(ChangeModEvent(isChangeMod: true));
           },
           child: Padding(
-            padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
+            padding: EdgeInsets.only(left: 6.0, bottom: 4.0, right: todoImageFile != null ? 25 : 5),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -218,6 +209,73 @@ class TitlePresentWidget extends StatelessWidget {
             ),
           ),
         ),
+        if (todoImageFile != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                      width: 0.5),
+                  borderRadius: BorderRadius.circular(ToolThemeData.itemHeight),
+                ),
+                child: SizedBox(
+                  width: ToolThemeData.itemHeight - 10,
+                  height: ToolThemeData.itemHeight,
+                  child: InkWell(
+                    onTap: () {
+                      //ii image top
+                      ServiceImagePluginWork.openImage(todoImageFile);
+                    },
+                    child: MyAnimatedCard(
+                      intensity: 0.01,
+                      directionUp: false,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.0),
+                        child: Opacity(
+                          opacity: 0.80,
+                          child: Image.file(
+                            todoImageFile,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        Align(
+            alignment: Alignment.bottomRight,
+            child: DecoratedBox(
+              decoration: todoImageFile != null
+                  ? BoxDecoration(
+                      border: Border.all(color: Colors.redAccent.withOpacity(0.5), width: 0.5),
+                      color: Colors.white.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(12),
+                    )
+                  : BoxDecoration(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  ToolDateFormatter.formatToMonthDay(targetDateTime) ?? '',
+                  style: TextStyle(
+                    color: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                        ? Colors.greenAccent
+                        : Colors.black,
+                    fontWeight: bloc.state.todoItem.category == EnumTodoCategory.social.name ||
+                            todoImageFile != null
+                        ? FontWeight.w700
+                        : FontWeight.w600,
+                    fontSize:
+                        bloc.state.todoItem.category == EnumTodoCategory.social.name ? 13 : 11,
+                  ),
+                ),
+              ),
+            )),
       ],
     );
   }
@@ -244,6 +302,8 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
+    File? todoImageFile = context.select((TodoItemBloc bloc) => bloc.state.imageFile);
+    //File? todoImageFile = bloc.state.imageFile;
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
     DateTime? targetDateTime = bloc.state.todoItem.targetDateTime;
@@ -280,21 +340,24 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                 fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
-                suffixIcon: Container(
-                  width: 50,
-                  height: 40,
-                  alignment: Alignment.center,
-                  child: InkWell(
-                    focusNode: FocusNode(skipTraversal: true),
-                    onTap: () => bloc.add(RequestChangeItemDateEvent(buildContext: context)),
-                    onLongPress: () => bloc.add(SetItemDateEvent(userDateTime: DateTime.now())),
-                    onSecondaryTap: () =>bloc.add(IncreaseItemDateEvent()),
-                    child: Text(
-                      formattedTargetDateTime,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        shadows: ToolThemeData.defTextShadow,
+                suffixIcon: MyAnimatedCard(
+                  intensity: 0.012,
+                  child: Container(
+                    width: 50,
+                    height: 40,
+                    alignment: Alignment.center,
+                    child: InkWell(
+                      focusNode: FocusNode(skipTraversal: true),
+                      onTap: () => bloc.add(RequestChangeItemDateEvent(buildContext: context)),
+                      onLongPress: () => bloc.add(SetItemDateEvent(userDateTime: DateTime.now())),
+                      onSecondaryTap: () => bloc.add(IncreaseItemDateEvent()),
+                      child: Text(
+                        formattedTargetDateTime,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          shadows: ToolThemeData.defTextShadow,
+                        ),
                       ),
                     ),
                   ),
@@ -311,6 +374,95 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                 controller: _controllerDescription,
                 minLines: 2,
                 maxLines: 8,
+                decoration: InputDecoration(
+                  suffixIconConstraints: todoImageFile == null
+                      ? BoxConstraints.tightFor(width: 35, height: 35)
+                      : BoxConstraints.tightFor(width: 45, height: 45),
+                  suffixIcon: todoImageFile != null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 4.0),
+                              child: Align(
+                                alignment: Alignment.bottomRight,
+                                child: InkWell(
+                                  onTap: () {
+                                    ServiceImagePluginWork.openImage(todoImageFile);
+                                  },
+                                  onSecondaryTap: () {},
+                                  onLongPress: () {
+                                    ServiceImagePluginWork.deleteImage(
+                                      todoItem: bloc.state.todoItem,
+                                      updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
+                                    );
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    child: Opacity(
+                                      opacity: 0.80,
+                                      child: AspectRatio(
+                                        aspectRatio:
+                                            1.0, // Устанавливаем квадратное соотношение сторон
+                                        child: FittedBox(
+                                          fit: BoxFit.cover,
+                                          child: Image.file(
+                                            todoImageFile,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: InkWell(
+                              onTap: () {
+                                //ii image
+                                ServiceImagePluginWork.drawImage(
+                                    title: bloc.state.todoItem.title,
+                                    id: bloc.state.todoItem.id,
+                                    updateCallBack: () => bloc.add(SetTodoItemImageEvent()));
+                                Log.e('ADD NEW IMAGE');
+                              },
+                              onSecondaryTap: () {
+                                ServiceImagePluginWork.selectAndSetTodoImage(
+                                  todoItem: bloc.state.todoItem,
+                                  updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
+                                );
+                              },
+                              child: Center(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(1.0),
+                                    child: MyAnimatedCard(
+                                      intensity: 0.012,
+                                      child: ClipOval(
+                                        child: Opacity(
+                                          opacity: 0.9,
+                                          child: Icon(
+                                            Icons.add_a_photo_outlined,
+                                            color: Colors.purple,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
@@ -350,8 +502,6 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
     TodoItem todoItem = context.select((TodoItemBloc bloc) => bloc.state.todoItem);
     int autoPauseSeconds = todoItem.autoPauseSeconds;
     TimeModEnum timerMod = context.select((TodoItemBloc bloc) => bloc.state.timerMod);
-    // String targetDataString =
-    //     ToolDateFormatter.formatToMonthDay(bloc.state.todoItem.targetDateTime) ?? '';
     return Stack(
       children: [
         if (autoPauseSeconds > 0)
@@ -379,8 +529,9 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                     opacity: 1,
                     child: CircleAvatar(
                         radius: 4.5,
-                        backgroundColor:
-                            autoPauseSeconds == 30 ? Colors.yellowAccent[400]!.withOpacity(0.8) : Colors.redAccent!.withOpacity(0.8)),
+                        backgroundColor: autoPauseSeconds == 30
+                            ? Colors.yellowAccent[400]!.withOpacity(0.8)
+                            : Colors.redAccent!.withOpacity(0.8)),
                   ),
                 ),
               ),
@@ -601,18 +752,9 @@ class StopwatchWidget extends StatelessWidget {
 //grp Ext
 
 extension HilightData on DateTime {
-  bool isSameDay(DateTime date) {
-    if (date.day == this.day && date.month == this.month && date.year == this.year) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   Color getHighlightColor(DateTime date) {
     DateTime today = DateTime.now();
     DateTime tomorrow = DateTime(today.year, today.month, today.day + 1);
-
     if (date.isSameDay(today)) {
       // Это сегодня
       return Colors.greenAccent[400]!;
@@ -716,18 +858,24 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                   child: Card(
                     child: InkWell(
                       onTap: () {
-                        parentContext
-                            .read<TodoItemBloc>()
-                            .add(SetAutoPauseSeconds(autoPauseSeconds: 30 * index));
-                        Log.i('set auto pause on ${30 * index}');
+                        parentContext.read<TodoItemBloc>().add(
+                            SetAutoPauseSeconds(autoPauseSeconds: index == 0 ? 0 : 30 ~/ index));
+                        Log.i('set auto pause on ${30 ~/ index}');
+                        _handleTapUp();
                       },
-                      child: Container(
-                        width: 20.0,
-                        height: 20.0,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: circleColor.withOpacity(0.8),
-                          border: Border.all(color: Colors.white!, width: 1, ),
+                      child: MyAnimatedCard(
+                        intensity: 0.01,
+                        child: Container(
+                          width: 20.0,
+                          height: 20.0,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: circleColor.withOpacity(0.8),
+                            border: Border.all(
+                              color: Colors.white!,
+                              width: 1,
+                            ),
+                          ),
                         ),
                       ),
                     ),

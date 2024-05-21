@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// При наведение виджет реагирует и чуть-чуть приподнимается
 class MyAnimatedCard extends StatefulWidget {
   final Widget child;
   final double intensity;
@@ -30,8 +31,8 @@ class MyAnimatedCardState extends State<MyAnimatedCard> {
         duration: Duration(milliseconds: 75),
         transform: isHovered
             ? (Matrix4.identity()
-          ..scale(scaleIntensity, scaleIntensity)
-          ..translate(translateIntensity, translateIntensity))
+              ..scale(scaleIntensity, scaleIntensity)
+              ..translate(translateIntensity, translateIntensity))
             : Matrix4.identity(),
         child: widget.child,
       ),

@@ -1,21 +1,23 @@
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
+import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 
 class ServiceStatisticData {
   static String weekKey = 'week_data';
   static String dayKey = 'day_data';
 
   static Future<Map<String, dynamic>> requestData() async {
-    return {weekKey: await _requestWeekStat(), dayKey: await _requestDaysStat()};
+    List<TodoItem> todoItemList = (await GlobalDbDao.getAllTodoItem());
+    todoItemList.sort((a, b) => b.targetDateTime!.compareTo(a.targetDateTime!));
+    return {weekKey: await _requestWeekStat(todoItemList), dayKey: await _requestDaysStat(todoItemList)};
   }
 
-  static Future<List<StatisticWeekHolder>> _requestWeekStat() async {
-    List<TodoItem> todoItemList = (await GlobalDbDao.getAllTodoItem());
+  static Future<List<StatisticWeekHolder>> _requestWeekStat( List<TodoItem> todoItemList) async {
     Map<String, List<TodoItem>> weekMap = {};
     for (var todoItem in todoItemList) {
       DateTime date = todoItem.targetDateTime!;
@@ -24,8 +26,7 @@ class ServiceStatisticData {
     return _calculateWeekDateHolder(weekMap);
   }
 
-  static Future<List<StatisticDayHolder>> _requestDaysStat() async {
-    List<TodoItem> todoItemList = (await GlobalDbDao.getAllTodoItem());
+  static Future<List<StatisticDayHolder>> _requestDaysStat( List<TodoItem> todoItemList) async {
     Map<String, List<TodoItem>> dayMap = {};
     for (var todoItem in todoItemList) {
       DateTime date = todoItem.targetDateTime!;
@@ -34,10 +35,10 @@ class ServiceStatisticData {
     return _calculateDaysDateHolder(dayMap);
   }
 
-  static int _storyCost = 30 * 60;
+  static int _storyCost = 60 * 60;
   static int _dailyPenalty = 15 * 60;
-  static int _todoIndividualPrise = 4 * 60;
-  static int _todoIndividualSinglePrise = 2 * 60;
+  static int _todoIndividualPrise = 5 * 60;
+  static int _todoIndividualSinglePrise = 3 * 60;
 
   static List<StatisticWeekHolder> _calculateWeekDateHolder(Map<String, List<TodoItem>> weekMap) {
     List<StatisticWeekHolder> statisticHolderList = [];
@@ -97,16 +98,27 @@ class ServiceStatisticData {
       int dayScore = 0;
       DateTime today = DateTime.now();
       for (var item in itemList) {
+        int? prise;
+        try {
+          dynamic data = jsonDecode(item.content);
+          if (data is Map<String, dynamic> && data.containsKey('prise')) {
+            prise = data['prise'];
+          }
+        } catch (e) {
+        }
         if (item.category == EnumTodoCategory.daily.name &&
             !item.targetDateTime!.isSameDay(today) &&
             item.isDone == false) {
-          //dayScore -= _dailyPenalty;
+          dayScore -= _dailyPenalty;
         }
         // дэйлики с наградой
         if (item.category == EnumTodoCategory.daily.name &&
             item.isDone == true &&
-            item.content != '') {
-          dayScore += (int.tryParse(item.content) ?? 0) * 60;
+            prise != null) {
+          Log.e('change deaily on $prise from $dayScore' );
+          dayScore += prise  * 60;
+          Log.e('to $dayScore');
+
         }
         if (item.category == EnumTodoCategory.history_social.name) {
           dayScore += _storyCost;
@@ -173,14 +185,4 @@ class StatisticDayHolder {
   });
 }
 
-//grp Ext
 
-extension HilightData on DateTime {
-  bool isSameDay(DateTime date) {
-    if (date.day == this.day && date.month == this.month && date.year == this.year) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-}

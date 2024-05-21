@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
-import 'package:zymixx_todo_list/presentation/bloc/statistic_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class StatisticScreen extends StatelessWidget {
   const StatisticScreen({super.key});
@@ -15,10 +12,7 @@ class StatisticScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocProvider(
-        create: (_) => StatisticBloc(),
-        child: const StatisticWidget(),
-      ),
+      body: const StatisticWidget(),
     );
   }
 }
@@ -29,8 +23,6 @@ class StatisticWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.find<AllItemControlBloc>().state.todoActiveItemList;
-    //await ServiceStatisticData.requestWeekStat();
-
     return FutureBuilder(
       future: ServiceStatisticData.requestData(),
       builder: (context, snapshot) {
@@ -42,8 +34,8 @@ class StatisticWidget extends StatelessWidget {
                   weekData: snapshot.data![ServiceStatisticData.weekKey],
                   dayData: snapshot.data![ServiceStatisticData.dayKey]),
               DataTableWidget(
-                              weekData: snapshot.data![ServiceStatisticData.weekKey],
-                            ),
+                weekData: snapshot.data![ServiceStatisticData.weekKey],
+              ),
             ],
           );
         } else {
@@ -81,20 +73,20 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
     Colors.blue,
   ];
 
-  bool isWeeklyMod = true;
+  bool isWeeklyMod = false;
 
   Map<int, StatisticWeekHolder> weekStatisticMap = {};
   Map<int, StatisticDayHolder> dayStatisticMap = {};
 
   @override
   void initState() {
-    var weekList = widget.weekData.reversed.toList();
-    var dayList = widget.dayData.reversed.toList();
+    var weekList = widget.weekData.toList();
+    var dayList = widget.dayData.toList();
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
     );
-    Log.i('weekList $weekList');
+    //выравниваем порядок и берём только часть от общего пула
     for (var i = 0; i < (weekList.length >= 8 ? 8 : weekList.length); i++) {
       weekStatisticMap[i] = weekList[weekList.length - 1 - i];
     }
@@ -432,73 +424,73 @@ class DataTableWidget extends StatelessWidget {
             child: Container(
               height: 220,
               child: StreamBuilder<Object>(
-                stream: null,
-                builder: (context, snapshot) {
-                  return SingleChildScrollView(
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.all<Color>(Colors.grey[300]!),
-                      columnSpacing: 40,
-                      border: TableBorder(
-                        verticalInside: BorderSide(color: Colors.grey),
-                        bottom: BorderSide(color: Colors.grey[400]!.withOpacity(0.8)!),
-                      ),
-                      columns: [
-                        DataColumn(label: Center(child: Text('Дата'))),
-                        DataColumn(label: Center(child: Text('Дел'))),
-                        DataColumn(label: Center(child: Text('Fails'))),
-                        DataColumn(label: Center(child: Text('Story'))),
-                        DataColumn(label: Center(child: Text('Итого'))),
-                      ],
-                      rows: weekData
-                          .map(
-                            (item) => DataRow(cells: [
-                              DataCell(Center(
-                                  child: Text(item.weekName,
+                  stream: null,
+                  builder: (context, snapshot) {
+                    return SingleChildScrollView(
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.all<Color>(Colors.grey[300]!),
+                        columnSpacing: 40,
+                        border: TableBorder(
+                          verticalInside: BorderSide(color: Colors.grey),
+                          bottom: BorderSide(color: Colors.grey[400]!.withOpacity(0.8)!),
+                        ),
+                        columns: [
+                          DataColumn(label: Center(child: Text('Дата'))),
+                          DataColumn(label: Center(child: Text('Дел'))),
+                          DataColumn(label: Center(child: Text('Fails'))),
+                          DataColumn(label: Center(child: Text('Story'))),
+                          DataColumn(label: Center(child: Text('Итого'))),
+                        ],
+                        rows: weekData
+                            .map(
+                              (item) => DataRow(cells: [
+                                DataCell(Center(
+                                    child: Text(item.weekName,
+                                        style: TextStyle(
+                                            color: Colors.grey[700],
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 15.5)))),
+                                DataCell(Center(
+                                    child: Text(item.todoItemCount.toString(),
+                                        style:
+                                            TextStyle(fontWeight: FontWeight.w600, fontSize: 18)))),
+                                DataCell(
+                                  Center(
+                                    child: Text(
+                                      item.dailyFails.toString(),
                                       style: TextStyle(
-                                          color: Colors.grey[700],
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 15.5)))),
-                              DataCell(Center(
-                                  child: Text(item.todoItemCount.toString(),
-                                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18)))),
-                              DataCell(
-                                Center(
-                                  child: Text(
-                                    item.dailyFails.toString(),
-                                    style: TextStyle(
-                                        color: item.dailyFails == 0
-                                            ? Colors.greenAccent[700]
-                                            : item.dailyFails > 3
-                                                ? Colors.red[700]
-                                                : Colors.black,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 18),
+                                          color: item.dailyFails == 0
+                                              ? Colors.greenAccent[700]
+                                              : item.dailyFails > 3
+                                                  ? Colors.red[700]
+                                                  : Colors.black,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 18),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              DataCell(
-                                Center(
-                                  child: Text(
-                                    item.storyItems.toString(),
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                                DataCell(
+                                  Center(
+                                    child: Text(
+                                      item.storyItems.toString(),
+                                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              DataCell(
-                                Center(
-                                  child: Text(
-                                    '${item.weekScore}h',
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                                DataCell(
+                                  Center(
+                                    child: Text(
+                                      '${item.weekScore}h',
+                                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ]),
-                          )
-                          .toList(),
-                    ),
-                  );
-                }
-              ),
+                              ]),
+                            )
+                            .toList(),
+                      ),
+                    );
+                  }),
             ),
           ),
         ),

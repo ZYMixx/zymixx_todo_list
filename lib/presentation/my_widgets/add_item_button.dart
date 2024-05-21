@@ -1,19 +1,19 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class AddItemButton extends StatelessWidget {
 
   VoidCallback onTapAction;
-  VoidCallback onLongTapAction;
+  VoidCallback? onLongTapAction;
+  VoidCallback? secondaryAction;
   Color? bgColor;
 
   AddItemButton({
     required this.onTapAction,
-    required this.onLongTapAction,
+    this.onLongTapAction,
+    this.secondaryAction,
     this.bgColor,
   });
   @override
@@ -25,7 +25,10 @@ class AddItemButton extends StatelessWidget {
           onTapAction.call();
         },
         onLongPress: () {
-          onLongTapAction.call();
+          onLongTapAction?.call();
+        },
+        onSecondaryTap: () {
+          secondaryAction?.call();
         },
         child: Container(
           width: ToolThemeData.itemWidth,

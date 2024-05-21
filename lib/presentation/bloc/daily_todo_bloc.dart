@@ -8,11 +8,9 @@ import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/db_todo_item_getter.dart';
 import 'package:zymixx_todo_list/data/services/stream_controller_service.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
-import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
+import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
-import 'package:zymixx_todo_list/domain/todo_item.dart';
-import 'package:zymixx_todo_list/presentation/App.dart';
 import 'package:zymixx_todo_list/presentation/action_screens/create_daily_widget.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_confirm_delete_dialog.dart';
@@ -31,12 +29,17 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
       }
     });
     on<DeleteDailyEvent>((event, emit) async {
-      deleteDailyItem(context: event._context, itemId: event.itemId, title: event.title);
+      deleteDailyItem(
+          context: event._context,
+          content: event.content,
+          itemId: event.itemId,
+          title: event.title);
     });
     on<ChangeYesterdayModEvent>((event, emit) async {
       emit(state.copyWith(yesterdayDailyMod: !state.yesterdayDailyMod));
     });
     on<RequestAddNewDailyEvent>((event, emit) async {
+      //! MAP
       //'name': name,
       //'timer': timer,
       //'autoPauseSeconds': autoPauseSeconds,
@@ -62,7 +65,11 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     });
   }
 
-  deleteDailyItem({required BuildContext context, required int itemId, required String title}) {
+  deleteDailyItem(
+      {required BuildContext context,
+      required String content,
+      required int itemId,
+      required String title}) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -75,7 +82,9 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
           },
           labelOnCancel: 'Навсегда',
           onCancel: () async {
-            await _daoDatabase.updateContentByTitle(title: title, newContent: delDataBaseKey);
+            String changedContent =
+                ToolMergeJson.mergeJsonAndMap(content, {'${DailyTodoBloc.delDataBaseKey}': true});
+            await _daoDatabase.updateContentByTitle(title: title, newContent: changedContent);
             await _daoDatabase.deleteTodoItemById(itemId: itemId);
             Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
           },
@@ -116,6 +125,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
         identifier: timerIdentifier,
         callBack: callBack,
         finishCallBack: () => _onDailyTimerEnd(itemId: completeEvent.itemId),
+        autoPauseSeconds: await state.activeDailyItemGetter?.autoPauseSeconds ?? 0,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) async {
       if (event) {
@@ -148,9 +158,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
   }
 
   void _onDailyTimerEnd({required itemId}) {
-    Log.e('DAILY EVENT ENDED');
     StreamControllerService.stopStream(state.activeTimerIdentifier!);
-
     state.activeDailyItemGetter = null;
     state.activeTimerIdentifier = null;
     this.add(CompleteDailyEvent(isComplete: true, itemId: itemId, remainSeconds: 0));
@@ -184,7 +192,6 @@ class DailyTodoState {
       yesterdayDailyMod: yesterdayDailyMod ?? this.yesterdayDailyMod,
     );
   }
-
 }
 
 class DailyTodoEvent {}
@@ -207,11 +214,13 @@ class CompleteDailyEvent extends DailyTodoEvent {
 class DeleteDailyEvent extends DailyTodoEvent {
   int itemId;
   String title;
+  String content;
   BuildContext _context;
 
   DeleteDailyEvent({
     required this.itemId,
     required this.title,
+    required this.content,
     required BuildContext context,
   }) : _context = context;
 }

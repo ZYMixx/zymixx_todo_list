@@ -11,9 +11,7 @@ import 'package:zymixx_todo_list/presentation/action_screens/create_daily_widget
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
-
   final _daoDatabase = DaoDatabase();
-
 
   CalendarBloc() : super(CalendarState()) {
     on<SaveEvent>((event, emit) {
@@ -28,18 +26,20 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     on<DeleteCalendarItemEvent>((event, emit) async {
       await _daoDatabase.deleteTodoItem(event.todoItem);
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
-
     });
     on<DoneCalendarItemEvent>((event, emit) async {
-      await _daoDatabase.insertTodoItem(event.todoItem.copyWith(isDone: true, category: EnumTodoCategory.history.name));
+      await _daoDatabase.insertTodoItem(
+          event.todoItem.copyWith(isDone: true, category: EnumTodoCategory.history.name));
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
     on<SetStoryCalendarItemEvent>((event, emit) async {
-      if (event.todoItem.category == EnumTodoCategory.social.name){
-        await _daoDatabase.editTodoItemById(id: event.todoItem.id, category:EnumTodoCategory.active.name );
+      if (event.todoItem.category == EnumTodoCategory.social.name) {
+        await _daoDatabase.editTodoItemById(
+            id: event.todoItem.id, category: EnumTodoCategory.active.name);
         Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
       } else {
-        await _daoDatabase.editTodoItemById(id: event.todoItem.id, category:EnumTodoCategory.social.name );
+        await _daoDatabase.editTodoItemById(
+            id: event.todoItem.id, category: EnumTodoCategory.social.name);
         Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
       }
     });
@@ -55,7 +55,8 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     emit(state.copyWith(selectedTodoItem: null, selectedDateTime: event.selectedDateTime));
   }
 
-  Future<void> _onChangeTodoDateEvent(ChangeTodoDateEvent event, Emitter<CalendarState> emit) async {
+  Future<void> _onChangeTodoDateEvent(
+      ChangeTodoDateEvent event, Emitter<CalendarState> emit) async {
     {
       DateTime? userInput = await ToolShowOverlay.showUserInputOverlay<DateTime>(
         context: event._context,
@@ -68,7 +69,6 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     }
   }
 }
-
 
 class CalendarState {
   TodoItem? selectedTodoItem;
@@ -90,9 +90,7 @@ class CalendarState {
   }
 }
 
-class CalendarEvent {
-
-}
+class CalendarEvent {}
 
 class SaveEvent extends CalendarEvent {
   TodoItem todoItem;
@@ -117,6 +115,7 @@ class DoneCalendarItemEvent extends CalendarEvent {
     required this.todoItem,
   });
 }
+
 class SetStoryCalendarItemEvent extends CalendarEvent {
   TodoItem todoItem;
 
@@ -125,18 +124,15 @@ class SetStoryCalendarItemEvent extends CalendarEvent {
   });
 }
 
-
 class SelectDateEvent extends CalendarEvent {
   DateTime selectedDateTime;
 
   SelectDateEvent({
     required this.selectedDateTime,
   });
-
-
 }
 
-class ChangeTodoDateEvent extends CalendarEvent  {
+class ChangeTodoDateEvent extends CalendarEvent {
   BuildContext _context;
   int todoItemId;
 

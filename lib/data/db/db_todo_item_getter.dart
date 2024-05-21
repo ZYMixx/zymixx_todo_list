@@ -2,10 +2,10 @@ import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 
+// для получения всегда актуальных данных из бд
 class DbTodoItemGetter {
 
   DaoDatabase _dao = DaoDatabase();
-
   int itemId;
 
   DbTodoItemGetter({
@@ -23,6 +23,7 @@ class DbTodoItemGetter {
   Future<DateTime?> get targetDateTime => _getTargetDateTime();
   Future<TodoItem?> get todoItem => _getTodoItem();
   Future<int> get secondSpent => _getSecondSpent();
+  Future<int> get autoPauseSeconds => _getAutoPauseSeconds();
 
 
 
@@ -64,6 +65,9 @@ class DbTodoItemGetter {
 
   Future<int> _getSecondSpent() async {
     return (await _dao.getTodoItem(id: itemId))?.secondsSpent ?? 0;
+  }
+  Future<int> _getAutoPauseSeconds() async {
+    return (await _dao.getTodoItem(id: itemId))?.autoPauseSeconds ?? 0;
   }
 
 

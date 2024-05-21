@@ -1,11 +1,12 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
+import 'package:zymixx_todo_list/data/services/service_image_plugin_work.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
-import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
 
@@ -14,7 +15,6 @@ import '../../domain/todo_item.dart';
 class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState> {
   final DaoDatabase _daoDB = DaoDatabase();
 
-// fsdfe
   AllItemControlBloc()
       : super(ItemControlBlocState(
             todoActiveItemList: [], todoDailyItemList: [], todoHistoryItemList: [])) {
@@ -34,19 +34,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       var itemList = await _daoDB.getActiveTodoItems();
       var todoDailyList = await _daoDB.getDailyTodoItems();
       var todoHistoryItemList = await _daoDB.getHistoryTodoItems();
-      Log.i('itemList $itemList');
-      Log.i('todoDailyList ${todoDailyList.length} $todoDailyList');
-      Log.i('todoHistoryItemList $todoHistoryItemList');
-      // for (var item in itemList){
-      //   await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
-      // }
-      //for (var item in todoDailyList){
-      //  await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
-      //  await _daoDB.deleteTodoItemById(itemId: item.id);
-      //}
-      // for (var item in todoHistoryItemList){
-      //   await _daoDB.editTodoItemById(id: item.id, secondsSpent: 0);
-      // }
+      ServiceImagePluginWork.loadImageData();
       emit(state.copyWith(
           todoActiveItemList: itemList,
           todoDailyItemList: todoDailyList,
@@ -64,7 +52,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
         'prise': event.prise,
         'dailyDayList': event.dailyDayList,
         'period': event.period,
-        '${DailyTodoBloc.delDataBaseKey}': true
+        '${DailyTodoBloc.delDataBaseKey}': false
       };
       await _daoDB.insertDailyItem(
         title: event.name ?? '',
@@ -77,7 +65,6 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
     });
     on<DellAllItemEvent>((event, emit) async {});
     on<DeleteItemEvent>((event, emit) async {
-      Log.i('try to delite');
       await _daoDB.deleteTodoItem(event.todoItem);
       this.add(LoadAllItemEvent());
     });
@@ -95,22 +82,12 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
   createDalyBloc() async {
     List<TodoItem> todayDailyList = await _daoDB.getTodayDailyTodoItems();
-    Log.e('$todayDailyList getTodayDailyTodoItems');
     if (todayDailyList.isNotEmpty) {
       return;
     }
-    // List<TodoItem> dailyList = (await _daoDB.getDailyTodoItems())
-    //     .where((element) => jsonDecode(element.content)[ DailyTodoBloc.delDataBaseKey] != true)
-    //     .toList(growable: false);
-    // Set<String> uniqueDailyTitleList = dailyList.map((e) => e.title!).toSet();
-    // for (var uniqueTitle in uniqueDailyTitleList) {
-    //   var dailyItem = dailyList.firstWhere((element) => element.title == uniqueTitle);
-    //   _daoDB.insertDuplicateTodoItem(
-    //       dailyItem.copyWith(targetDateTime: DateTime.now(), isDone: false, secondsSpent: 0));
-    // }
 
     List<TodoItem> dailyList = (await _daoDB.getDailyTodoItems())
-        .where((element) => jsonDecode(element.content)[DailyTodoBloc.delDataBaseKey] != true)
+        .where((element) => jsonDecode(element.content)[DailyTodoBloc.delDataBaseKey] == false)
         .toList(growable: false);
 
     Set<String> uniqueDailyTitleList = dailyList.map((e) => e.title!).toSet();
@@ -134,18 +111,20 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
     }
   }
 
-  bool shouldCreateDaily(int period, List<int> dailyDayList, List<TodoItem> dailyList, String? title) {
+  bool shouldCreateDaily(
+      int period, List<int> dailyDayList, List<TodoItem> dailyList, String? title) {
     if (period > 0 && period <= 3) {
       DateTime now = DateTime.now();
       for (int i = 1; i <= period; i++) {
         DateTime pastDate = now.subtract(Duration(days: i));
-        if (dailyList.any((item) => item.title == title && item.targetDateTime!.isAtSameMomentAs(pastDate))) {
+        if (dailyList
+            .any((item) => item.title == title && item.targetDateTime!.isSameDay(pastDate))) {
           return false;
         }
       }
     }
     int todayWeekday = DateTime.now().weekday;
-    if (dailyList.isNotEmpty) {
+    if (dailyDayList.isNotEmpty) {
       if (dailyDayList.contains(todayWeekday)) {
         return true;
       } else {
@@ -240,3 +219,32 @@ class ChangeItemEvent extends ItemControlBlocEvent {
 }
 
 class DellAllItemEvent extends ItemControlBlocEvent {}
+
+//grp extension
+extension StringExtension on String {
+  String capStart() {
+    if (this.isEmpty) {
+      return this;
+    }
+    return '${this[0].toUpperCase()}${this.substring(1)}';
+  }
+}
+
+extension DateTimeExtension on DateTime {
+  String getStringDate() {
+    initializeDateFormatting('ru', null);
+    String month = DateFormat.MMMM('ru').format(this);
+    String day = DateFormat.d('ru').format(this);
+    String dayOfWeek = DateFormat.E('ru').format(this);
+
+    return '${month.capStart()} $day, ${dayOfWeek}.';
+  }
+
+  bool isSameDay(DateTime date) {
+    if (date.day == this.day && date.month == this.month && date.year == this.year) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}

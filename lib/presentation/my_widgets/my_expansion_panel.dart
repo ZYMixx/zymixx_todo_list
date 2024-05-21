@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
 
 class MyExpansionPanel extends StatefulWidget {
   final List<Widget> listWidget;
@@ -78,7 +77,7 @@ Widget buildExpansionHeader(String title) {
     child: Padding(
       padding: const EdgeInsets.only(left: 28.0, bottom: 0),
       child: Text(
-         title,
+        title,
         style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
       ),
     ),

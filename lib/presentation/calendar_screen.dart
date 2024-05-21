@@ -1,9 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:gap/gap.dart';
@@ -13,7 +10,7 @@ import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/calendar_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
@@ -39,7 +36,8 @@ class CalendarScreenWidget extends StatelessWidget {
         .read<AllItemControlBloc>()
         .state
         .todoActiveItemList
-        .where((item) => item.targetDateTime != null && item.category == EnumTodoCategory.social.name)
+        .where(
+            (item) => item.targetDateTime != null && item.category == EnumTodoCategory.social.name)
         .map((e) => e.targetDateTime!)
         .toSet();
     Set<DateTime> setNotEmptyDate = context
@@ -74,10 +72,14 @@ class CalendarScreenWidget extends StatelessWidget {
                         toggleDaySelection: true,
                         showActionButtons: false,
                         showNavigationArrow: true,
-                        monthViewSettings: DateRangePickerMonthViewSettings(viewHeaderHeight: 15),
+                        monthViewSettings: DateRangePickerMonthViewSettings(
+                          viewHeaderHeight: 15,
+                          firstDayOfWeek: 1,
+                        ),
                         headerHeight: 25,
                         controller: _calendarController,
-                        cellBuilder: (BuildContext context, DateRangePickerCellDetails cellDetails) {
+                        cellBuilder:
+                            (BuildContext context, DateRangePickerCellDetails cellDetails) {
                           //i начало build
                           DateTime date = cellDetails.date;
                           var cellColor = Colors.white;
@@ -85,7 +87,7 @@ class CalendarScreenWidget extends StatelessWidget {
                           DateTime today = DateTime.now();
                           bool isToday = date.isSameDay(DateTime.now());
                           for (var targetData in setNotEmptyDate) {
-                             if (targetData.isSameDay(date)) {
+                            if (targetData.isSameDay(date)) {
                               //cellColor = Colors.deepOrangeAccent[400]!;
                               cellColor = Colors.redAccent;
                             }
@@ -100,15 +102,21 @@ class CalendarScreenWidget extends StatelessWidget {
                               padding: const EdgeInsets.all(1.0),
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: isStoryDay ? Colors.amber!.withOpacity(1):null,
+                                  color: isStoryDay ? Colors.amber!.withOpacity(1) : null,
                                 ),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    gradient: isStoryDay ? null : RadialGradient(
-                                      colors:  [Colors.white, Colors.white, cellColor.withOpacity(0.1)],
-                                      stops: [0.5, 0.4, 1.0],
-                                    ),
+                                    gradient: isStoryDay
+                                        ? null
+                                        : RadialGradient(
+                                            colors: [
+                                              Colors.white,
+                                              Colors.white,
+                                              cellColor.withOpacity(0.1)
+                                            ],
+                                            stops: [0.5, 0.4, 1.0],
+                                          ),
                                   ),
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
@@ -176,7 +184,8 @@ class CalendarScreenWidget extends StatelessWidget {
                               width: cellDetails.bounds.width,
                               height: cellDetails.bounds.height,
                               alignment: Alignment.center,
-                              child: Text(yearValue.toString() + ' - ' + (yearValue + 9).toString()),
+                              child:
+                                  Text(yearValue.toString() + ' - ' + (yearValue + 9).toString()),
                             );
                           }
                         },
@@ -204,7 +213,6 @@ class DayDataBlockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //var itemList = context.read<AllItemControlBloc>().state.todoItemList;
     var itemList = context.select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList);
     DateTime? selectDate = context.select((CalendarBloc bloc) => bloc.state.selectedDateTime);
     List<TodoItem> todoTodoItemList = itemList.where((TodoItem todoItem) {
@@ -223,7 +231,7 @@ class DayDataBlockWidget extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 4),
             child: InkWell(
-              onTap: (){
+              onTap: () {
                 if (selectDate != null) {
                   Get.find<AllItemControlBloc>().add(AddNewItemEvent(dateTime: selectDate));
                 }
@@ -244,7 +252,10 @@ class DayDataBlockWidget extends StatelessWidget {
           child: ListView.builder(
               itemCount: todoTodoItemList.length,
               itemBuilder: (context, itemId) {
-                return DataTodoItem(todoItem: todoTodoItemList[itemId], key: ValueKey(todoTodoItemList),);
+                return DataTodoItem(
+                  todoItem: todoTodoItemList[itemId],
+                  key: ValueKey(todoTodoItemList),
+                );
               }),
         ),
       ],
@@ -265,7 +276,6 @@ class _DataTodoItemState extends State<DataTodoItem> {
   late TextEditingController _controllerTitle;
   late TextEditingController _controllerDescription;
   late TodoItem tempTodoItem;
-
 
   @override
   void initState() {
@@ -294,7 +304,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
           padding: EdgeInsets.all(4),
           height: 140,
           decoration: BoxDecoration(
-            color: isStoryItem ? Colors.orange: Colors.deepPurpleAccent,
+              color: isStoryItem ? Colors.orange : Colors.deepPurpleAccent,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black26,
@@ -302,16 +312,15 @@ class _DataTodoItemState extends State<DataTodoItem> {
                   spreadRadius: 2.0,
                   offset: Offset(0, 0), // changes position of shadow
                 ),
-              ]
-          ),
+              ]),
           child: Row(
             children: [
               Flexible(
                 flex: 5,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: BorderDirectional(end: BorderSide(width: 1)),
+                      color: Colors.white,
+                      border: BorderDirectional(end: BorderSide(width: 1)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black26,
@@ -319,8 +328,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                           spreadRadius: 1.0,
                           offset: Offset(0, 0), // changes position of shadow
                         ),
-                      ]
-                  ),
+                      ]),
                   child: Column(
                     children: [
                       Flexible(
@@ -329,16 +337,16 @@ class _DataTodoItemState extends State<DataTodoItem> {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 6.0, right: 4),
                           child: TextField(
-                            controller: _controllerTitle,
-                            maxLines: 1,
-                            decoration: InputDecoration(hintText: 'title'),
+                              controller: _controllerTitle,
+                              maxLines: 1,
+                              decoration: InputDecoration(hintText: 'title'),
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,
                                   letterSpacing: -0.5,
                                   wordSpacing: -1.0,
                                   height: 0.9,
-                                  shadows: ToolThemeData.defTextShadow)                        ),
+                                  shadows: ToolThemeData.defTextShadow)),
                         ),
                       ),
                       Flexible(
@@ -347,9 +355,9 @@ class _DataTodoItemState extends State<DataTodoItem> {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 6.0, right: 4),
                           child: TextField(
-                            controller: _controllerDescription,
-                            maxLines: 4,
-                            decoration: InputDecoration(hintText: 'content'),
+                              controller: _controllerDescription,
+                              maxLines: 4,
+                              decoration: InputDecoration(hintText: 'content'),
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
@@ -363,8 +371,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                                     blurRadius: 1.5,
                                   ),
                                 ],
-                              )
-                          ),
+                              )),
                         ),
                       )
                     ],
@@ -377,17 +384,14 @@ class _DataTodoItemState extends State<DataTodoItem> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 3.0),
                     child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 1.0,
-                              spreadRadius: 1.0,
-                              offset: Offset(0, 0), // changes position of shadow
-                            ),
-                          ]
-                      ),
+                      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 1.0,
+                          spreadRadius: 1.0,
+                          offset: Offset(0, 0), // changes position of shadow
+                        ),
+                      ]),
                       child: MyAnimatedCard(
                         intensity: 0.005,
                         child: Column(
@@ -398,7 +402,9 @@ class _DataTodoItemState extends State<DataTodoItem> {
                                 child: MaterialButton(
                                   focusNode: FocusNode(skipTraversal: true),
                                   onPressed: () {
-                                    context.read<CalendarBloc>().add(SaveEvent(todoItem: tempTodoItem));
+                                    context
+                                        .read<CalendarBloc>()
+                                        .add(SaveEvent(todoItem: tempTodoItem));
                                   },
                                   color: Colors.green,
                                   child: Text('Save'),
@@ -411,7 +417,10 @@ class _DataTodoItemState extends State<DataTodoItem> {
                                 child: MaterialButton(
                                   focusNode: FocusNode(skipTraversal: true),
                                   onPressed: () {
-                                    context.read<CalendarBloc>().add(ChangeTodoDateEvent(context: context, todoItemId: widget.todoItem.id,));
+                                    context.read<CalendarBloc>().add(ChangeTodoDateEvent(
+                                          context: context,
+                                          todoItemId: widget.todoItem.id,
+                                        ));
                                   },
                                   color: Colors.blueAccent,
                                   child: Text('Date'),
@@ -422,35 +431,48 @@ class _DataTodoItemState extends State<DataTodoItem> {
                               child: MyAnimatedCard(
                                 intensity: 0.005,
                                 child: DecoratedBox(
-                                  decoration: isStoryItem ? BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [Colors.orangeAccent[200]!, Colors.purple[800]!],
-                                      stops: [0.5,0.5],
-                                      transform: GradientRotation(0.7),
-                                    ),
-                                  )  : BoxDecoration(
-                                      color: Colors.orangeAccent
-                                  ),
+                                  decoration: isStoryItem
+                                      ? BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Colors.orangeAccent[200]!,
+                                              Colors.purple[800]!
+                                            ],
+                                            stops: [0.5, 0.5],
+                                            transform: GradientRotation(0.7),
+                                          ),
+                                        )
+                                      : BoxDecoration(color: Colors.orangeAccent),
                                   child: MaterialButton(
                                     focusNode: FocusNode(skipTraversal: true),
                                     onPressed: () {
-                                      context.read<CalendarBloc>().add(SetStoryCalendarItemEvent(todoItem: tempTodoItem));
+                                      context
+                                          .read<CalendarBloc>()
+                                          .add(SetStoryCalendarItemEvent(todoItem: tempTodoItem));
                                     },
-                                    child: isStoryItem ? ShaderMask(
-                                      blendMode: BlendMode.srcIn,
-                                      shaderCallback: (bounds) => LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [Colors.purple[900]!, Colors.white],
-                                        stops: [0.5,0.5],
-                                        transform: GradientRotation(0.7),
-                                      ).createShader(
-                                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                                      ),
-                                      child: Text('Story', style: TextStyle(fontSize: 16, letterSpacing: 1.5),),
-                                    ) : Text('Story', style: TextStyle(fontSize: 16, letterSpacing: 1.5),),
+                                    child: isStoryItem
+                                        ? ShaderMask(
+                                            blendMode: BlendMode.srcIn,
+                                            shaderCallback: (bounds) => LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: [Colors.purple[900]!, Colors.white],
+                                              stops: [0.5, 0.5],
+                                              transform: GradientRotation(0.7),
+                                            ).createShader(
+                                              Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                                            ),
+                                            child: Text(
+                                              'Story',
+                                              style: TextStyle(fontSize: 16, letterSpacing: 1.5),
+                                            ),
+                                          )
+                                        : Text(
+                                            'Story',
+                                            style: TextStyle(fontSize: 16, letterSpacing: 1.5),
+                                          ),
                                   ),
                                 ),
                               ),
@@ -461,7 +483,9 @@ class _DataTodoItemState extends State<DataTodoItem> {
                                 child: MaterialButton(
                                   focusNode: FocusNode(skipTraversal: true),
                                   onPressed: () {
-                                    context.read<CalendarBloc>().add(DoneCalendarItemEvent(todoItem: tempTodoItem));
+                                    context
+                                        .read<CalendarBloc>()
+                                        .add(DoneCalendarItemEvent(todoItem: tempTodoItem));
                                   },
                                   color: Colors.greenAccent,
                                   child: Text('Done'),
@@ -474,7 +498,9 @@ class _DataTodoItemState extends State<DataTodoItem> {
                                 child: MaterialButton(
                                   focusNode: FocusNode(skipTraversal: true),
                                   onPressed: () {
-                                    context.read<CalendarBloc>().add(DeleteCalendarItemEvent(todoItem: tempTodoItem));
+                                    context
+                                        .read<CalendarBloc>()
+                                        .add(DeleteCalendarItemEvent(todoItem: tempTodoItem));
                                   },
                                   color: Colors.red,
                                   child: Text('Delete'),
@@ -491,34 +517,5 @@ class _DataTodoItemState extends State<DataTodoItem> {
         ),
       ),
     );
-  }
-}
-
-//grp extension
-extension StringExtension on String {
-  String capStart() {
-    if (this.isEmpty) {
-      return this;
-    }
-    return '${this[0].toUpperCase()}${this.substring(1)}';
-  }
-}
-
-extension DateTimeExtension on DateTime {
-  String getStringDate() {
-    initializeDateFormatting('ru', null); // Инициализация локали для русского языка
-    String month = DateFormat.MMMM('ru').format(this); // Получаем полное название месяца на русском
-    String day = DateFormat.d('ru').format(this); // Получаем день месяца на русском
-    String dayOfWeek = DateFormat.E('ru').format(this); // Получаем день недели на русском
-
-    return '${month.capStart()} $day, ${dayOfWeek}.';
-  }
-
-  bool isSameDay(DateTime date) {
-    if (date.day == this.day && date.month == this.month && date.year == this.year) {
-      return true;
-    } else {
-      return false;
-    }
   }
 }

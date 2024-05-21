@@ -111,25 +111,26 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                               TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.w500),
                         )
                       : Padding(
-                        padding: const EdgeInsets.only(left: 25.0),
-                        child: Center(
-                            child: Text(
+                          padding: const EdgeInsets.only(left: 25.0),
+                          child: Center(
+                              child: Text(
                             widget.todoItem.title!,
                             textAlign: TextAlign.center,
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                           )),
-                      ),
+                        ),
                 ),
-                if (!isClicked && widget.todoItem.secondsSpent > 60) Text(
-                  '${(widget.todoItem.secondsSpent / 60).toInt()}',
-                  style: TextStyle(
-                    color: Colors.green[600],
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                if (!isClicked && widget.todoItem.secondsSpent > 60)
+                  Text(
+                    '${(widget.todoItem.secondsSpent / 60).toInt()}',
+                    style: TextStyle(
+                      color: Colors.green[600],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                if (!isClicked && widget.todoItem.secondsSpent > 60)  Text('-min'),
-                if (!isClicked ) SizedBox(width: 10),
+                if (!isClicked && widget.todoItem.secondsSpent > 60) Text('-min'),
+                if (!isClicked) SizedBox(width: 10),
                 InkWell(
                   onTap: () => Get.find<AllItemControlBloc>()
                       .add(DeleteItemEvent(todoItem: widget.todoItem)),

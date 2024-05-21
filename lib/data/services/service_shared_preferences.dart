@@ -1,7 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-// flutter pub add shared_preferences
-
 class ServiceSharedPreferences {
   static late SharedPreferences sharedPreferences;
 

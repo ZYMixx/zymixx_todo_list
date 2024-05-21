@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/db_todo_item_getter.dart';
+import 'package:zymixx_todo_list/data/services/service_image_plugin_work.dart';
 import 'package:zymixx_todo_list/data/services/stream_controller_service.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
@@ -15,8 +16,6 @@ import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/data/services/service_audio_player.dart';
 import 'package:zymixx_todo_list/presentation/action_screens/choose_date_widget.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
-
-import '../../data/services/service_get_time.dart';
 
 enum TimeModEnum { timer, stopwatch, none }
 
@@ -70,6 +69,10 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       await _daoDatabase.editTodoItemById(
           id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
       emit(state.copyWith(todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
+    });
+
+    on<SetTodoItemImageEvent>((event, emit) async {
+      emit(state.copyWith(imageFile: ServiceImagePluginWork.checkFileExist(todoItem)));
     });
   }
 
@@ -132,11 +135,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: remainSeconds)));
   }
 
-  //Function() finishCallBack =  _onTimerEnd;
-
   Future<void> _onStopStartTimerEvent(
       StopStartTimerEvent event, Emitter<TodoItemBlocState> emit) async {
-    //ii
     if (StreamControllerService.stopStream(timerIdentifier)) {
       return;
     }
@@ -155,6 +155,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Stream timerStream = StreamControllerService.addStreamItem(
         identifier: timerIdentifier,
         callBack: callBack,
+        autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
         finishCallBack: _onTimerEnd,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
@@ -167,7 +168,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     StreamControllerService.stopStream(stopwatchIdentifier); //останавливаем секундомер если он был
   }
 
-  void _onStopStartStopwatchEvent(StopStartStopwatchEvent event, Emitter<TodoItemBlocState> emit) {
+  Future<void> _onStopStartStopwatchEvent(StopStartStopwatchEvent event, Emitter<TodoItemBlocState> emit) async {
     if (StreamControllerService.stopStream(stopwatchIdentifier)) {
       return;
     }
@@ -188,6 +189,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         identifier: stopwatchIdentifier,
         callBack: callBack,
         finishCallBack: _onTimerEnd,
+        autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
       if (event) {
@@ -225,7 +227,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         await _daoDatabase.editTodoItemById(
             id: state.todoItemId, title: event.titleText, content: event.descriptionText);
       } catch (e) {
-        print("ZYYYYYYYYYYYYMIXX");
+        print(e);
       }
       emit(state.copyWith(todoItem: await state.dbTodoItemGetter.todoItem));
       this.add(ChangeModEvent(isChangeMod: false));
@@ -278,23 +280,29 @@ class TodoItemBlocState {
   TodoItem todoItem;
   TimeModEnum timerMod;
   bool changeTextMod;
+  File? imageFile;
 
   TodoItemBlocState({
     this.timerMod = TimeModEnum.none,
     required this.todoItem,
     this.changeTextMod = false,
+    this.imageFile,
   })  : todoItemId = todoItem.id,
-        dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id);
+        dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id) {
+    imageFile = ServiceImagePluginWork.checkFileExist(todoItem);
+  }
 
   TodoItemBlocState copyWith({
     TodoItem? todoItem,
     TimeModEnum? timerMod,
     bool? changeTextMod,
+    File? imageFile,
   }) {
     return TodoItemBlocState(
       todoItem: todoItem ?? this.todoItem,
       timerMod: timerMod ?? this.timerMod,
       changeTextMod: changeTextMod ?? this.changeTextMod,
+      imageFile: imageFile ?? this.imageFile,
     );
   }
 }
@@ -368,4 +376,9 @@ class SetAutoPauseSeconds extends TodoItemBlocEvent {
   int autoPauseSeconds;
 
   SetAutoPauseSeconds({required this.autoPauseSeconds});
+}
+
+class SetTodoItemImageEvent extends TodoItemBlocEvent {
+
+  SetTodoItemImageEvent();
 }

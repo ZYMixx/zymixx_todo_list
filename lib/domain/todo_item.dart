@@ -53,6 +53,13 @@ class TodoItem {
     return 'TodoItem{id: $id, title: $title, content: $content, category $category, targetDateTime ${ToolDateFormatter.formatToMonthDay(targetDateTime)} }\n';
   }
 
+  String toStringFull() {
+    return 'TodoItem(id: $id, title: $title, content: $content, category: $category, '
+        'timerSeconds: $timerSeconds, stopwatchSeconds: $stopwatchSeconds, '
+        'secondsSpent: $secondsSpent, autoPauseSeconds: $autoPauseSeconds, '
+        'isDone: $isDone, targetDateTime: ${targetDateTime?.toIso8601String()})\n';
+  }
+
   TodoItem copyWith({
     int? id,
     String? title,
@@ -108,6 +115,3 @@ class TodoItem {
       isDone.hashCode ^
       targetDateTime.hashCode;
 }
-//      targetDateTime: json['targetDateTime'] == null
-//           ? null
-//           : DateTime.fromMillisecondsSinceEpoch(json['targetDateTime']),

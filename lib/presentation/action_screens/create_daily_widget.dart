@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class CreateDailyWidget extends StatefulWidget {
   const CreateDailyWidget({super.key});
@@ -44,8 +44,8 @@ class _CreateDailyWidgetState extends State<CreateDailyWidget> with TickerProvid
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 100.0),
                     child: FractionallySizedBox(
-                      widthFactor: 0.7,
-                      heightFactor: 0.6,
+                      widthFactor: 0.8,
+                      heightFactor: 0.75,
                       alignment: Alignment.topLeft,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -102,9 +102,6 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
 
   @override
   void initState() {
-    // 'prise'
-    // 'period'
-    // 'dayOfWeak'
 
     super.initState();
     _controller = AnimationController(
@@ -144,7 +141,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.7, 1.0), // Задержка для третьего виджета
+        curve: Interval(0.7, 1.0), // Задержка для четвёртого виджета
       ),
     );
     _controller.forward();
@@ -196,7 +193,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             child: Row(
               children: [
                 Flexible(
-                  flex: 5,
+                  flex: 7,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -223,7 +220,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                         decoration: InputDecoration(
                           hintText: 'Минуты в день',
                           prefixIcon: Icon(Icons.timelapse),
-                          hintStyle: TextStyle(fontSize: 14),
+                          hintStyle: TextStyle(fontSize: 13),
                           suffixText: 'min',
                           counterText: '',
                           filled: true,
@@ -241,7 +238,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                 ),
                 SizedBox(width: 10),
                 Flexible(
-                  flex: 2,
+                  flex: 3,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       boxShadow: [
@@ -481,7 +478,7 @@ class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
               });
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+              padding: EdgeInsets.symmetric(horizontal: 6.5, vertical: 3.0),
               decoration: BoxDecoration(
                 color: _dailyDayList.contains(i) ? Colors.blueAccent : Colors.transparent,
                 borderRadius: BorderRadius.circular(8.0),

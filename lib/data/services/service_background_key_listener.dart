@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:keyboard_event/keyboard_event.dart';
-import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 abstract class ServiceBackgroundKeyListener {
   static List<CodeCallBack> userCallBacks = [];
   static late KeyboardEvent keyboardEvent;
   static bool listenIsOn = false;
+  static int noActionSecondTimer = 0;
+  static Timer? _timerKeyLoop;
 
   static Future<void> initPlatformState() async {
     keyboardEvent = KeyboardEvent();
@@ -26,7 +27,11 @@ abstract class ServiceBackgroundKeyListener {
 
   static startListening() {
     keyboardEvent.startListening((keyEvent) {
+      noActionSecondTimer = 0;
       checkUserCode(keyEvent);
+    });
+    _timerKeyLoop = Timer.periodic(Duration(seconds: 1), (timer) {
+      noActionSecondTimer += 1;
     });
   }
 
@@ -39,9 +44,6 @@ abstract class ServiceBackgroundKeyListener {
   }
 
   static checkUserCode(dynamic keyEvent) {
-    //print('cheak ${keyEvent}');
-    //print('keyEvent.vkName ${keyEvent.vkName}');
-    //Log.i('${keyEvent.vkName}');
     for (var item in userCallBacks) {
       if (keyEvent.isReleased && keyEvent.vkName == item.codeKey) {
         if (item.needAltDown && !keyEvent.isAltDown) {
@@ -53,8 +55,6 @@ abstract class ServiceBackgroundKeyListener {
   }
 }
 
-//LCONTROL LMENU  LSHIFT
-//qqqqq1qqqqssqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq 1qqqqqqqqqqqqqqqqqqqq
 class CodeCallBack {
   final String codeKey;
   final bool needAltDown;

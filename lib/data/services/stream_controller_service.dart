@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/services/service_background_key_listener.dart';
 
 class StreamControllerService {
   static List<StreamItem> streamItemsList = [];
@@ -12,7 +12,7 @@ class StreamControllerService {
     required Future<bool> Function() callBack,
     required Function() finishCallBack,
     required Duration periodDuration,
-    //required T blocListener,
+    required int autoPauseSeconds,
   }) {
     for (var item in streamItemsList) {
       if (item.identifier == identifier) {
@@ -23,6 +23,7 @@ class StreamControllerService {
         identifier: identifier,
         callBack: callBack,
         finishCallBack: finishCallBack,
+        autoPauseSeconds: autoPauseSeconds,
         periodDuration: periodDuration);
     streamItemsList.add(newItem);
     return newItem._stream;
@@ -72,18 +73,16 @@ class StreamItem<T extends Bloc> {
   late Stream<bool> _stream;
   Duration periodDuration;
   bool isRun = true;
+  int autoPauseSeconds;
   Future<bool> Function() callBack;
   Function finishCallBack;
- // T? blocListener;
- // dynamic blocUpdateEvent;
 
   StreamItem({
     required this.identifier,
     required this.callBack,
     required this.finishCallBack,
     required this.periodDuration,
-   // required this.blocListener,
-   // required this.blocUpdateEvent,
+    required this.autoPauseSeconds,
   }) {
     _stream = callLoop().asBroadcastStream();
   }
@@ -92,14 +91,10 @@ class StreamItem<T extends Bloc> {
     isRun = false;
   }
 
- // changeListener(T? blocListener){
- //   this.blocListener = blocListener;
- // }
-
   Stream<bool> callLoop() async* {
     while (isRun) {
       yield await Future.delayed(periodDuration).then((_) async {
-        if (isRun) {
+        if (isRun && (autoPauseSeconds == 0 ||ServiceBackgroundKeyListener.noActionSecondTimer < autoPauseSeconds)) {
           if (!(await callBack.call())) {
             finishCallBack.call();
           }

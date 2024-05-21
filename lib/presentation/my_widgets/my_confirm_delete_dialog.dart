@@ -43,20 +43,3 @@ class MyConfirmDeleteDialog extends StatelessWidget {
     );
   }
 }
-
-// showDialog(
-//   context: context,
-//   builder: (BuildContext context) {
-//     return MyConfirmDeleteDialog(
-//       contentMessage: 'Вы уверены, что хотите удалить элемент?',
-//       onConfirm: () {
-//         // Обработка подтверждения удаления
-//       },
-//       onCancel: () {
-//         // Обработка отмены удаления
-//       },
-//     );
-//   },
-// );
-
-

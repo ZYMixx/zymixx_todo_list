@@ -13,30 +13,31 @@ class ServiceWindowManager extends WindowListener {
   static bool isIgnoreMouseEvent = false;
   static bool isHide = false;
 
-  Future<void> testHideBG() async{
+  Future<void> testHideBG() async {
     Log.i('triger');
-    if (isHide){
+    if (isHide) {
       await windowManager.setIgnoreMouseEvents(false);
       isHide = false;
     } else {
-     await windowManager.setIgnoreMouseEvents(true);
-     await windowManager.setBackgroundColor(Colors.transparent);
+      await windowManager.setIgnoreMouseEvents(true);
+      await windowManager.setBackgroundColor(Colors.transparent);
       isHide = true;
     }
     await windowManager.ensureInitialized();
   }
 
   init() {
-    setWindowOnTop();
+    //setWindowOnTop();
     //setListener();
     position();
-    windowManager.setBackgroundColor(Colors.transparent);
     windowManager.ensureInitialized();
-    Future.delayed(Duration(milliseconds: 500)).then((_) {
-      windowManager.setAsFrameless();
-      windowManager.setAlwaysOnTop(true);
-      windowManager.ensureInitialized();
-    });
+    //windowManager.setBackgroundColor(Colors.transparent);
+    //windowManager.ensureInitialized();
+    // Future.delayed(Duration(milliseconds: 500)).then((_) {
+    // windowManager.setAsFrameless();
+    //  windowManager.setAlwaysOnTop(true);
+    //  windowManager.ensureInitialized();
+    // });
   }
 
   setListener() {
@@ -54,9 +55,9 @@ class ServiceWindowManager extends WindowListener {
   }
 
   position() {
-    const initialSize = Size(500, 320);
+    const initialSize = Size(420, 600);
     win.size = initialSize;
-    win.position = Offset(1350, 30);
+    win.position = Offset(1450, 30);
     win.show();
     windowManager.setResizable(false);
   }

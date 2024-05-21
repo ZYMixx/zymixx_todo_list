@@ -8,7 +8,7 @@ import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/add_item_button.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/mu_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class DailyTodoScreen extends StatelessWidget {
   const DailyTodoScreen({super.key});
@@ -50,6 +50,15 @@ class DailyTodoWidget extends StatelessWidget {
               (element) => element.targetDateTime != null && element.targetDateTime!.isSameDay(now))
           .toList();
     }
+    dailyTodoList.sort((a, b) {
+      if (!a.isDone && b.isDone) {
+        return -1;
+      } else if (a.isDone && !b.isDone) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
     return Column(
       children: [
         if (yesterdayDailyMod)
@@ -97,6 +106,7 @@ class DailyTodoWidget extends StatelessWidget {
                 context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
               },
               onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
+              secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
               bgColor: Colors.grey,
             ),
           ),
@@ -144,7 +154,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),
           width: double.infinity,
-          height: 60,
+          height: widget.dailyTodoItem.isDone ? 40 : 60,
           decoration: BoxDecoration(
             color: widget.dailyTodoItem.isDone ? Colors.greenAccent : Colors.white70,
             border: Border.all(
@@ -165,6 +175,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
               context.read<DailyTodoBloc>().add(DeleteDailyEvent(
                   itemId: widget.dailyTodoItem.id,
                   context: context,
+                  content: widget.dailyTodoItem.content,
                   title: widget.dailyTodoItem.title));
             },
             child: Stack(
@@ -348,14 +359,4 @@ List<String> getWeekdayNames(List<dynamic> weekdays) {
     }
     return weekdayNames[day - 1];
   }).toList();
-}
-
-extension DateTimeExtension on DateTime {
-  bool isSameDay(DateTime date) {
-    if (date.day == this.day && date.month == this.month && date.year == this.year) {
-      return true;
-    } else {
-      return false;
-    }
-  }
 }
