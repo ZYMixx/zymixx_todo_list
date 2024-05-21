@@ -21,7 +21,7 @@
 ---
 <div style="display: flex; justify-content: space-between;">
     <img src="https://s12.gifyu.com/images/SfIgz.gif" width="40%">
-    <img src="https://s12.gifyu.com/images/SfIRY.md.gif" width="45%">
+    <img src="https://s12.gifyu.com/images/SfIRY.gif" width="45%">
 </div>
 
 ---
