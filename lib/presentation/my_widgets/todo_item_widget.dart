@@ -519,7 +519,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                       color: Colors.black26,
                       blurRadius: 2.0,
                       spreadRadius: 1.0,
-                      offset: Offset(0, 0), // changes position of shadow
+                      offset: Offset(0, 0),
                     ),
                   ],
                 ),

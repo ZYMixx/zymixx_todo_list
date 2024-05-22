@@ -310,7 +310,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                   color: Colors.black26,
                   blurRadius: 2.0,
                   spreadRadius: 2.0,
-                  offset: Offset(0, 0), // changes position of shadow
+                  offset: Offset(0, 0),
                 ),
               ]),
           child: Row(
@@ -326,7 +326,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                           color: Colors.black26,
                           blurRadius: 1.0,
                           spreadRadius: 1.0,
-                          offset: Offset(0, 0), // changes position of shadow
+                          offset: Offset(0, 0),
                         ),
                       ]),
                   child: Column(
@@ -389,7 +389,7 @@ class _DataTodoItemState extends State<DataTodoItem> {
                           color: Colors.black26,
                           blurRadius: 1.0,
                           spreadRadius: 1.0,
-                          offset: Offset(0, 0), // changes position of shadow
+                          offset: Offset(0, 0),
                         ),
                       ]),
                       child: MyAnimatedCard(

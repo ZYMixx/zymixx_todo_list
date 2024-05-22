@@ -55,7 +55,7 @@ class ServiceWindowManager extends WindowListener {
   }
 
   position() {
-    const initialSize = Size(420, 600);
+    const initialSize = Size(460, 660);
     win.size = initialSize;
     win.position = Offset(1450, 30);
     win.show();

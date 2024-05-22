@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
-import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class CreateDailyWidget extends StatefulWidget {
@@ -60,7 +58,7 @@ class _CreateDailyWidgetState extends State<CreateDailyWidget> with TickerProvid
                               color: Colors.black.withOpacity(0.3),
                               blurRadius: 6.0,
                               spreadRadius: 4.0,
-                              offset: Offset(0, 2), // changes position of shadow
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
@@ -106,7 +104,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 400), // Общая длительность анимации
+      duration: Duration(milliseconds: 400),
     );
     _animation1 = Tween<double>(
       begin: 0.0,
@@ -114,7 +112,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.4, 0.7), // Виджет 1 появляется сразу
+        curve: Interval(0.4, 0.7),
       ),
     );
     _animation2 = Tween<double>(
@@ -123,7 +121,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.5, 0.8), // Задержка для второго виджета
+        curve: Interval(0.5, 0.8),
       ),
     );
     _animation3 = Tween<double>(
@@ -132,7 +130,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.6, 0.9), // Задержка для третьего виджета
+        curve: Interval(0.6, 0.9),
       ),
     );
     _animation4 = Tween<double>(
@@ -141,7 +139,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Interval(0.7, 1.0), // Задержка для четвёртого виджета
+        curve: Interval(0.7, 1.0),
       ),
     );
     _controller.forward();
@@ -163,7 +161,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                     color: Colors.black.withOpacity(0.45),
                     blurRadius: 4.0,
                     spreadRadius: 2.0,
-                    offset: Offset(0, 2), // changes position of shadow
+                    offset: Offset(0, 2),
                   ),
                 ],
                 borderRadius: BorderRadius.circular(10.0),
@@ -201,7 +199,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                           color: Colors.black.withOpacity(0.45),
                           blurRadius: 4.0,
                           spreadRadius: 2.0,
-                          offset: Offset(0, 0), // changes position of shadow
+                          offset: Offset(0, 0),
                         ),
                       ],
                       borderRadius: BorderRadius.circular(10.0),
@@ -246,7 +244,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                           color: Colors.black.withOpacity(0.45),
                           blurRadius: 4.0,
                           spreadRadius: 2.0,
-                          offset: Offset(0, 0), // changes position of shadow
+                          offset: Offset(0, 0),
                         ),
                       ],
                       borderRadius: BorderRadius.circular(10.0),
@@ -323,7 +321,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                     color: Colors.black.withOpacity(0.45),
                     blurRadius: 2.5,
                     spreadRadius: 1.5,
-                    offset: Offset(0, 2), // changes position of shadow
+                    offset: Offset(0, 2),
                   ),
                 ],
                 borderRadius: BorderRadius.circular(10.0),
@@ -487,7 +485,7 @@ class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: Offset(0, 2), // changes position of shadow
+                    offset: Offset(0, 2),
                   ),
                 ],
               ),
@@ -579,12 +577,12 @@ class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
                         color: Colors.grey.withOpacity(0.5),
                         spreadRadius: 2,
                         blurRadius: 5,
-                        offset: Offset(0, 2), // changes position of shadow
+                        offset: Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Text(
-                    _getWeekday(i),
+                    i.toString(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -597,18 +595,5 @@ class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
         ),
       ],
     );
-  }
-
-  String _getWeekday(int index) {
-    switch (index) {
-      case 1:
-        return '1';
-      case 2:
-        return '2';
-      case 3:
-        return '3';
-      default:
-        return '';
-    }
   }
 }
