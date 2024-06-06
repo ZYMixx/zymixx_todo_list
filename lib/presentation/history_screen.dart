@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
@@ -40,12 +41,16 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
       itemBuilder: (context, index) {
         DateTime date = dates[index];
         List<TodoItem> items = groupedMap[date]!;
+        int allSecondsSpent = items.fold(0, (previousValue, element) => previousValue + element.secondsSpent);
         List<Widget> itemWidgets = items.map((item) => TodoHistoryItem(todoItem: item)).toList();
-        return MyExpansionPanel(
-          listWidget: itemWidgets,
-          panelTitle:
-              '${ToolDateFormatter.formatToMonthDayWeek(date) ?? 'No Date'}_ ${items.length} _ ${'77'} min',
-          widgetHeight: 45,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1),
+          child: MyExpansionPanel(
+            listWidget: itemWidgets,
+            panelTitle:
+                '${ToolDateFormatter.formatToMonthDayWeek(date) ?? 'No Date'}_ ${items.length} _ ${(allSecondsSpent/60).toInt()} min',
+            widgetHeight: 45,
+          ),
         );
       },
     );
@@ -91,7 +96,7 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
             color: isClicked
                 ? Colors.grey[200]
                 : socialHistory
-                    ? Colors.orangeAccent[100]
+                    ? ToolThemeData.specialItemColor
                     : Colors.blue[100],
             border: Border.all(color: Colors.deepPurple),
             borderRadius: BorderRadius.circular(4),

@@ -9,6 +9,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   keyboard_event
   screen_retriever
   sqlite3_flutter_libs
+  system_tray
   window_manager
 )
 

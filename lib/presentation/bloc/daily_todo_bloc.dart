@@ -100,7 +100,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
       StreamControllerService.stopStream(state.activeTimerIdentifier!);
       state.activeDailyItemGetter = null;
       state.activeTimerIdentifier = null;
-      ToolShowToast.showError('Был остановлен другой активный Dealy.');
+      ToolShowToast.showError('Был остановлен другой активный Daily.');
       return;
     }
     if (StreamControllerService.stopStream(timerIdentifier)) {

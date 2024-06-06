@@ -28,11 +28,13 @@ class ServiceStatisticData {
 
   static Future<List<StatisticDayHolder>> _requestDaysStat( List<TodoItem> todoItemList) async {
     Map<String, List<TodoItem>> dayMap = {};
+    Map<String, bool> mondayMap = {};
     for (var todoItem in todoItemList) {
       DateTime date = todoItem.targetDateTime!;
       dayMap.putIfAbsent(_calculateDayName(date), () => []).add(todoItem);
+      mondayMap.putIfAbsent(_calculateDayName(date), () => date.weekday == 1);
     }
-    return _calculateDaysDateHolder(dayMap);
+    return _calculateDaysDateHolder(dayMap, mondayMap);
   }
 
   static int _storyCost = 60 * 60;
@@ -51,6 +53,14 @@ class ServiceStatisticData {
       int weekScore = 0;
       DateTime today = DateTime.now();
       for (var item in itemList) {
+        int? prise;
+        try {
+          dynamic data = jsonDecode(item.content);
+          if (data is Map<String, dynamic> && data.containsKey('prise')) {
+            prise = data['prise'];
+          }
+        } catch (e) {
+        }
         if (item.category == EnumTodoCategory.daily.name &&
             !item.targetDateTime!.isSameDay(today) &&
             item.isDone == false) {
@@ -60,8 +70,8 @@ class ServiceStatisticData {
         // дэйлики с наградой
         if (item.category == EnumTodoCategory.daily.name &&
             item.isDone == true &&
-            item.content != '') {
-          weekScore += (int.tryParse(item.content) ?? 0) * 60;
+            prise != null) {
+          weekScore += (prise) * 60;
         }
         if (item.category == EnumTodoCategory.history_social.name) {
           storyItems++;
@@ -90,7 +100,7 @@ class ServiceStatisticData {
     return statisticHolderList;
   }
 
-  static List<StatisticDayHolder> _calculateDaysDateHolder(Map<String, List<TodoItem>> dayMap) {
+  static List<StatisticDayHolder> _calculateDaysDateHolder(Map<String, List<TodoItem>> dayMap, Map<String, bool> mondayMap) {
     List<StatisticDayHolder> statisticDayHolderList = [];
     for (var dayStringKey in dayMap.keys) {
       List<TodoItem> itemList = dayMap[dayStringKey]!;
@@ -115,9 +125,7 @@ class ServiceStatisticData {
         if (item.category == EnumTodoCategory.daily.name &&
             item.isDone == true &&
             prise != null) {
-          Log.e('change deaily on $prise from $dayScore' );
           dayScore += prise  * 60;
-          Log.e('to $dayScore');
 
         }
         if (item.category == EnumTodoCategory.history_social.name) {
@@ -134,11 +142,13 @@ class ServiceStatisticData {
       String scoreString = (dayScore / 3600).toStringAsFixed(1);
       double finalDayScore = double.parse(scoreString);
       statisticDayHolderList.add(
-        StatisticDayHolder(dayName: dayName, dayScore: finalDayScore),
+        StatisticDayHolder(dayName: dayName, dayScore: finalDayScore, isMonday: mondayMap[dayName]!),
       );
     }
     return statisticDayHolderList;
   }
+
+
 
   static String _calculateWeek(DateTime itemDate) {
     DateTime monday = itemDate.subtract(Duration(days: itemDate.weekday - 1));
@@ -157,6 +167,7 @@ class ServiceStatisticData {
     String formattedMonday = dateFormat.format(itemDate);
     return '$formattedMonday';
   }
+
 }
 
 class StatisticWeekHolder {
@@ -178,10 +189,12 @@ class StatisticWeekHolder {
 class StatisticDayHolder {
   String dayName;
   double dayScore;
+ bool isMonday;
 
   StatisticDayHolder({
     required this.dayName,
     required this.dayScore,
+    required this.isMonday,
   });
 }
 

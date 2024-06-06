@@ -36,7 +36,7 @@ class AddItemButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: bgColor ?? Colors.green,
             border: Border.all(
-              color: Colors.red,
+              color: ToolThemeData.itemBorderColor,
             ),
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),

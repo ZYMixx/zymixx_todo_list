@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import '../../presentation/App.dart';
 
 class ToolShowToast {
@@ -26,7 +27,7 @@ class ToolShowToast {
             message,
           ),
           duration: Duration(seconds: duration ?? 3),
-          backgroundColor: Colors.redAccent.withOpacity(0.8),
+          backgroundColor: ToolThemeData.itemBorderColor.withOpacity(0.8),
           elevation: 0,
           behavior: SnackBarBehavior.floating,
         ),

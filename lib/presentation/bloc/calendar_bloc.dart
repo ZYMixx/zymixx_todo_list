@@ -28,20 +28,22 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
     on<DoneCalendarItemEvent>((event, emit) async {
-      await _daoDatabase.insertTodoItem(
-          event.todoItem.copyWith(isDone: true, category: EnumTodoCategory.history.name));
+      if (event.todoItem.category == EnumTodoCategory.social.name) {
+        await _daoDatabase.insertTodoItem(
+            event.todoItem.copyWith(isDone: true, category: EnumTodoCategory.history_social.name));
+      } else {
+        await _daoDatabase.insertTodoItem(
+            event.todoItem.copyWith(isDone: true, category: EnumTodoCategory.history.name));
+      }
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
     on<SetStoryCalendarItemEvent>((event, emit) async {
       if (event.todoItem.category == EnumTodoCategory.social.name) {
-        await _daoDatabase.editTodoItemById(
-            id: event.todoItem.id, category: EnumTodoCategory.active.name);
-        Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+        await _daoDatabase.insertTodoItem(event.todoItem..category = EnumTodoCategory.active.name);
       } else {
-        await _daoDatabase.editTodoItemById(
-            id: event.todoItem.id, category: EnumTodoCategory.social.name);
-        Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+        await _daoDatabase.insertTodoItem(event.todoItem..category = EnumTodoCategory.social.name);
       }
+      Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
   }
 
@@ -63,7 +65,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
         child: ChooseDateWidget(),
       );
       if (userInput != null) {
-        await _daoDatabase.editTodoItemById(id: event.todoItemId, targetDateTime: userInput!);
+        await _daoDatabase.insertTodoItem(event.todoItem..targetDateTime = userInput!);
         Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
       }
     }
@@ -134,10 +136,10 @@ class SelectDateEvent extends CalendarEvent {
 
 class ChangeTodoDateEvent extends CalendarEvent {
   BuildContext _context;
-  int todoItemId;
+  TodoItem todoItem;
 
   ChangeTodoDateEvent({
     required BuildContext context,
-    required this.todoItemId,
+    required this.todoItem,
   }) : _context = context;
 }

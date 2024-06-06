@@ -11,33 +11,29 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 class ServiceWindowManager extends WindowListener {
   static final win = appWindow;
   static bool isIgnoreMouseEvent = false;
-  static bool isHide = false;
-
-  Future<void> testHideBG() async {
-    Log.i('triger');
-    if (isHide) {
-      await windowManager.setIgnoreMouseEvents(false);
-      isHide = false;
-    } else {
-      await windowManager.setIgnoreMouseEvents(true);
-      await windowManager.setBackgroundColor(Colors.transparent);
-      isHide = true;
-    }
-    await windowManager.ensureInitialized();
-  }
+  static bool isHided = false;
 
   init() {
-    //setWindowOnTop();
-    //setListener();
-    position();
+    windowManager.setAsFrameless();
+    windowManager.setAlwaysOnTop(true);
+    windowManager.setBackgroundColor(Colors.transparent);
     windowManager.ensureInitialized();
-    //windowManager.setBackgroundColor(Colors.transparent);
-    //windowManager.ensureInitialized();
-    // Future.delayed(Duration(milliseconds: 500)).then((_) {
-    // windowManager.setAsFrameless();
-    //  windowManager.setAlwaysOnTop(true);
-    //  windowManager.ensureInitialized();
-    // });
+     Future.delayed(Duration(milliseconds: 1500)).then((_) {
+       windowManager.setAsFrameless();
+      windowManager.setAlwaysOnTop(true);
+     windowManager.setBackgroundColor(Colors.transparent);
+      windowManager.ensureInitialized();
+     });
+  }
+
+  static onHideWindowPressed(){
+    if (isHided){
+      windowManager.show();
+      isHided = false;
+    } else {
+      windowManager.hide();
+      isHided = true;
+    }
   }
 
   setListener() {
@@ -54,12 +50,19 @@ class ServiceWindowManager extends WindowListener {
     windowManager.setAlwaysOnTop(true);
   }
 
-  position() {
-    const initialSize = Size(460, 660);
-    win.size = initialSize;
-    win.position = Offset(1450, 30);
-    win.show();
-    windowManager.setResizable(false);
+  static Future<void> position() async {
+    const initialSize = Size(450, 720);
+    //win.size = initialSize;
+    windowManager.setSize(initialSize);
+
+    //win.position = Offset(1450, 30);
+   // win.show();
+   // win.restore();
+    //return  await windowManager.setResizable(false);
+  }
+  static Future<void> workModPosition() async {
+    const initialSize = Size(440, 43);
+    windowManager.setSize(initialSize);
   }
 }
 

@@ -1,9 +1,66 @@
 #include "flutter_window.h"
 
 #include <optional>
-
 #include "flutter/generated_plugin_registrant.h"
 
+#include <windows.h> // zymixx
+#include <flutter/method_channel.h> //zymixx
+#include <flutter/standard_method_codec.h> //zymixx
+#include <iostream> // Для использования std::cout
+#include <flutter/method_call.h>
+
+void SimulateMouseClick() {
+    POINT cursorPos;
+
+    // Получить текущие координаты курсора
+    if (GetCursorPos(&cursorPos)) {
+        int x = cursorPos.x;
+        int y = cursorPos.y;
+
+        Sleep(30); // 30 мс задержка, можно настроить при необходимости
+
+        // Получение разрешения экрана
+        int screenX = GetSystemMetrics(SM_CXSCREEN);
+        int screenY = GetSystemMetrics(SM_CYSCREEN);
+
+        // Первый клик: нажатие
+        INPUT input = {0};
+
+        ZeroMemory(&input, sizeof(INPUT));
+        input.type = INPUT_MOUSE;
+        input.mi.dx = MulDiv(x, 65536, screenX);
+        input.mi.dy = MulDiv(y, 65536, screenY);
+        input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN;
+        SendInput(1, &input, sizeof(INPUT));
+
+        Sleep(25);
+
+        // Второй клик: отпускание
+        ZeroMemory(&input, sizeof(INPUT));
+        input.type = INPUT_MOUSE;
+        input.mi.dx = MulDiv(x, 65536, screenX);
+        input.mi.dy = MulDiv(y, 65536, screenY);
+        input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTUP;
+        SendInput(1, &input, sizeof(INPUT));
+
+        ZeroMemory(&input, sizeof(INPUT));
+        input.type = INPUT_MOUSE;
+        input.mi.dx = MulDiv(x, 65536, screenX);
+        input.mi.dy = MulDiv(y, 65536, screenY);
+        input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTDOWN;
+        SendInput(1, &input, sizeof(INPUT));
+
+        Sleep(25);
+
+        // Второй клик: отпускание
+        ZeroMemory(&input, sizeof(INPUT));
+        input.type = INPUT_MOUSE;
+        input.mi.dx = MulDiv(x, 65536, screenX);
+        input.mi.dy = MulDiv(y, 65536, screenY);
+        input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE | MOUSEEVENTF_LEFTUP;
+        SendInput(1, &input, sizeof(INPUT));
+    }
+}
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
@@ -34,6 +91,28 @@ bool FlutterWindow::OnCreate() {
   // Flutter can complete the first frame before the "show window" callback is
   // registered. The following call ensures a frame is pending to ensure the
   // window is shown. It is a no-op if the first frame hasn't completed yet.
+
+    auto engine = flutter_controller_->engine();
+    if (engine) {
+        HWND hwnd = GetHandle();
+        ShowWindow(hwnd, SW_MAXIMIZE);
+
+        flutter::MethodChannel<> channel(
+                engine->messenger(), "ru.zymixx/simulateMouseClick",
+                &flutter::StandardMethodCodec::GetInstance()
+        );
+
+        channel.SetMethodCallHandler(
+                [hwnd](const flutter::MethodCall<>& call, std::unique_ptr<flutter::MethodResult<>> result) {
+                    if (call.method_name() == "simulateMouseClick") {
+                        SimulateMouseClick();
+                        result->Success();
+                    } else {
+                        result->NotImplemented();
+                    }
+                }
+        );
+    }
   flutter_controller_->ForceRedraw();
 
   return true;

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
@@ -23,30 +25,33 @@ class StatisticWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.find<AllItemControlBloc>().state.todoActiveItemList;
-    return FutureBuilder(
-      future: ServiceStatisticData.requestData(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          Log.e(" snapshot.data ${snapshot.data}");
-          return Column(
-            children: [
-              LineChartSample(
+    return DecoratedBox(
+      decoration: ToolThemeData.defBGImageBoxDecoration,
+      child: FutureBuilder(
+        future: ServiceStatisticData.requestData(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            Log.e(" snapshot.data ${snapshot.data}");
+            return Column(
+              children: [
+                LineChartSample(
+                    weekData: snapshot.data![ServiceStatisticData.weekKey],
+                    dayData: snapshot.data![ServiceStatisticData.dayKey]),
+                DataTableWidget(
                   weekData: snapshot.data![ServiceStatisticData.weekKey],
-                  dayData: snapshot.data![ServiceStatisticData.dayKey]),
-              DataTableWidget(
-                weekData: snapshot.data![ServiceStatisticData.weekKey],
+                ),
+              ],
+            );
+          } else {
+            return Center(
+              child: Text(
+                'Build Statistic..',
+                style: TextStyle(color: Colors.white),
               ),
-            ],
-          );
-        } else {
-          return Center(
-            child: Text(
-              'Build Statistic..',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
-        }
-      },
+            );
+          }
+        },
+      ),
     );
   }
 }
@@ -80,18 +85,18 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
 
   @override
   void initState() {
-    var weekList = widget.weekData.toList();
-    var dayList = widget.dayData.toList();
+    //выравниваем порядок и берём только часть от общего пула
+    var weekList = widget.weekData.reversed.toList().sublist(widget.weekData.length > 8 ? widget.weekData.length - 8 : 0);
+    var dayList = widget.dayData.reversed.toList().sublist(widget.dayData.length > 12 ? widget.dayData.length - 12 : 0);
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
     );
-    //выравниваем порядок и берём только часть от общего пула
     for (var i = 0; i < (weekList.length >= 8 ? 8 : weekList.length); i++) {
-      weekStatisticMap[i] = weekList[weekList.length - 1 - i];
+      weekStatisticMap[i] = weekList[i];
     }
-    for (var i = 0; i < (dayList.length >= 14 ? 14 : dayList.length); i++) {
-      dayStatisticMap[i] = dayList[dayList.length - 1 - i];
+    for (var i = 0; i < (dayList.length >= 12 ? 12 : dayList.length); i++) {
+      dayStatisticMap[i] = dayList[i];
     }
     super.initState();
   }
@@ -211,13 +216,9 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       case 20:
         text = '20h';
         break;
-      case 30:
-        text = '30h';
-        break;
       default:
         return Container();
     }
-
     return Text(text, style: style, textAlign: TextAlign.left);
   }
 
@@ -259,7 +260,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       minX: 0,
       maxX: 8,
       minY: 0,
-      maxY: 40,
+      maxY: 30,
       lineBarsData: [
         LineChartBarData(
           spots: listFLSpot,
@@ -269,7 +270,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
           dotData: FlDotData(
               show: true,
               getDotPainter: (q, w, e, r) => FlDotCirclePainter(
-                    color: Colors.purpleAccent,
+                    color: ToolThemeData.highlightColor,
                     radius: 5,
                   )),
           belowBarData: BarAreaData(
@@ -285,16 +286,21 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
 
   Widget bottomTitleDayByDay(double value, TitleMeta meta) {
     //ii day
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-    );
-    Widget text;
     StatisticDayHolder? statHolder = dayStatisticMap[value.toInt()];
+    bool isMonday = true;
+
+    Widget text;
+
+    // Check if the day is Monday (in Dart, Monday is represented by 1)
     if (statHolder != null) {
-      text = Text('${statHolder.dayName}-');
+      TextStyle style = TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 12,
+        color: statHolder.isMonday ? Colors.orange[800] : null,
+      );
+      text = Text('${statHolder.dayName}-', style: style,);
     } else {
-      text = const Text('', style: style);
+      text = Text('');
     }
     return SideTitleWidget(
       axisSide: meta.axisSide,
@@ -319,9 +325,6 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
         break;
       case 4:
         text = '4h';
-        break;
-      case 6:
-        text = '6h';
         break;
       default:
         return Container();
@@ -369,7 +372,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       minX: 0,
       maxX: 12,
       minY: 0,
-      maxY: 8,
+      maxY: 6,
       lineBarsData: [
         LineChartBarData(
           spots: listFLSpot,
@@ -379,7 +382,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
           dotData: FlDotData(
               show: true,
               getDotPainter: (q, w, e, r) => FlDotCirclePainter(
-                    color: Colors.purpleAccent,
+                    color: ToolThemeData.highlightColor,
                     radius: 5,
                   )),
           belowBarData: BarAreaData(

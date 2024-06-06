@@ -1,10 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 
 class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
+  final DaoDatabase _daoDB = DaoDatabase();
+
   ListTodoScreenBloc() : super(ListTodoState(primaryPositionList: [])) {
     GlobalDbDao.broadcastActiveTodoStream.listen((newList) {
       if (newList.isNotEmpty) {
@@ -26,12 +30,18 @@ class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
     on<ChangeTodayOnlyModEvent>((event, emit) async {
       emit(await state.copyWith(isShowTodayOnlyMod: event.isShowTodayOnlyMod));
     });
-
     on<ChangeOrderEvent>((event, emit) async {
-      List<int> list = [...?state._primaryPositionList];
-      var movedId = list[event.movedItemPos];
-      list.removeAt(event.movedItemPos);
-      list.insertAll(event.replacedItemPos, [movedId]);
+      List<int> list = [...state._primaryPositionList];
+      int replacePos = list.indexWhere((element) => element == event.replacedItemId);
+      list.removeWhere((element) => element == event.movedItemId);
+      list.insertAll(replacePos, [event.movedItemId]);
+      emit(await state.copyWith(primaryPositionList: list));
+    });
+    on<SetSpinWinnerEvent>((event, emit) async {
+      await _daoDB.editTodoItemById(id: event.movedItemId, targetDateTime: DateTime.now());
+      List<int> list = [...state._primaryPositionList];
+      list.remove(event.movedItemId);
+      list.insert(0, event.movedItemId);
       emit(await state.copyWith(primaryPositionList: list));
     });
   }
@@ -58,7 +68,9 @@ class ListTodoState {
           [];
       List<int> remainPosId = filteredTodoItemList.map((e) => e.id).toList();
       secondPosItemList = [..._primaryPositionList];
-      return secondPosItemList..removeWhere((element) => !remainPosId.contains(element));
+      var x = secondPosItemList..removeWhere((element) => !remainPosId.contains(element));
+      Log.i('send $x');
+      return x;
     } else {
       return _primaryPositionList;
     }
@@ -98,12 +110,19 @@ class ChangeTodayOnlyModEvent extends ListTodoEvent {
 }
 
 class ChangeOrderEvent extends ListTodoEvent {
-  int replacedItemPos;
-  int movedItemPos;
+  int replacedItemId;
+  int movedItemId;
 
   ChangeOrderEvent({
-    required this.replacedItemPos,
-    required this.movedItemPos,
+    required this.replacedItemId,
+    required this.movedItemId,
+  });
+}
+class SetSpinWinnerEvent extends ListTodoEvent {
+  int movedItemId;
+
+  SetSpinWinnerEvent({
+    required this.movedItemId,
   });
 }
 

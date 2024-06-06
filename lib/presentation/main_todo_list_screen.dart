@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
@@ -41,106 +43,118 @@ class ItemBoxWidget extends StatelessWidget {
         context.select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList);
     List<int> posItemList =
         context.select((ListTodoScreenBloc bloc) => bloc.state.getPositionItemList(todoItemList));
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: ToolThemeData.itemWidth,
-        ),
-        child: Column(
-          children: [
-            todoItemList.isNotEmpty
-                ? Expanded(
-                    child: ReorderableListView.builder(
-                      onReorder: (oldItem, newItem) {
-                        if (newItem < oldItem) {
-                          Get.find<ListTodoScreenBloc>().add(
-                              ChangeOrderEvent(replacedItemPos: newItem, movedItemPos: oldItem));
-                        } else {
-                          Get.find<ListTodoScreenBloc>().add(ChangeOrderEvent(
-                              replacedItemPos: newItem - 1, movedItemPos: oldItem));
-                        }
-                      },
-                      itemCount: posItemList.length,
-                      padding: EdgeInsets.only(bottom: 15),
-                      itemBuilder: (context, itemId) {
-                        var orderedItem;
-                        if (todoItemList.isNotEmpty) {
-                          orderedItem =
-                              todoItemList.firstWhere((item) => item.id == posItemList[itemId]);
-                        }
-                        return BlocProvider(
-                          create: (_) => Get.find<AllItemControlBloc>(),
-                          key: ValueKey(orderedItem),
-                          child: Material(
-                            color: Colors.black,
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: TodoItemWidget(
-                                todoItem: orderedItem,
+    return Theme(
+      data: ThemeData(canvasColor: Colors.transparent),
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: DecoratedBox(
+          decoration: ToolThemeData.defBGImageBoxDecoration,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: ToolThemeData.itemWidth,
+            ),
+            child: Column(
+              children: [
+                todoItemList.isNotEmpty
+                    ? Expanded(
+                        child: ReorderableListView.builder(
+                          onReorder: (oldItem, newItem) {
+                            if (newItem < oldItem) {
+                              Get.find<ListTodoScreenBloc>().add(
+                                  ChangeOrderEvent(replacedItemId: posItemList[newItem], movedItemId: posItemList[oldItem]));
+                            } else {
+                              Get.find<ListTodoScreenBloc>().add(ChangeOrderEvent(
+                                  replacedItemId: posItemList[newItem-1], movedItemId: posItemList[oldItem]));
+                            }
+                          },
+                          itemCount: posItemList.length,
+                          padding: EdgeInsets.only(bottom: 15),
+                          itemBuilder: (context, itemId) {
+                            var orderedItem;
+                            if (todoItemList.isNotEmpty) {
+                              orderedItem =
+                                  todoItemList.firstWhere((item) => item.id == posItemList[itemId]);
+                            }
+                            return BlocProvider(
+                              create: (_) => Get.find<AllItemControlBloc>(),
+                              key: ValueKey(orderedItem),
+                              child: Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: TodoItemWidget(
+                                  todoItem: orderedItem,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Expanded(
+                        child: Center(
+                            child: Text(
+                          'No Deal At All',
+                          style: TextStyle(color: Colors.white),
+                        )),
+                      ),
+                DecoratedBox(
+                      decoration: BoxDecoration(
+                      color: Colors.black12
+                      ),
+                  child: Container(
+                    height: 26,
+                    decoration: BoxDecoration(
+                      border: Border(top: BorderSide(width: 2, color: Colors.black26)),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        MyAnimatedCard(
+                          intensity: 0.005,
+                          directionUp: false,
+                          child: InkWell(
+                            onTap: () => context
+                                .read<ListTodoScreenBloc>()
+                                .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                            splashColor: Colors.transparent,
+                            child: Text(
+                              '${ToolDateFormatter.formatToMonthDayWeek(DateTime.now())}',
+                              style: TextStyle(
+                                color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  )
-                : Expanded(
-                    child: Center(
-                        child: Text(
-                      'No Deal At All',
-                      style: TextStyle(color: Colors.white),
-                    )),
-                  ),
-            Container(
-              height: 26,
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  MyAnimatedCard(
-                    intensity: 0.005,
-                    directionUp: false,
-                    child: InkWell(
-                      onTap: () => context
-                          .read<ListTodoScreenBloc>()
-                          .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                      splashColor: Colors.transparent,
-                      child: Text(
-                        '${ToolDateFormatter.formatToMonthDayWeek(DateTime.now())}',
-                        style: TextStyle(
-                          color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
                         ),
-                      ),
+                        MyAnimatedCard(
+                          intensity: 0.005,
+                          directionUp: false,
+                          child: InkWell(
+                            onTap: () => context
+                                .read<ListTodoScreenBloc>()
+                                .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                            splashColor: Colors.transparent,
+                            child: Icon(
+                              Icons.today,
+                              color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  MyAnimatedCard(
-                    intensity: 0.005,
-                    directionUp: false,
-                    child: InkWell(
-                      onTap: () => context
-                          .read<ListTodoScreenBloc>()
-                          .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                      splashColor: Colors.transparent,
-                      child: Icon(
-                        Icons.today,
-                        color: isShowTodayOnlyMod ? Colors.green[400]! : Colors.grey,
-                      ),
-                    ),
+                ),
+                ColoredBox(
+                  color: Colors.black12,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom : 4, right: 8, left: 8),
+                    child: AddItemButton(
+                        onTapAction: () => Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
+                        onLongTapAction: () => Get.find<AllItemControlBloc>().add(DellAllItemEvent())),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Opacity(
-              opacity: 1,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-                child: AddItemButton(
-                    onTapAction: () => Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
-                    onLongTapAction: () => Get.find<AllItemControlBloc>().add(DellAllItemEvent())),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

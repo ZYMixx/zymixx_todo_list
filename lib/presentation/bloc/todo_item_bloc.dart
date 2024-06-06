@@ -20,13 +20,19 @@ import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 enum TimeModEnum { timer, stopwatch, none }
 
 class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
-  final _daoDatabase = DaoDatabase();
+  final _daoDatabase;
   late String timerIdentifier;
   late String stopwatchIdentifier;
 
   TodoItemBloc({required TodoItem todoItem, Key? key})
-      : super(TodoItemBlocState(todoItem: todoItem)) {
-    //grp TimeEvent
+      : _daoDatabase = DaoDatabase(),
+        timerIdentifier = "${todoItem.id.toString()}_timer",
+        stopwatchIdentifier = "${todoItem.id.toString()}_stopwatch",
+        super(TodoItemBlocState(todoItem: todoItem)) {
+    _initialize();
+  }
+
+  void _initialize() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       resumeBloc();
     });
@@ -35,47 +41,23 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         this.add(ChangeModEvent(isChangeMod: true));
       });
     }
-    timerIdentifier = "${state.todoItemId.toString()}_timer";
-    stopwatchIdentifier = "${state.todoItemId.toString()}_stopwatch";
-    on<RequestChangeItemDateEvent>((event, emit) => _onChangeItemDateEvent(event, emit));
-    on<TimerSecondTickEvent>((event, emit) => _onTimerSecondTickEvent(event, emit));
-    on<StopStartTimerEvent>((event, emit) => _onStopStartTimerEvent(event, emit));
-    on<StopStartStopwatchEvent>((event, emit) => _onStopStartStopwatchEvent(event, emit));
-    on<StopwatchSecondTickEvent>((event, emit) => _onStopwatchSecondTickEvent(event, emit));
-    on<ChangeTimeModEvent>((event, emit) => _onChangeTimeModEvent(event, emit));
-    on<ChangeTimerEvent>((event, emit) => _onChangeTimerEvent(event, emit));
-    on<LoseFocusEvent>((event, emit) => _onLoseFocusEvent(event, emit));
-    on<DismissEvent>((event, emit) => _onDismissEvent(event, emit));
-    on<ChangeModEvent>((event, emit) {
-      emit(state.copyWith(changeTextMod: event.isChangeMod));
-    });
-    on<StopwatchResetTimeEvent>((event, emit) {
-      _daoDatabase.editTodoItemById(id: state.todoItemId, stopwatchSeconds: 0);
-      emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: 0)));
-    });
-    on<SetItemDateEvent>((event, emit) async {
-      await _daoDatabase.editTodoItemById(
-          id: state.todoItemId, targetDateTime: event.userDateTime!);
-      emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
-    });
-    on<IncreaseItemDateEvent>((event, emit) async {
-      DateTime tDate = (await state.dbTodoItemGetter.targetDateTime)!;
-      DateTime increasedTargetDate = DateTime(tDate.year, tDate.month, tDate.day + 1);
-      await _daoDatabase.editTodoItemById(
-          id: state.todoItemId, targetDateTime: increasedTargetDate);
-      emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: increasedTargetDate)));
-    });
-    on<SetAutoPauseSeconds>((event, emit) async {
-      await _daoDatabase.editTodoItemById(
-          id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
-      emit(state.copyWith(todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
-    });
-
-    on<SetTodoItemImageEvent>((event, emit) async {
-      emit(state.copyWith(imageFile: ServiceImagePluginWork.checkFileExist(todoItem)));
-    });
+    on<RequestChangeItemDateEvent>(_onChangeItemDateEvent);
+    on<TimerSecondTickEvent>(_onTimerSecondTickEvent);
+    on<StopStartTimerEvent>(_onStopStartTimerEvent);
+    on<StopStartStopwatchEvent>(_onStopStartStopwatchEvent);
+    on<StopwatchSecondTickEvent>(_onStopwatchSecondTickEvent);
+    on<ChangeTimeModEvent>(_onChangeTimeModEvent);
+    on<ChangeTimerEvent>(_onChangeTimerEvent);
+    on<LoseFocusEvent>(_onLoseFocusEvent);
+    on<DismissEvent>(_onDismissEvent);
+    on<ChangeModEvent>(_onChangeModEvent);
+    on<StopwatchResetTimeEvent>(_onStopwatchResetTimeEvent);
+    on<SetItemDateEvent>(_onSetItemDateEvent);
+    on<IncreaseItemDateEvent>(_onIncreaseItemDateEvent);
+    on<SetAutoPauseSeconds>(_onSetAutoPauseSeconds);
+    on<SetTodoItemImageEvent>(_onSetTodoItemImageEvent);
+    on<SetTimerActiveEvent>(_onSetTimerActiveEvent);
   }
-
   @override
   Future<void> close() async {
     StreamControllerService.removeListener(identifier: timerIdentifier);
@@ -97,6 +79,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       StreamControllerService.addListener(
           subscription: streamSubscription, identifier: timerIdentifier);
       Log.i('resuscribe Timer');
+      this.add(SetTimerActiveEvent(isActive: true));
     }
     if (stopwatchStream != null) {
       this.add(ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
@@ -108,11 +91,51 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       StreamControllerService.addListener(
           subscription: streamSubscription, identifier: stopwatchIdentifier);
       Log.i('resuscribe stopwatch');
+      this.add(SetTimerActiveEvent(isActive: true));
+
     }
   }
 
   _onTimerEnd() {
+    this.add(SetTimerActiveEvent(isActive: false));
     ServiceAudioPlayer.playTimerAlert();
+  }
+
+  void _onChangeModEvent(ChangeModEvent event, Emitter<TodoItemBlocState> emit) {
+    emit(state.copyWith(changeTextMod: event.isChangeMod));
+  }
+
+  void _onStopwatchResetTimeEvent(StopwatchResetTimeEvent event, Emitter<TodoItemBlocState> emit) {
+    _daoDatabase.editTodoItemById(id: state.todoItemId, stopwatchSeconds: 0);
+    emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: 0)));
+  }
+
+  void _onSetItemDateEvent(SetItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
+    await _daoDatabase.editTodoItemById(
+        id: state.todoItemId, targetDateTime: event.userDateTime!);
+    emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
+  }
+
+  void _onIncreaseItemDateEvent(IncreaseItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
+    DateTime tDate = (await state.dbTodoItemGetter.targetDateTime)!;
+    DateTime increasedTargetDate = DateTime(tDate.year, tDate.month, tDate.day + 1);
+    await _daoDatabase.editTodoItemById(
+        id: state.todoItemId, targetDateTime: increasedTargetDate);
+    emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: increasedTargetDate)));
+  }
+
+  void _onSetAutoPauseSeconds(SetAutoPauseSeconds event, Emitter<TodoItemBlocState> emit) async {
+    await _daoDatabase.editTodoItemById(
+        id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
+    emit(state.copyWith(todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
+  }
+
+  void _onSetTodoItemImageEvent(SetTodoItemImageEvent event, Emitter<TodoItemBlocState> emit) async {
+    emit(state.copyWith(imageFile: ServiceImagePluginWork.checkFileExist(state.todoItem)));
+  }
+
+  void _onSetTimerActiveEvent(SetTimerActiveEvent event, Emitter<TodoItemBlocState> emit) async {
+    emit(state.copyWith(isTimerActive: event.isActive));
   }
 
   Future<void> _onChangeItemDateEvent(
@@ -138,6 +161,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   Future<void> _onStopStartTimerEvent(
       StopStartTimerEvent event, Emitter<TodoItemBlocState> emit) async {
     if (StreamControllerService.stopStream(timerIdentifier)) {
+      this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
     Future<bool> Function() callBack = () async {
@@ -165,16 +189,18 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     });
     StreamControllerService.addListener(
         subscription: streamSubscription, identifier: timerIdentifier);
+    this.add(SetTimerActiveEvent(isActive: true));
     StreamControllerService.stopStream(stopwatchIdentifier); //останавливаем секундомер если он был
   }
 
   Future<void> _onStopStartStopwatchEvent(StopStartStopwatchEvent event, Emitter<TodoItemBlocState> emit) async {
     if (StreamControllerService.stopStream(stopwatchIdentifier)) {
+      this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
     Future<bool> Function() callBack = () async {
       int crntSeconds = await state.dbTodoItemGetter.stopwatchSeconds;
-      if (crntSeconds == 2400) {
+      if (crntSeconds > 2400) {
         StreamControllerService.stopStream(stopwatchIdentifier);
         _onTimerEnd();
         return false;
@@ -198,7 +224,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     });
     StreamControllerService.addListener(
         subscription: streamSubscription, identifier: stopwatchIdentifier);
-    StreamControllerService.stopStream(timerIdentifier);
+    this.add(SetTimerActiveEvent(isActive: true));
+    StreamControllerService.stopStream(timerIdentifier); //останавливаем таймер если он был
   }
 
   void _onStopwatchSecondTickEvent(
@@ -235,6 +262,10 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   }
 
   Future<void> _onDismissEvent(DismissEvent event, Emitter<TodoItemBlocState> emit) async {
+    DateTime dateNow = DateTime.now();
+    if (dateNow.hour < 3){
+      dateNow = dateNow.copyWith(day: dateNow.day - 1);
+    }
     if (event.direction == DismissDirection.startToEnd) {
       //right
       if (state.todoItem.category == EnumTodoCategory.social.name){
@@ -242,14 +273,14 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
           id: state.todoItemId,
           category: EnumTodoCategory.history_social.name,
           isDone: true,
-          targetDateTime: DateTime.now(),
+          targetDateTime: dateNow,
         );
       } else {
         await _daoDatabase.editTodoItemById(
           id: state.todoItemId,
           category: EnumTodoCategory.history.name,
           isDone: true,
-          targetDateTime: DateTime.now(),
+          targetDateTime: dateNow,
         );
       }
     }
@@ -280,12 +311,14 @@ class TodoItemBlocState {
   TodoItem todoItem;
   TimeModEnum timerMod;
   bool changeTextMod;
+  bool isTimerActive;
   File? imageFile;
 
   TodoItemBlocState({
     this.timerMod = TimeModEnum.none,
     required this.todoItem,
     this.changeTextMod = false,
+    this.isTimerActive = false,
     this.imageFile,
   })  : todoItemId = todoItem.id,
         dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id) {
@@ -296,12 +329,14 @@ class TodoItemBlocState {
     TodoItem? todoItem,
     TimeModEnum? timerMod,
     bool? changeTextMod,
+    bool? isTimerActive,
     File? imageFile,
   }) {
     return TodoItemBlocState(
       todoItem: todoItem ?? this.todoItem,
       timerMod: timerMod ?? this.timerMod,
       changeTextMod: changeTextMod ?? this.changeTextMod,
+      isTimerActive: isTimerActive ?? this.isTimerActive,
       imageFile: imageFile ?? this.imageFile,
     );
   }
@@ -381,4 +416,9 @@ class SetAutoPauseSeconds extends TodoItemBlocEvent {
 class SetTodoItemImageEvent extends TodoItemBlocEvent {
 
   SetTodoItemImageEvent();
+}
+
+class SetTimerActiveEvent extends TodoItemBlocEvent {
+  bool isActive;
+  SetTimerActiveEvent({required this.isActive});
 }

@@ -13,71 +13,103 @@ import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
 import '../../domain/todo_item.dart';
 
 class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState> {
-  final DaoDatabase _daoDB = DaoDatabase();
+  final DaoDatabase _daoDB;
 
   AllItemControlBloc()
-      : super(ItemControlBlocState(
-            todoActiveItemList: [], todoDailyItemList: [], todoHistoryItemList: [])) {
+      : _daoDB = DaoDatabase(),
+        super(
+          ItemControlBlocState(
+            todoActiveItemList: [],
+            todoDailyItemList: [],
+            todoHistoryItemList: [],
+          )
+        ) {
     Log.i('init parent bloc');
     createDalyBloc();
+    _initializeEventListeners();
+  }
+
+  void _initializeEventListeners() {
     GlobalDbDao.broadcastActiveTodoStream.listen((newList) {
       this.add(LoadAllItemEvent());
     });
+
     GlobalDbDao.streamAllOtherEvent.stream.listen((newList) {
       this.add(UpdateTodoListOnlyEvent());
     });
-    on<UpdateTodoListOnlyEvent>((event, emit) async {
-      state.todoActiveItemList = await _daoDB.getActiveTodoItems();
-      state.todoDailyItemList = await _daoDB.getDailyTodoItems();
-    });
-    on<LoadAllItemEvent>((event, emit) async {
-      var itemList = await _daoDB.getActiveTodoItems();
-      var todoDailyList = await _daoDB.getDailyTodoItems();
-      var todoHistoryItemList = await _daoDB.getHistoryTodoItems();
-      ServiceImagePluginWork.loadImageData();
-      emit(state.copyWith(
-          todoActiveItemList: itemList,
-          todoDailyItemList: todoDailyList,
-          todoHistoryItemList: todoHistoryItemList));
-    });
-    on<LoadDailyItemEvent>((event, emit) async {
-      var todoDailyList = await _daoDB.getDailyTodoItems();
-      emit(state.copyWith(todoDailyItemList: todoDailyList));
-    });
-    on<AddNewItemEvent>((event, emit) async {
-      await _daoDB.insertEmptyItem(userDateTime: event.dateTime);
-    });
-    on<AddNewDailyItemEvent>((event, emit) async {
-      Map<String, dynamic> contentMap = {
-        'prise': event.prise,
-        'dailyDayList': event.dailyDayList,
-        'period': event.period,
-        '${DailyTodoBloc.delDataBaseKey}': false
-      };
-      await _daoDB.insertDailyItem(
-        title: event.name ?? '',
-        timer: event.timer,
-        autoPauseSeconds: event.autoPauseSeconds,
-        content: jsonEncode(contentMap),
-      );
-      var todoDailyList = await _daoDB.getDailyTodoItems();
-      emit(state.copyWith(todoDailyItemList: todoDailyList));
-    });
-    on<DellAllItemEvent>((event, emit) async {});
-    on<DeleteItemEvent>((event, emit) async {
-      await _daoDB.deleteTodoItem(event.todoItem);
-      this.add(LoadAllItemEvent());
-    });
-    on<ChangeItemEvent>((event, emit) async {
-      if (event.category != null) {
-        await _daoDB.editTodoItemById(
-            id: event.todoItem.id, isDone: false, category: event.category?.name);
-      } else {
-        await _daoDB.editTodoItemById(
-            id: event.todoItem.id, isDone: false, category: EnumTodoCategory.active.name);
-      }
-      this.add(LoadAllItemEvent());
-    });
+
+    on<UpdateTodoListOnlyEvent>(_onUpdateTodoListOnlyEvent);
+    on<LoadAllItemEvent>(_onLoadAllItemEvent);
+    on<LoadDailyItemEvent>(_onLoadDailyItemEvent);
+    on<AddNewItemEvent>(_onAddNewItemEvent);
+    on<AddNewDailyItemEvent>(_onAddNewDailyItemEvent);
+    on<DellAllItemEvent>(_onDellAllItemEvent);
+    on<DeleteItemEvent>(_onDeleteItemEvent);
+    on<ChangeItemEvent>(_onChangeItemEvent);
+  }
+
+  void _onUpdateTodoListOnlyEvent(
+      UpdateTodoListOnlyEvent event, Emitter<ItemControlBlocState> emit) async {
+    state.todoActiveItemList = await _daoDB.getActiveTodoItems();
+    state.todoDailyItemList = await _daoDB.getDailyTodoItems();
+  }
+
+  void _onLoadAllItemEvent(LoadAllItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    var itemList = await _daoDB.getActiveTodoItems();
+    var todoDailyList = await _daoDB.getDailyTodoItems();
+    var todoHistoryItemList = await _daoDB.getHistoryTodoItems();
+    ServiceImagePluginWork.loadImageData();
+    emit(state.copyWith(
+        todoActiveItemList: itemList,
+        todoDailyItemList: todoDailyList,
+        todoHistoryItemList: todoHistoryItemList));
+  }
+
+  void _onLoadDailyItemEvent(LoadDailyItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    var todoDailyList = await _daoDB.getDailyTodoItems();
+    emit(state.copyWith(todoDailyItemList: todoDailyList));
+  }
+
+  void _onAddNewItemEvent(AddNewItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    await _daoDB.insertEmptyItem(userDateTime: event.dateTime);
+  }
+
+  void _onAddNewDailyItemEvent(
+      AddNewDailyItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    Map<String, dynamic> contentMap = {
+      'prise': event.prise,
+      'dailyDayList': event.dailyDayList,
+      'period': event.period,
+      '${DailyTodoBloc.delDataBaseKey}': false
+    };
+    await _daoDB.insertDailyItem(
+      title: event.name ?? '',
+      timer: event.timer,
+      autoPauseSeconds: event.autoPauseSeconds,
+      content: jsonEncode(contentMap),
+    );
+    var todoDailyList = await _daoDB.getDailyTodoItems();
+    emit(state.copyWith(todoDailyItemList: todoDailyList));
+  }
+
+  void _onDellAllItemEvent(DellAllItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    // Ваш код обработки DellAllItemEvent
+  }
+
+  void _onDeleteItemEvent(DeleteItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    await _daoDB.deleteTodoItem(event.todoItem);
+    this.add(LoadAllItemEvent());
+  }
+
+  void _onChangeItemEvent(ChangeItemEvent event, Emitter<ItemControlBlocState> emit) async {
+    if (event.category != null) {
+      await _daoDB.editTodoItemById(
+          id: event.todoItem.id, isDone: false, category: event.category?.name);
+    } else {
+      await _daoDB.editTodoItemById(
+          id: event.todoItem.id, isDone: false, category: EnumTodoCategory.active.name);
+    }
+    this.add(LoadAllItemEvent());
   }
 
   createDalyBloc() async {

@@ -22,7 +22,6 @@ class ToolNavigator {
     Navigator.push(
       context ?? App.navigatorKey.currentContext!,
       root.getRoute(
-        //УБРАТЬ
           screen
       ),
     );
@@ -131,7 +130,7 @@ enum PageRootEnum {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => widget,
       barrierDismissible: true,
-      opaque: false,
+      opaque: true,
       transitionDuration: const Duration(milliseconds: 10),
       reverseTransitionDuration: const Duration(milliseconds: 10),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {

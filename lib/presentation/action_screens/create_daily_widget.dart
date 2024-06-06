@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
 
 class CreateDailyWidget extends StatefulWidget {
@@ -428,7 +429,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
             child: Radio(
               value: 120,
               splashRadius: 13,
-              fillColor: MaterialStateProperty.all(Colors.red),
+              fillColor: MaterialStateProperty.all(ToolThemeData.itemBorderColor),
               groupValue: _selectedValue,
               onChanged: (value) {
                 setState(() {

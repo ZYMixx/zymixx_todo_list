@@ -20,21 +20,26 @@ import '../bloc/todo_item_bloc.dart';
 
 class TodoItemWidget extends StatelessWidget {
   final TodoItem todoItem;
+  Color bgColor;
 
-  TodoItemWidget({Key? key, required this.todoItem}) : super(key: key);
+  TodoItemWidget({Key? key, required this.todoItem, this.bgColor = Colors.blueAccent})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => TodoItemBloc(todoItem: todoItem),
-      child: TodoItemBody(),
+      child: TodoItemBody(bgColor: bgColor),
     );
   }
 }
 
 class TodoItemBody extends StatefulWidget {
+  final Color bgColor;
+
   const TodoItemBody({
     super.key,
+    required this.bgColor,
   });
 
   @override
@@ -46,7 +51,9 @@ class _TodoItemBodyState extends State<TodoItemBody> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     bool isChangeTextMod = context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
-    int lines = ((bloc.state.todoItem.content?.length ?? 100) / 30).toInt();
+    String todoContent = bloc.state.todoItem.content;
+    int lineSeparator = bloc.state.todoItem.content.split('\n').length - 1;
+    int lines = (todoContent.length + (lineSeparator*15)) ~/ 27;
     DateTime? targetDateTime =
         context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
     if (lines < 2) {
@@ -60,7 +67,6 @@ class _TodoItemBodyState extends State<TodoItemBody> {
       child: AnimatedContainer(
         width: ToolThemeData.itemWidth,
         curve: Curves.easeInOut,
-        //height: isChangeTextMod ? 300 : 100,
         height: isChangeTextMod
             ? (25 * lines).toDouble() + (ToolThemeData.itemHeight + 10)
             : (ToolThemeData.itemHeight),
@@ -100,7 +106,7 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                   width: 35,
                   child: Icon(
                     Icons.keyboard_double_arrow_left,
-                    color: Colors.redAccent,
+                    color: ToolThemeData.itemBorderColor,
                     size: 50,
                   ),
                 ),
@@ -116,22 +122,22 @@ class _TodoItemBodyState extends State<TodoItemBody> {
             padding: EdgeInsets.symmetric(horizontal: 3),
             decoration: BoxDecoration(
               color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                  ? Colors.orangeAccent
-                  : Colors.blueAccent,
+                  ? ToolThemeData.specialItemColor
+                  : widget.bgColor,
               gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
                   ? LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.orangeAccent,
-                        Colors.blueAccent,
+                        ToolThemeData.specialItemColor,
+                        widget.bgColor,
                       ],
                       transform: GradientRotation(-0.04),
                       stops: [0.5, 1],
                     )
                   : null,
               border: Border.all(
-                color: Colors.red,
+                color: widget.bgColor == Colors.transparent ? Colors.transparent : ToolThemeData.itemBorderColor,
               ),
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
@@ -253,7 +259,7 @@ class TitlePresentWidget extends StatelessWidget {
             child: DecoratedBox(
               decoration: todoImageFile != null
                   ? BoxDecoration(
-                      border: Border.all(color: Colors.redAccent.withOpacity(0.5), width: 0.5),
+                      border: Border.all(color: ToolThemeData.itemBorderColor.withOpacity(0.5), width: 0.5),
                       color: Colors.white.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(12),
                     )
@@ -291,12 +297,18 @@ class TitleChangeWidget extends StatefulWidget {
 class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   late TextEditingController _controllerTitle;
   late TextEditingController _controllerDescription;
+  late String descriptionForSave;
 
   @override
   void initState() {
     super.initState();
     _controllerTitle = TextEditingController();
     _controllerDescription = TextEditingController();
+    _controllerDescription.addListener(() {
+      Log.i('call add listener');
+      _replaceNewLinesWithEmoji();
+      descriptionForSave = _formatTextForSave(_controllerDescription.text);
+    });
   }
 
   @override
@@ -323,7 +335,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               bloc.add(
                 LoseFocusEvent(
                   titleText: _controllerTitle.text.trim(),
-                  descriptionText: _controllerDescription.text.trim(),
+                  descriptionText: descriptionForSave,
                 ),
               );
               //bloc.add(ChangeModEvent(isChangeMod: false));
@@ -422,6 +434,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                           child: Align(
                             alignment: Alignment.bottomRight,
                             child: InkWell(
+                              focusNode: FocusNode(skipTraversal: true),
                               onTap: () {
                                 //ii image
                                 ServiceImagePluginWork.drawImage(
@@ -484,6 +497,24 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
       ),
     );
   }
+
+
+  void _replaceNewLinesWithEmoji() {
+    String currentText = _controllerDescription.text;
+    String regexPattern = '\\n(?!${ToolThemeData.lineIndicator})';
+    String newText = currentText.replaceAllMapped(RegExp(regexPattern), (match) => '\n${ToolThemeData.lineIndicator}');
+    if (newText != currentText) {
+      _controllerDescription.value = _controllerDescription.value.copyWith(
+        text: newText,
+        selection: TextSelection.collapsed(offset: _controllerDescription.selection.baseOffset + (newText.length - currentText.length)),
+      );
+    }
+  }
+
+  String _formatTextForSave(test) {
+    return _controllerDescription.text.replaceAll(ToolThemeData.lineIndicator, '');
+  }
+
 }
 
 class TimerWorkWidget extends StatefulWidget {
@@ -531,7 +562,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                         radius: 4.5,
                         backgroundColor: autoPauseSeconds == 30
                             ? Colors.yellowAccent[400]!.withOpacity(0.8)
-                            : Colors.redAccent!.withOpacity(0.8)),
+                            : ToolThemeData.itemBorderColor.withOpacity(0.8)),
                   ),
                 ),
               ),
@@ -621,8 +652,16 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   }
 }
 
-class TimerWidget extends StatelessWidget {
+class TimerWidget extends StatefulWidget {
   const TimerWidget({Key? key}) : super(key: key);
+
+  @override
+  State<TimerWidget> createState() => _TimerWidgetState();
+}
+
+class _TimerWidgetState extends State<TimerWidget> {
+  double scale = 1.0;
+  double opacity = 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -630,6 +669,8 @@ class TimerWidget extends StatelessWidget {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
     String timerString = ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
+    bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+
     return Material(
       color: Colors.transparent,
       child: Row(
@@ -670,11 +711,28 @@ class TimerWidget extends StatelessWidget {
                     shadows: ToolThemeData.defTextShadow,
                   ),
                 ),
-                Icon(
-                  Icons.arrow_downward_outlined,
-                  size: 14,
-                  color: Colors.black,
-                ),
+                Builder(builder: (context) {
+                  if (scale == 1.0) {
+                    scale = 1.10;
+                    opacity = 1.0;
+                  } else {
+                    scale = 1.0;
+                    opacity = 0.8;
+                  }
+                  return AnimatedOpacity(
+                    duration: Duration(seconds: 1),
+                    opacity: opacity,
+                    child: AnimatedScale(
+                      scale: scale,
+                      duration: Duration(seconds: 1),
+                      child: Icon(
+                        Icons.arrow_downward_outlined,
+                        size: 14,
+                        color: isTimerActive ? Colors.black : Colors.grey[700],
+                      ),
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -700,12 +758,22 @@ class TimerWidget extends StatelessWidget {
   }
 }
 
-class StopwatchWidget extends StatelessWidget {
+class StopwatchWidget extends StatefulWidget {
   const StopwatchWidget({Key? key}) : super(key: key);
+
+  @override
+  State<StopwatchWidget> createState() => _StopwatchWidgetState();
+}
+
+class _StopwatchWidgetState extends State<StopwatchWidget> {
+  double scale = 1.0;
+  double opacity = 1.0;
+  Tween<Offset> positionTween = Tween(begin: Offset(0, 0), end: Offset(0, 0.2));
 
   @override
   Widget build(BuildContext context) {
     int stopwatch = context.select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
+    bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     String stopwatchString = ToolTimeStringConverter.formatSecondsToTimeMinute(stopwatch);
     return IconButton(
@@ -725,21 +793,37 @@ class StopwatchWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Center(
-                child: Text(
-                  stopwatchString,
-                  style: TextStyle(
-                    fontSize: 17.5,
-                    fontWeight: FontWeight.w500,
-                    shadows: ToolThemeData.defTextShadow,
-                  ),
+              Text(
+                stopwatchString,
+                style: TextStyle(
+                  fontSize: 17.5,
+                  fontWeight: FontWeight.w500,
+                  shadows: ToolThemeData.defTextShadow,
                 ),
               ),
-              Icon(
-                Icons.arrow_upward_outlined,
-                size: 14,
-                color: Colors.black,
-              ),
+              //ii timer arrow
+              Builder(builder: (context) {
+                if (scale == 1.0) {
+                  scale = 1.25;
+                  opacity = 1.0;
+                } else {
+                  scale = 1.0;
+                  opacity = 0.7;
+                }
+                return AnimatedOpacity(
+                  duration: Duration(seconds: 1),
+                  opacity: opacity,
+                  child: AnimatedScale(
+                    scale: scale,
+                    duration: Duration(seconds: 1),
+                    child: Icon(
+                      Icons.arrow_upward_outlined,
+                      size: 14,
+                      color: isTimerActive ? Colors.black : Colors.grey[700],
+                    ),
+                  ),
+                );
+              }),
               SizedBox(width: 3)
             ],
           ),
@@ -763,7 +847,7 @@ extension HilightData on DateTime {
       return Colors.orange;
     } else if (date.isBefore(today)) {
       // День уже прошёл
-      return Colors.pinkAccent!;
+      return ToolThemeData.itemBorderColor;
     } else {
       // Это только ещё будет
       return Colors.grey;
@@ -841,7 +925,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
           circleColor = Colors.amberAccent!;
           break;
         case 2:
-          circleColor = Colors.pinkAccent;
+          circleColor = ToolThemeData.itemBorderColor;
           break;
       }
       return OverlayEntry(

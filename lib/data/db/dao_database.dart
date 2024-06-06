@@ -89,7 +89,7 @@ class DaoDatabase {
     DateTime finalDateTime;
     DateTime today = DateTime.now();
     if (userDateTime == null) {
-      if (today.hour >= 21) {
+      if (today.hour >= 22) { // создаём задачу на следующий день
         finalDateTime = DateTime(today.year, today.month, today.day + 1);
       } else {
         finalDateTime = today;
