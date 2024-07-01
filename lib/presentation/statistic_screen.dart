@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
+import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
@@ -14,6 +18,7 @@ class StatisticScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: const StatisticWidget(),
     );
   }
@@ -25,33 +30,37 @@ class StatisticWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Get.find<AllItemControlBloc>().state.todoActiveItemList;
-    return DecoratedBox(
-      decoration: ToolThemeData.defBGImageBoxDecoration,
-      child: FutureBuilder(
-        future: ServiceStatisticData.requestData(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            Log.e(" snapshot.data ${snapshot.data}");
-            return Column(
-              children: [
-                LineChartSample(
-                    weekData: snapshot.data![ServiceStatisticData.weekKey],
-                    dayData: snapshot.data![ServiceStatisticData.dayKey]),
-                DataTableWidget(
-                  weekData: snapshot.data![ServiceStatisticData.weekKey],
-                ),
-              ],
-            );
-          } else {
-            return Center(
-              child: Text(
-                'Build Statistic..',
-                style: TextStyle(color: Colors.white),
+    return FutureBuilder(
+      future: Get.find<ServiceStatisticData>().requestData(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return SingleChildScrollView(
+            child: SizedBox(
+              height: 880,
+              child: Column(
+                children: [
+                  LineChartSample(
+                      weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
+                      dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey]),
+                  Expanded(
+                      child: CalendarScreenWidget(
+                          dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey])),
+                  DataTableWidget(
+                    weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
+                  ),
+                ],
               ),
-            );
-          }
-        },
-      ),
+            ),
+          );
+        } else {
+          return Center(
+            child: Text(
+              'Build Statistic..',
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        }
+      },
     );
   }
 }
@@ -74,8 +83,12 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
   late AnimationController _animationController;
 
   List<Color> gradientColors = [
-    Colors.cyan,
-    Colors.blue,
+    //ToolThemeData.itemBorderColor,
+    ToolThemeData.mainGreenColor,
+    ToolThemeData.specialItemColor,
+    // Colors.cyan,
+    // Colors.blue,
+    // Colors.blue,
   ];
 
   bool isWeeklyMod = false;
@@ -86,8 +99,12 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
   @override
   void initState() {
     //выравниваем порядок и берём только часть от общего пула
-    var weekList = widget.weekData.reversed.toList().sublist(widget.weekData.length > 8 ? widget.weekData.length - 8 : 0);
-    var dayList = widget.dayData.reversed.toList().sublist(widget.dayData.length > 12 ? widget.dayData.length - 12 : 0);
+    var weekList = widget.weekData.reversed
+        .toList()
+        .sublist(widget.weekData.length > 8 ? widget.weekData.length - 8 : 0);
+    var dayList = widget.dayData.reversed
+        .toList()
+        .sublist(widget.dayData.length > 12 ? widget.dayData.length - 12 : 0);
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 400),
@@ -265,18 +282,21 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
         LineChartBarData(
           spots: listFLSpot,
           isCurved: true,
-          barWidth: 5,
+          color: ToolThemeData.mainGreenColor,
+          barWidth: 4,
           isStrokeCapRound: true,
           dotData: FlDotData(
               show: true,
               getDotPainter: (q, w, e, r) => FlDotCirclePainter(
-                    color: ToolThemeData.highlightColor,
+                    color: ToolThemeData.itemBorderColor,
                     radius: 5,
                   )),
           belowBarData: BarAreaData(
             show: true,
             gradient: LinearGradient(
-              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+              begin: Alignment.bottomCenter,
+              end: Alignment.center,
+              colors: gradientColors.map((color) => color.withOpacity(0.45)).toList(),
             ),
           ),
         ),
@@ -287,18 +307,17 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
   Widget bottomTitleDayByDay(double value, TitleMeta meta) {
     //ii day
     StatisticDayHolder? statHolder = dayStatisticMap[value.toInt()];
-    bool isMonday = true;
-
     Widget text;
-
-    // Check if the day is Monday (in Dart, Monday is represented by 1)
     if (statHolder != null) {
       TextStyle style = TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 12,
         color: statHolder.isMonday ? Colors.orange[800] : null,
       );
-      text = Text('${statHolder.dayName}-', style: style,);
+      text = Text(
+        '${statHolder.dayName}-',
+        style: style,
+      );
     } else {
       text = Text('');
     }
@@ -333,11 +352,17 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
     return Text(text, style: style, textAlign: TextAlign.left);
   }
 
+  double heightScore = 2.9;
+
   LineChartData dayByDayData() {
     //ii day
     List<FlSpot> listFLSpot = [];
     for (var key in dayStatisticMap.keys) {
-      listFLSpot.add(FlSpot(key.toDouble(), dayStatisticMap[key]!.dayScore));
+      double data = dayStatisticMap[key]!.dayScore;
+      listFLSpot.add(HighlightFlSpot(key.toDouble(), data));
+      if (data > heightScore) {
+        listFLSpot.add(HighlightFlSpot(key.toDouble(), data, isHighlight: true));
+      }
     }
     return LineChartData(
       titlesData: FlTitlesData(
@@ -369,30 +394,242 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
         show: true,
         border: Border.all(color: Colors.black),
       ),
+      clipData: FlClipData.all(),
       minX: 0,
       maxX: 12,
       minY: 0,
-      maxY: 6,
+      maxY: 5,
       lineBarsData: [
         LineChartBarData(
           spots: listFLSpot,
           isCurved: true,
-          barWidth: 5,
+          barWidth: 3,
           isStrokeCapRound: true,
+          color: ToolThemeData.mainGreenColor,
+          preventCurveOverShooting: true,
           dotData: FlDotData(
               show: true,
-              getDotPainter: (q, w, e, r) => FlDotCirclePainter(
-                    color: ToolThemeData.highlightColor,
-                    radius: 5,
-                  )),
+              getDotPainter: (spot, percent, barData, index) {
+                Color color;
+                double radius = 5;
+                if (spot.y < 1.1) {
+                  color = Colors.red;
+                } else if (spot.y < heightScore) {
+                  color = ToolThemeData.itemBorderColor;
+                } else {
+                  color = Colors.black;
+                  radius = 6.5;
+                  if ((spot as HighlightFlSpot).isHighlight) {
+                    color = ToolThemeData.specialItemColor;
+                    radius = 5;
+                  }
+                }
+                return FlDotCirclePainter(
+                  color: color,
+                  radius: radius,
+                );
+              }),
           belowBarData: BarAreaData(
             show: true,
+            applyCutOffY: true,
             gradient: LinearGradient(
-              colors: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+              begin: Alignment.bottomCenter,
+              end: Alignment.center,
+              stops: [0.3, 1],
+              colors: gradientColors.map((color) => color.withOpacity(0.45)).toList(),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+//ii Календарь
+
+class HighlightFlSpot extends FlSpot{
+  bool isHighlight;
+  HighlightFlSpot(super.x, super.y, {this.isHighlight = false});
+}
+
+class CalendarScreenWidget extends StatelessWidget {
+  final List<StatisticDayHolder> dayData;
+
+  const CalendarScreenWidget({
+    super.key,
+    required this.dayData,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    DateRangePickerController _calendarController = DateRangePickerController();
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: MyAnimatedCard(
+        intensity: 0.005,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            right: 12.0,
+            left: 12.0,
+            top: 6.0,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 10,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(width: 0.7),
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: 500,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0, left: 12.0, top: 12.0),
+                    child: FractionallySizedBox(
+                      heightFactor: 1.00,
+                      widthFactor: 0.9,
+                      child: SfDateRangePicker(
+                        selectionMode: DateRangePickerSelectionMode.single,
+                        view: DateRangePickerView.month,
+                        initialDisplayDate: DateTime.now(),
+                        selectionColor: ToolThemeData.mainGreenColor,
+                        toggleDaySelection: true,
+                        showActionButtons: false,
+                        showNavigationArrow: true,
+                        monthViewSettings: DateRangePickerMonthViewSettings(
+                          viewHeaderHeight: 15,
+                          firstDayOfWeek: 1,
+                        ),
+                        headerHeight: 25,
+                        controller: _calendarController,
+                        cellBuilder:
+                            (BuildContext context, DateRangePickerCellDetails cellDetails) {
+                          DateTime date = cellDetails.date;
+                          var cellColor = Colors.white;
+                          DateTime today = DateTime.now();
+                          bool isToday = date.isSameDay(DateTime.now());
+                          double dayScore = 0.0;
+                          for (var targetDataItem in dayData) {
+                            if (targetDataItem.dateTime.isSameDay(date)) {
+                              dayScore = targetDataItem.dayScore;
+                            }
+                          }
+                          if (date.isBefore(today)) {
+                            if (dayScore < 1) {
+                              cellColor = Colors.red[100]!;
+                            } else if (dayScore < 1.5) {
+                              cellColor = Colors.greenAccent[100]!;
+                            } else if (dayScore < 2) {
+                              cellColor = ToolThemeData.highlightGreenColor;
+                            } else if (dayScore < 2.5) {
+                              cellColor = ToolThemeData.mainGreenColor;
+                            } else if (dayScore > 2.9) {
+                              cellColor = ToolThemeData.specialItemColor;
+                            }
+                          }
+                          if (_calendarController.view == DateRangePickerView.month) {
+                            return Padding(
+                              padding: const EdgeInsets.all(1.0),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(color: cellColor),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: RadialGradient(
+                                      colors: [Colors.white38, Colors.white24, Colors.white12],
+                                      stops: [0.5, 0.4, 1.0],
+                                    ),
+                                  ),
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                        border: isToday
+                                            ? Border.all(
+                                                width: 2, color: ToolThemeData.highlightColor)
+                                            : Border.all(width: 0.75, color: Colors.black12),
+                                        shape: BoxShape.rectangle),
+                                    child: Center(
+                                      child: Text(
+                                        dayScore.toString(),
+                                        style: TextStyle(
+                                          color: isToday
+                                              ? ToolThemeData.itemBorderColor
+                                              : Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: isToday ? FontStyle.italic : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else if (_calendarController.view == DateRangePickerView.year) {
+                            bool isToMonth = date.month == today.month && date.year == today.year;
+                            return Container(
+                              width: cellDetails.bounds.width,
+                              height: cellDetails.bounds.height,
+                              alignment: Alignment.center,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      border: isToMonth
+                                          ? Border.all(
+                                              width: 1.5, color: ToolThemeData.highlightColor)
+                                          : null,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Center(
+                                        child: Text(DateFormat('MMMM', 'ru')
+                                            .format(cellDetails.date)
+                                            .capStart()))),
+                              ),
+                            );
+                          } else if (_calendarController.view == DateRangePickerView.decade) {
+                            bool isToYear = date.year == today.year;
+                            return Container(
+                              width: cellDetails.bounds.width,
+                              height: cellDetails.bounds.height,
+                              alignment: Alignment.center,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      border: isToYear
+                                          ? Border.all(
+                                              width: 1.5, color: ToolThemeData.highlightColor)
+                                          : null,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Center(child: Text(cellDetails.date.year.toString()))),
+                              ),
+                            );
+                          } else {
+                            final int yearValue = (cellDetails.date.year ~/ 10) * 10;
+                            return Container(
+                              width: cellDetails.bounds.width,
+                              height: cellDetails.bounds.height,
+                              alignment: Alignment.center,
+                              child:
+                                  Text(yearValue.toString() + ' - ' + (yearValue + 9).toString()),
+                            );
+                          }
+                        },
+                        onSelectionChanged: (args) {},
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -425,7 +662,7 @@ class DataTableWidget extends StatelessWidget {
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Container(
-              height: 220,
+              height: 270,
               child: StreamBuilder<Object>(
                   stream: null,
                   builder: (context, snapshot) {
@@ -463,7 +700,7 @@ class DataTableWidget extends StatelessWidget {
                                       item.dailyFails.toString(),
                                       style: TextStyle(
                                           color: item.dailyFails == 0
-                                              ? Colors.greenAccent[700]
+                                              ? ToolThemeData.mainGreenColor
                                               : item.dailyFails > 3
                                                   ? Colors.red[700]
                                                   : Colors.black,

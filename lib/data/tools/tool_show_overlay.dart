@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
-import '../../presentation/App.dart';
+import '../../presentation/app.dart';
 
 class ToolShowOverlay {
-  static OverlayEntry? _overlayEntry;
-  static dynamic _completer;
-  static bool isOpen = false;
+  OverlayEntry? _overlayEntry;
+  dynamic _completer;
+  bool isOpen = false;
 
-  static Future<T?> showUserInputOverlay<T>({
+  Future<T?> showUserInputOverlay<T>({
     required BuildContext context,
     required Widget child,
   }) async {
@@ -28,17 +28,13 @@ class ToolShowOverlay {
     return _completer.future;
   }
 
-  static submitUserData(dynamic) {
-    Log.i('send $dynamic');
+  submitUserData(dynamic) {
+    Log.i('submitUserData $dynamic');
     _completer?.complete(dynamic);
     _hideOverlay();
   }
 
-  static cancelUserData() {
-    _hideOverlay();
-  }
-
-  static void _hideOverlay() {
+  void _hideOverlay() {
     isOpen = false;
     _overlayEntry?.remove();
     _overlayEntry = null;

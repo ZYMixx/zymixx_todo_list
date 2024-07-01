@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 
@@ -50,7 +51,7 @@ class TodoItem {
 
   @override
   String toString() {
-    return 'TodoItem{id: $id, title: $title, content: $content, category $category, targetDateTime ${ToolDateFormatter.formatToMonthDay(targetDateTime)} }\n';
+    return 'TodoItem{id: $id, title: $title, content: $content, category $category, targetDateTime ${Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime)} }\n';
   }
 
   String toStringFull() {

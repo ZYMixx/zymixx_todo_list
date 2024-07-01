@@ -1,21 +1,21 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServiceSharedPreferences {
-  static late SharedPreferences sharedPreferences;
+  late SharedPreferences sharedPreferences;
 
-  static init() async {
+  init() async {
     sharedPreferences = await SharedPreferences.getInstance();
   }
 
-  static putString({required String key, required String stringData}) {
+  putString({required String key, required String stringData}) {
     sharedPreferences.setString(key, stringData);
   }
 
-  static String? getString({required String key}) {
+  String? getString({required String key}) {
     return sharedPreferences.getString(key);
   }
 
-  static resetKey({required String key}) {
+  removeKey({required String key}) {
     sharedPreferences.remove(key);
   }
 }

@@ -9,6 +9,7 @@
 #include <iostream> // Для использования std::cout
 #include <flutter/method_call.h>
 
+
 void SimulateMouseClick() {
     POINT cursorPos;
 
@@ -61,6 +62,26 @@ void SimulateMouseClick() {
         SendInput(1, &input, sizeof(INPUT));
     }
 }
+
+void SetBackgroundColor(HWND hwnd, COLORREF color) {
+    HBRUSH hBrush = CreateSolidBrush(color);
+    SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)hBrush);
+    InvalidateRect(hwnd, nullptr, TRUE);
+}
+
+bool PreventDoubleOpenApp(){
+    HWND hWnd = FindWindow(NULL, L"TodoList");
+    if (hWnd) {
+        if (IsIconic(hWnd)) {
+            ShowWindow(hWnd, SW_RESTORE);
+        } else {
+            ShowWindow(hWnd, SW_SHOW);
+        }
+        SetForegroundWindow(hWnd);
+        return true;
+    }
+    return false;
+}
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
@@ -95,10 +116,12 @@ bool FlutterWindow::OnCreate() {
     auto engine = flutter_controller_->engine();
     if (engine) {
         HWND hwnd = GetHandle();
-        ShowWindow(hwnd, SW_MAXIMIZE);
+
+        ShowWindow(hwnd, SW_MINIMIZE);
+        SetBackgroundColor(hwnd, RGB(0, 0, 0));
 
         flutter::MethodChannel<> channel(
-                engine->messenger(), "ru.zymixx/simulateMouseClick",
+                engine->messenger(), "ru.zymixx/zymixxWindowsChannel",
                 &flutter::StandardMethodCodec::GetInstance()
         );
 
@@ -107,6 +130,9 @@ bool FlutterWindow::OnCreate() {
                     if (call.method_name() == "simulateMouseClick") {
                         SimulateMouseClick();
                         result->Success();
+                    } else if (call.method_name() == "preventDoubleOpenApp"){
+                        bool success = PreventDoubleOpenApp();
+                        result->Success(flutter::EncodableValue(success));
                     } else {
                         result->NotImplemented();
                     }

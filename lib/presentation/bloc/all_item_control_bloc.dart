@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
@@ -17,24 +18,22 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
   AllItemControlBloc()
       : _daoDB = DaoDatabase(),
-        super(
-          ItemControlBlocState(
-            todoActiveItemList: [],
-            todoDailyItemList: [],
-            todoHistoryItemList: [],
-          )
-        ) {
+        super(ItemControlBlocState(
+          todoActiveItemList: [],
+          todoDailyItemList: [],
+          todoHistoryItemList: [],
+        )) {
     Log.i('init parent bloc');
     createDalyBloc();
     _initializeEventListeners();
   }
 
   void _initializeEventListeners() {
-    GlobalDbDao.broadcastActiveTodoStream.listen((newList) {
+    Get.find<GlobalDbDao>().broadcastActiveTodoStream.listen((newList) {
       this.add(LoadAllItemEvent());
     });
 
-    GlobalDbDao.streamAllOtherEvent.stream.listen((newList) {
+    Get.find<GlobalDbDao>().streamAllOtherEvent.stream.listen((newList) {
       this.add(UpdateTodoListOnlyEvent());
     });
 
@@ -58,7 +57,8 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
     var itemList = await _daoDB.getActiveTodoItems();
     var todoDailyList = await _daoDB.getDailyTodoItems();
     var todoHistoryItemList = await _daoDB.getHistoryTodoItems();
-    ServiceImagePluginWork.loadImageData();
+
+    Get.find<ServiceImagePluginWork>().loadImageData();
     emit(state.copyWith(
         todoActiveItemList: itemList,
         todoDailyItemList: todoDailyList,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
@@ -60,61 +61,58 @@ class DailyTodoWidget extends StatelessWidget {
         return 0;
       }
     });
-    return DecoratedBox(
-      decoration: ToolThemeData.defBGImageBoxDecoration,
-      child: Column(
-        children: [
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    yesterdayDailyMod ? 'Вчера' : 'Дейлики',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: yesterdayDailyMod ? 30 : 24,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Baseline(
-                    baseline: yesterdayDailyMod ? 40.0 : 30.0,
-                    baselineType: TextBaseline.alphabetic,
-                    child: Icon(
-                      yesterdayDailyMod ? Icons.timelapse_outlined : Icons.calendar_month_outlined,
-                      color: Colors.white,
-                      size: yesterdayDailyMod ? 31 : 26,
-                    ),
-                  ),
-                ],
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(2.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                yesterdayDailyMod ? 'Вчера' : 'Дейлики',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: yesterdayDailyMod ? 30 : 24,
+                  color: Colors.white,
+                ),
               ),
-            ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: dailyTodoList.length,
-              itemBuilder: (context, itemId) {
-                return DailyTodoItem(
-                  dailyTodoItem: dailyTodoList[itemId],
-                );
+              Baseline(
+                baseline: yesterdayDailyMod ? 40.0 : 30.0,
+                baselineType: TextBaseline.alphabetic,
+                child: Icon(
+                  yesterdayDailyMod ? Icons.timelapse_outlined : Icons.calendar_month_outlined,
+                  color: Colors.white,
+                  size: yesterdayDailyMod ? 31 : 26,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: dailyTodoList.length,
+            itemBuilder: (context, itemId) {
+              return DailyTodoItem(
+                dailyTodoItem: dailyTodoList[itemId],
+              );
+            },
+          ),
+        ),
+        Opacity(
+          opacity: 1,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+            child: AddItemButton(
+              onTapAction: () {
+                context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
               },
+              onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
+              secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
+              bgColor: Colors.grey,
             ),
           ),
-          Opacity(
-            opacity: 1,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-              child: AddItemButton(
-                onTapAction: () {
-                  context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
-                },
-                onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
-                secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
-                bgColor: Colors.grey,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -122,7 +120,7 @@ class DailyTodoWidget extends StatelessWidget {
 class DailyTodoItem extends StatefulWidget {
   final TodoItem dailyTodoItem;
 
-  const DailyTodoItem({required this.dailyTodoItem});
+  DailyTodoItem({required this.dailyTodoItem}) : super(key: ValueKey('${dailyTodoItem.title}_${dailyTodoItem.id}'));
 
   @override
   State<DailyTodoItem> createState() => _DailyTodoItemState();
@@ -130,11 +128,9 @@ class DailyTodoItem extends StatefulWidget {
 
 class _DailyTodoItemState extends State<DailyTodoItem> {
   bool timerIsRun = false;
-  int? remainTimer;
 
   @override
   void initState() {
-    remainTimer = widget.dailyTodoItem.timerSeconds;
     Get.find<DailyTodoBloc>()
         .checkOnActiveTimer(itemId: widget.dailyTodoItem.id, updateCallBack: secondUpdate);
     super.initState();
@@ -142,9 +138,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
 
   void secondUpdate(int second) {
     if (mounted) {
-      setState(() {
-        remainTimer = second;
-      });
+      setState(() {});
     }
   }
 
@@ -159,7 +153,9 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
           width: double.infinity,
           height: widget.dailyTodoItem.isDone ? 40 : 60,
           decoration: BoxDecoration(
-            color: widget.dailyTodoItem.isDone ? Colors.greenAccent : Colors.white.withOpacity(0.92),
+            color: widget.dailyTodoItem.isDone
+                ? ToolThemeData.highlightGreenColor
+                : Colors.white.withOpacity(0.92),
             border: Border.all(
               width: 2,
               color: ToolThemeData.itemBorderColor,
@@ -171,8 +167,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
               context.read<DailyTodoBloc>().add(CompleteDailyEvent(
                   isComplete: !widget.dailyTodoItem.isDone,
                   itemId: widget.dailyTodoItem.id,
-                  remainSeconds: remainTimer ?? 0,
-                  timerUpdateCB: secondUpdate));
+                  remainSeconds: widget.dailyTodoItem.timerSeconds ?? 0));
             },
             onLongPress: () {
               context.read<DailyTodoBloc>().add(DeleteDailyEvent(
@@ -261,7 +256,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                     ? Colors.grey[400]
                                     : widget.dailyTodoItem.autoPauseSeconds == 60
                                         ? Colors.yellowAccent
-                                        : ToolThemeData.itemBorderColor,
+                                        : ToolThemeData.highlightColor,
                               ),
                             ),
                           ),
@@ -272,9 +267,9 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          remainTimer == 0
+                          widget.dailyTodoItem.timerSeconds == 0
                               ? ''
-                              : '${ToolTimeStringConverter.formatSecondsToTimeWithoutZero(remainTimer ?? 0)}',
+                              : '${Get.find<ToolTimeStringConverter>().formatSecondsToTimeWithoutZero(widget.dailyTodoItem.timerSeconds ?? 0)}',
                           style: TextStyle(
                             fontSize: 21.1,
                             fontWeight: FontWeight.w700,
@@ -282,7 +277,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                             shadows: timerIsRun
                                 ? [
                                     Shadow(
-                                      color: Colors.greenAccent,
+                                      color: ToolThemeData.mainGreenColor,
                                       offset: Offset(1, 1.5),
                                       blurRadius: 1.6,
                                     )
@@ -310,7 +305,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                             shadows: timerIsRun
                                 ? [
                                     Shadow(
-                                      color: Colors.greenAccent,
+                                      color: ToolThemeData.mainGreenColor,
                                       offset: Offset(1, 1.5),
                                       blurRadius: 1.6,
                                     )
@@ -321,7 +316,9 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                         Icon(
                           Icons.emoji_events,
                           size: widget.dailyTodoItem.isDone ? 22 : 14,
-                          color: widget.dailyTodoItem.isDone ? ToolThemeData.specialItemColor : Colors.black,
+                          color: widget.dailyTodoItem.isDone
+                              ? ToolThemeData.specialItemColor
+                              : Colors.black,
                         ),
                         Text(' )'),
                       ],

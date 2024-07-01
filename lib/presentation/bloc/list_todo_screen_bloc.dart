@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
@@ -10,13 +10,11 @@ class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
   final DaoDatabase _daoDB = DaoDatabase();
 
   ListTodoScreenBloc() : super(ListTodoState(primaryPositionList: [])) {
-    GlobalDbDao.broadcastActiveTodoStream.listen((newList) {
-      if (newList.isNotEmpty) {
-        this.add(NeedUpdateEvent(todoItemList: newList));
-      }
+    Get.find<GlobalDbDao>().broadcastActiveTodoStream.listen((newList) {
+      this.add(NeedUpdateEvent(todoItemList: newList));
     });
     on<NeedUpdateEvent>((event, emit) async {
-      Log.i('call ned Update');
+      Log.i('ListTodoScreenBloc - call ned Update');
       List<int> tempoPosList = [...state._primaryPositionList];
       for (var item in event.todoItemList) {
         if (!tempoPosList.contains(item.id)) {
@@ -24,7 +22,6 @@ class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
         }
       }
       tempoPosList.removeWhere((element) => !event.todoItemList.map((e) => e.id).contains(element));
-      Log.i('tempoPosList ${tempoPosList}');
       emit(await state.copyWith(primaryPositionList: tempoPosList));
     });
     on<ChangeTodayOnlyModEvent>((event, emit) async {
@@ -69,7 +66,6 @@ class ListTodoState {
       List<int> remainPosId = filteredTodoItemList.map((e) => e.id).toList();
       secondPosItemList = [..._primaryPositionList];
       var x = secondPosItemList..removeWhere((element) => !remainPosId.contains(element));
-      Log.i('send $x');
       return x;
     } else {
       return _primaryPositionList;
@@ -77,7 +73,7 @@ class ListTodoState {
   }
 
   Future<List<int>> initPositionList() async {
-    return (await GlobalDbDao.getActiveTodoItem()).map((e) => e.id).toList();
+    return (await Get.find<GlobalDbDao>().getActiveTodoItem()).map((e) => e.id).toList();
   }
 
   ListTodoState copyWith({
@@ -118,6 +114,7 @@ class ChangeOrderEvent extends ListTodoEvent {
     required this.movedItemId,
   });
 }
+
 class SetSpinWinnerEvent extends ListTodoEvent {
   int movedItemId;
 

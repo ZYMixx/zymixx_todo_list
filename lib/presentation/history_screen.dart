@@ -8,7 +8,6 @@ import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_expansion_panel.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_radio_icon.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -36,23 +35,27 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
         context.select((AllItemControlBloc bloc) => bloc.state.todoHistoryItemList);
     Map<DateTime, List<TodoItem>> groupedMap = groupItemsByDate(todoHistoryItemList);
     List<DateTime> dates = groupedMap.keys.toList()..sort((a, b) => b.compareTo(a));
-    return ListView.builder(
-      itemCount: dates.length,
-      itemBuilder: (context, index) {
-        DateTime date = dates[index];
-        List<TodoItem> items = groupedMap[date]!;
-        int allSecondsSpent = items.fold(0, (previousValue, element) => previousValue + element.secondsSpent);
-        List<Widget> itemWidgets = items.map((item) => TodoHistoryItem(todoItem: item)).toList();
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1),
-          child: MyExpansionPanel(
-            listWidget: itemWidgets,
-            panelTitle:
-                '${ToolDateFormatter.formatToMonthDayWeek(date) ?? 'No Date'}_ ${items.length} _ ${(allSecondsSpent/60).toInt()} min',
-            widgetHeight: 45,
-          ),
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: ListView.builder(
+        itemCount: dates.length,
+        itemBuilder: (context, index) {
+          DateTime date = dates[index];
+          List<TodoItem> items = groupedMap[date]!;
+          int allSecondsSpent =
+              items.fold(0, (previousValue, element) => previousValue + element.secondsSpent);
+          List<Widget> itemWidgets = items.map((item) => TodoHistoryItem(todoItem: item)).toList();
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1),
+            child: MyExpansionPanel(
+              listWidget: itemWidgets,
+              panelTitle:
+                  '${Get.find<ToolDateFormatter>().formatToMonthDayWeek(date) ?? 'No Date'}_ ${items.length} _ ${(allSecondsSpent / 60).toInt()} min',
+              widgetHeight: 45,
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -129,7 +132,7 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                   Text(
                     '${(widget.todoItem.secondsSpent / 60).toInt()}',
                     style: TextStyle(
-                      color: Colors.green[600],
+                      color: ToolThemeData.mainGreenColor,
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                     ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../presentation/App.dart';
+import 'package:zymixx_todo_list/presentation/app.dart';
 
 class ToolNavigator {
   static void set(
@@ -17,13 +16,14 @@ class ToolNavigator {
     Navigator.pushReplacement(App.navigatorKey.currentContext!, root.getRoute(screen));
   }
 
-  static void push(
-      {required Widget screen, BuildContext? context, PageRootEnum root = PageRootEnum.fade}) {
-    Navigator.push(
+  static Future<T?> push<T extends Object?>({
+    required Widget screen,
+    BuildContext? context,
+    PageRootEnum root = PageRootEnum.fade,
+  }) {
+    return Navigator.push(
       context ?? App.navigatorKey.currentContext!,
-      root.getRoute(
-          screen
-      ),
+      root.getRoute(screen),
     );
   }
 
@@ -54,7 +54,7 @@ enum PageRootEnum {
   alert,
   empty;
 
-  Route getRoute(Widget widget) {
+  Route<T> getRoute<T extends Object?>(Widget widget) {
     switch (this) {
       case PageRootEnum.fade:
         return _createFadeRoute(widget);
@@ -67,7 +67,7 @@ enum PageRootEnum {
     }
   }
 
-  static Route _createFadeRoute(Widget widget) {
+  static Route<T> _createFadeRoute<T extends Object?>(Widget widget) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => widget,
       barrierDismissible: true,
@@ -83,7 +83,7 @@ enum PageRootEnum {
     );
   }
 
-  static Route _createSlideRoute(Widget widget) {
+  static Route<T> _createSlideRoute<T extends Object?>(Widget widget) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => widget,
       barrierDismissible: true,
@@ -103,7 +103,7 @@ enum PageRootEnum {
     );
   }
 
-  static Route _createAlertRoute(Widget widget) {
+  static Route<T> _createAlertRoute<T extends Object?>(Widget widget) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => widget,
       barrierDismissible: true,
@@ -126,7 +126,7 @@ enum PageRootEnum {
     );
   }
 
-  static Route _createEmptyRoute(Widget widget) {
+  static Route<T> _createEmptyRoute<T extends Object?>(Widget widget) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => widget,
       barrierDismissible: true,

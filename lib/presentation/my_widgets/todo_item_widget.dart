@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,13 +48,20 @@ class TodoItemBody extends StatefulWidget {
 }
 
 class _TodoItemBodyState extends State<TodoItemBody> {
+  late DismissAnimationWidget dismissArrow;
+
+  @override
+  void initState() {
+    dismissArrow = DismissAnimationWidget();
+  }
+
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     bool isChangeTextMod = context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
     String todoContent = bloc.state.todoItem.content;
     int lineSeparator = bloc.state.todoItem.content.split('\n').length - 1;
-    int lines = (todoContent.length + (lineSeparator*15)) ~/ 27;
+    int lines = (todoContent.length + (lineSeparator * 8)) ~/ 24;
     DateTime? targetDateTime =
         context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
     if (lines < 2) {
@@ -68,55 +76,26 @@ class _TodoItemBodyState extends State<TodoItemBody> {
         width: ToolThemeData.itemWidth,
         curve: Curves.easeInOut,
         height: isChangeTextMod
-            ? (25 * lines).toDouble() + (ToolThemeData.itemHeight + 10)
+            ? (21 * lines).toDouble() + (ToolThemeData.itemHeight + 18)
             : (ToolThemeData.itemHeight),
         constraints: BoxConstraints(
           minHeight: isChangeTextMod
-              ? (25 * lines).toDouble() + ToolThemeData.itemHeight
+              ? (21 * lines).toDouble() + ToolThemeData.itemHeight
               : ToolThemeData.itemHeight,
         ),
         duration: Duration(milliseconds: 250),
         child: Dismissible(
           key: UniqueKey(),
-          background: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              return Opacity(
-                opacity: 0.80,
-                child: SizedBox(
-                  width: 35,
-                  child: Icon(
-                    Icons.keyboard_double_arrow_right,
-                    color: Colors.greenAccent,
-                    size: 50,
-                  ),
-                ),
-              );
-            },
-            itemCount: 12, // Количество стрелок в узоре
-          ),
-          secondaryBackground: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.only(right: 30),
-            reverse: true,
-            itemBuilder: (context, index) {
-              return Opacity(
-                opacity: 0.85,
-                child: SizedBox(
-                  width: 35,
-                  child: Icon(
-                    Icons.keyboard_double_arrow_left,
-                    color: ToolThemeData.itemBorderColor,
-                    size: 50,
-                  ),
-                ),
-              );
-            },
-            itemCount: 12, // Количество стрелок в узоре
-          ),
-          //right
+          background: dismissArrow,
           onDismissed: (DismissDirection direction) {
             bloc.add(DismissEvent(direction: direction));
+          },
+          onUpdate: (value) {
+            if (value.direction == DismissDirection.startToEnd) {
+              dismissArrow.setAnimation?.call(value.progress, true);
+            } else {
+              dismissArrow.setAnimation?.call(value.progress, false);
+            }
           },
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 3),
@@ -137,7 +116,9 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                     )
                   : null,
               border: Border.all(
-                color: widget.bgColor == Colors.transparent ? Colors.transparent : ToolThemeData.itemBorderColor,
+                color: widget.bgColor == Colors.transparent
+                    ? Colors.transparent
+                    : ToolThemeData.itemBorderColor,
               ),
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
@@ -155,11 +136,21 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                 ),
                 MyAnimatedCard(
                   intensity: 0.01,
+                  directionUp: false,
                   child: AnimatedCirclesWidget(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
                       child: DecoratedBox(
-                        decoration: ToolThemeData.defShadowBox,
+                        decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black45,
+                              blurRadius: 1.5,
+                              spreadRadius: 1.0,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
                         child: ColoredBox(
                             color:
                                 targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
@@ -175,6 +166,76 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                 //SizedBox(width: 10),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DismissAnimationWidget extends StatefulWidget {
+  Function(double value, bool right)? setAnimation;
+
+  DismissAnimationWidget({Key? key}) : super(key: key);
+
+  @override
+  _DismissAnimationWidgetState createState() => _DismissAnimationWidgetState();
+}
+
+class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
+    with SingleTickerProviderStateMixin {
+  double animValue = 0.0;
+  bool isRightArrow = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.setAnimation = (double value, bool right) {
+      Log.i('call set state mounted $mounted ${isRightArrow}');
+      if (mounted) {
+        setState(() {
+          isRightArrow = right;
+          animValue = value * (right ? 1 : -1);
+        });
+      }
+      ;
+    };
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //int mnog = isRightArrow ? -1 : 1;
+    return Opacity(
+      opacity: animValue == 0 ? 0 : 1,
+      child: Transform.translate(
+        //offset: Offset(0, 0),
+        offset: Offset(
+            400 * (animValue / 2) + (8 * Random().nextDouble()) + (isRightArrow ? -230 : 220), 0),
+        child: Container(
+          alignment: isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
+          padding: EdgeInsets.only(right: 30),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            reverse: true,
+            clipBehavior: Clip.none,
+            children: List.generate(24, (index) {
+              return SizedBox(
+                width: 35,
+                child: Icon(
+                  isRightArrow
+                      ? Icons.keyboard_double_arrow_right
+                      : Icons.keyboard_double_arrow_left,
+                  color: isRightArrow ? ToolThemeData.mainGreenColor : ToolThemeData.highlightColor,
+                  // Цвет стрелок
+                  size: 50,
+                ),
+              );
+            }),
           ),
         ),
       ),
@@ -203,7 +264,7 @@ class TitlePresentWidget extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                (' ' + (title.capitalizeFirst ?? '')) ?? '',
+                (' ' + (title.capStart() ?? '')) ?? '',
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
@@ -233,7 +294,7 @@ class TitlePresentWidget extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       //ii image top
-                      ServiceImagePluginWork.openImage(todoImageFile);
+                      Get.find<ServiceImagePluginWork>().openImage(todoImageFile);
                     },
                     child: MyAnimatedCard(
                       intensity: 0.01,
@@ -259,7 +320,8 @@ class TitlePresentWidget extends StatelessWidget {
             child: DecoratedBox(
               decoration: todoImageFile != null
                   ? BoxDecoration(
-                      border: Border.all(color: ToolThemeData.itemBorderColor.withOpacity(0.5), width: 0.5),
+                      border: Border.all(
+                          color: ToolThemeData.highlightColor.withOpacity(0.5), width: 0.5),
                       color: Colors.white.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(12),
                     )
@@ -267,10 +329,10 @@ class TitlePresentWidget extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Text(
-                  ToolDateFormatter.formatToMonthDay(targetDateTime) ?? '',
+                  Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '',
                   style: TextStyle(
                     color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                        ? Colors.greenAccent
+                        ? ToolThemeData.mainGreenColor
                         : Colors.black,
                     fontWeight: bloc.state.todoItem.category == EnumTodoCategory.social.name ||
                             todoImageFile != null
@@ -297,48 +359,79 @@ class TitleChangeWidget extends StatefulWidget {
 class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   late TextEditingController _controllerTitle;
   late TextEditingController _controllerDescription;
-  late String descriptionForSave;
+  late String initialText;
+  String descriptionForSave = '';
+
+  late FocusNode _focusNodeTitle;
+  late FocusNode _focusNodeDescription;
+  TextSelection? _selectionTitle;
+  TextSelection? _selectionDescription;
 
   @override
   void initState() {
     super.initState();
     _controllerTitle = TextEditingController();
     _controllerDescription = TextEditingController();
+    _focusNodeTitle = FocusNode();
+    _focusNodeDescription = FocusNode();
     _controllerDescription.addListener(() {
-      Log.i('call add listener');
       _replaceNewLinesWithEmoji();
       descriptionForSave = _formatTextForSave(_controllerDescription.text);
     });
+  }
+
+  void _saveSelection() {
+    if (_focusNodeTitle.hasFocus) {
+      _selectionTitle = _controllerTitle.selection;
+    } else {
+      _selectionTitle = null;
+    }
+    if (_focusNodeDescription.hasFocus) {
+      _selectionDescription = _controllerDescription.selection;
+    } else {
+      _selectionDescription = null;
+    }
+  }
+
+  void _restoreSelection() {
+    if (_selectionTitle != null) {
+      _controllerTitle.selection = _selectionTitle!;
+      _focusNodeTitle.requestFocus();
+    }
+    if (_selectionDescription != null) {
+      _controllerDescription.selection = _selectionDescription!;
+      _focusNodeDescription.requestFocus();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     File? todoImageFile = context.select((TodoItemBloc bloc) => bloc.state.imageFile);
-    //File? todoImageFile = bloc.state.imageFile;
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
+    initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
     DateTime? targetDateTime = bloc.state.todoItem.targetDateTime;
-    String formattedTargetDateTime = ToolDateFormatter.formatToMonthDay(targetDateTime) ?? '';
+    String formattedTargetDateTime = Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
     return Padding(
       padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
       child: Focus(
         onFocusChange: (focus) {
           if (focus) {
-            _controllerTitle
-              ..selection =
-                  TextSelection(baseOffset: 0, extentOffset: _controllerTitle.text.length);
+             _controllerTitle
+               ..selection =
+                   TextSelection(baseOffset: 0, extentOffset: _controllerTitle.text.length);
           }
           if (!focus) {
             print('focus locc add Event ${_controllerTitle.text.trim()}');
+            //_saveSelection();
             Future.delayed(Duration.zero, () {
               bloc.add(
-                LoseFocusEvent(
+                SaveItemChangeEvent(
                   titleText: _controllerTitle.text.trim(),
                   descriptionText: descriptionForSave,
                 ),
               );
-              //bloc.add(ChangeModEvent(isChangeMod: false));
             });
           }
         },
@@ -348,6 +441,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               controller: _controllerTitle,
               autofocus: true,
               maxLines: 1,
+              focusNode: _focusNodeTitle,
               style: TextStyle(
                 fontWeight: FontWeight.w500,
               ),
@@ -360,9 +454,45 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                     alignment: Alignment.center,
                     child: InkWell(
                       focusNode: FocusNode(skipTraversal: true),
-                      onTap: () => bloc.add(RequestChangeItemDateEvent(buildContext: context)),
-                      onLongPress: () => bloc.add(SetItemDateEvent(userDateTime: DateTime.now())),
-                      onSecondaryTap: () => bloc.add(IncreaseItemDateEvent()),
+                      onTap: () => {
+                        _saveSelection(),
+                        bloc
+                          ..add(
+                            SaveItemChangeEvent(
+                              titleText: _controllerTitle.text.trim(),
+                              descriptionText: descriptionForSave,
+                              setChangeMod: true,
+                            ),
+                          )
+                          ..add(
+                            RequestChangeItemDateEvent(
+                                buildContext: context, restoreFocusCallBack: _restoreSelection),
+                          )
+                      },
+                      onLongPress: () =>
+                        bloc
+                          ..add(
+                            SaveItemChangeEvent(
+                              titleText: _controllerTitle.text.trim(),
+                              descriptionText: descriptionForSave,
+                              setChangeMod: true,
+                            ),
+                          )
+                          ..add(
+                            SetItemDateEvent(userDateTime: DateTime.now()),
+                          ),
+                      onSecondaryTap: () =>
+                        bloc
+                          ..add(
+                            SaveItemChangeEvent(
+                              titleText: _controllerTitle.text.trim(),
+                              descriptionText: descriptionForSave,
+                              setChangeMod: true,
+                            ),
+                          )
+                          ..add(
+                            IncreaseItemDateEvent(),
+                          ),
                       child: Text(
                         formattedTargetDateTime,
                         style: TextStyle(
@@ -384,42 +514,93 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               ),
               child: TextField(
                 controller: _controllerDescription,
+                focusNode: _focusNodeDescription,
                 minLines: 2,
-                maxLines: 8,
+                selectionControls: MaterialTextSelectionControls(),
+                maxLines: initialText == '' ? 3 : 8,
                 decoration: InputDecoration(
                   suffixIconConstraints: todoImageFile == null
                       ? BoxConstraints.tightFor(width: 35, height: 35)
                       : BoxConstraints.tightFor(width: 45, height: 45),
-                  suffixIcon: todoImageFile != null
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(right: 4.0),
+                  suffixIcon: (bloc.state.todoItem.title == 'New Title')
+                      ? Container()
+                      : todoImageFile != null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 4.0),
+                                  child: Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Get.find<ServiceImagePluginWork>().openImage(todoImageFile);
+                                      },
+                                      onSecondaryTap: () {},
+                                      onLongPress: () {
+                                        Get.find<ServiceImagePluginWork>().deleteImage(
+                                          todoItem: bloc.state.todoItem,
+                                          updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
+                                        );
+                                      },
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        child: Opacity(
+                                          opacity: 0.80,
+                                          child: AspectRatio(
+                                            aspectRatio:
+                                                1.0, // Устанавливаем квадратное соотношение сторон
+                                            child: FittedBox(
+                                              fit: BoxFit.cover,
+                                              child: Image.file(
+                                                todoImageFile,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Container(
                               child: Align(
                                 alignment: Alignment.bottomRight,
                                 child: InkWell(
+                                  focusNode: FocusNode(skipTraversal: true),
                                   onTap: () {
-                                    ServiceImagePluginWork.openImage(todoImageFile);
+                                    //ii image
+                                    Get.find<ServiceImagePluginWork>().drawImage(
+                                        title: bloc.state.todoItem.title,
+                                        id: bloc.state.todoItem.id,
+                                        updateCallBack: () => bloc.add(SetTodoItemImageEvent()));
+                                    Log.e('ADD NEW IMAGE');
                                   },
-                                  onSecondaryTap: () {},
-                                  onLongPress: () {
-                                    ServiceImagePluginWork.deleteImage(
+                                  onSecondaryTap: () {
+                                    Get.find<ServiceImagePluginWork>().selectAndSetTodoImage(
                                       todoItem: bloc.state.todoItem,
                                       updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
                                     );
                                   },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    child: Opacity(
-                                      opacity: 0.80,
-                                      child: AspectRatio(
-                                        aspectRatio:
-                                            1.0, // Устанавливаем квадратное соотношение сторон
-                                        child: FittedBox(
-                                          fit: BoxFit.cover,
-                                          child: Image.file(
-                                            todoImageFile,
+                                  child: Center(
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(1.0),
+                                        child: MyAnimatedCard(
+                                          intensity: 0.012,
+                                          child: ClipOval(
+                                            child: Opacity(
+                                              opacity: 0.9,
+                                              child: Icon(
+                                                Icons.add_a_photo_outlined,
+                                                color: Colors.purple,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -428,53 +609,6 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                 ),
                               ),
                             ),
-                          ],
-                        )
-                      : Container(
-                          child: Align(
-                            alignment: Alignment.bottomRight,
-                            child: InkWell(
-                              focusNode: FocusNode(skipTraversal: true),
-                              onTap: () {
-                                //ii image
-                                ServiceImagePluginWork.drawImage(
-                                    title: bloc.state.todoItem.title,
-                                    id: bloc.state.todoItem.id,
-                                    updateCallBack: () => bloc.add(SetTodoItemImageEvent()));
-                                Log.e('ADD NEW IMAGE');
-                              },
-                              onSecondaryTap: () {
-                                ServiceImagePluginWork.selectAndSetTodoImage(
-                                  todoItem: bloc.state.todoItem,
-                                  updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
-                                );
-                              },
-                              child: Center(
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(1.0),
-                                    child: MyAnimatedCard(
-                                      intensity: 0.012,
-                                      child: ClipOval(
-                                        child: Opacity(
-                                          opacity: 0.9,
-                                          child: Icon(
-                                            Icons.add_a_photo_outlined,
-                                            color: Colors.purple,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                 ),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
@@ -498,15 +632,17 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     );
   }
 
-
   void _replaceNewLinesWithEmoji() {
     String currentText = _controllerDescription.text;
     String regexPattern = '\\n(?!${ToolThemeData.lineIndicator})';
-    String newText = currentText.replaceAllMapped(RegExp(regexPattern), (match) => '\n${ToolThemeData.lineIndicator}');
+    String newText = currentText.replaceAllMapped(
+        RegExp(regexPattern), (match) => '\n${ToolThemeData.lineIndicator}');
     if (newText != currentText) {
       _controllerDescription.value = _controllerDescription.value.copyWith(
         text: newText,
-        selection: TextSelection.collapsed(offset: _controllerDescription.selection.baseOffset + (newText.length - currentText.length)),
+        selection: TextSelection.collapsed(
+            offset: _controllerDescription.selection.baseOffset +
+                (newText.length - currentText.length)),
       );
     }
   }
@@ -514,7 +650,6 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   String _formatTextForSave(test) {
     return _controllerDescription.text.replaceAll(ToolThemeData.lineIndicator, '');
   }
-
 }
 
 class TimerWorkWidget extends StatefulWidget {
@@ -545,24 +680,16 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                 decoration: BoxDecoration(
                   border: Border.all(width: 1.5, color: Colors.black),
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 2.0,
-                      spreadRadius: 1.0,
-                      offset: Offset(0, 0),
-                    ),
-                  ],
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(0.5),
                   child: Opacity(
                     opacity: 1,
                     child: CircleAvatar(
-                        radius: 4.5,
+                        radius: 4,
                         backgroundColor: autoPauseSeconds == 30
-                            ? Colors.yellowAccent[400]!.withOpacity(0.8)
-                            : ToolThemeData.itemBorderColor.withOpacity(0.8)),
+                            ? ToolThemeData.specialItemColor
+                            : ToolThemeData.highlightColor),
                   ),
                 ),
               ),
@@ -667,8 +794,8 @@ class _TimerWidgetState extends State<TimerWidget> {
   Widget build(BuildContext context) {
     int timer = context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
-    String timerString = ToolTimeStringConverter.formatSecondsToTimeMinute(timer);
+    Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
+    String timerString = Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
 
     return Material(
@@ -775,7 +902,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     int stopwatch = context.select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
     bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    String stopwatchString = ToolTimeStringConverter.formatSecondsToTimeMinute(stopwatch);
+    String stopwatchString = Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(stopwatch);
     return IconButton(
       onPressed: null,
       icon: InkWell(
@@ -830,28 +957,6 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
         ),
       ),
     );
-  }
-}
-
-//grp Ext
-
-extension HilightData on DateTime {
-  Color getHighlightColor(DateTime date) {
-    DateTime today = DateTime.now();
-    DateTime tomorrow = DateTime(today.year, today.month, today.day + 1);
-    if (date.isSameDay(today)) {
-      // Это сегодня
-      return Colors.greenAccent[400]!;
-    } else if (date.isSameDay(tomorrow)) {
-      // Это завтра
-      return Colors.orange;
-    } else if (date.isBefore(today)) {
-      // День уже прошёл
-      return ToolThemeData.itemBorderColor;
-    } else {
-      // Это только ещё будет
-      return Colors.grey;
-    }
   }
 }
 
@@ -925,7 +1030,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
           circleColor = Colors.amberAccent!;
           break;
         case 2:
-          circleColor = ToolThemeData.itemBorderColor;
+          circleColor = ToolThemeData.highlightColor;
           break;
       }
       return OverlayEntry(
@@ -1017,5 +1122,27 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
       onTapCancel: _handleTapUp,
       child: widget.child,
     );
+  }
+}
+
+//grp Ext
+
+extension HighlightData on DateTime {
+  Color getHighlightColor(DateTime date) {
+    DateTime today = DateTime.now();
+    DateTime tomorrow = DateTime(today.year, today.month, today.day + 1);
+    if (date.isSameDay(today)) {
+      // Это сегодня
+      return ToolThemeData.mainGreenColor!;
+    } else if (date.isSameDay(tomorrow)) {
+      // Это завтра
+      return Colors.orange;
+    } else if (date.isBefore(today)) {
+      // День уже прошёл
+      return ToolThemeData.highlightColor;
+    } else {
+      // Это только ещё будет
+      return Colors.grey;
+    }
   }
 }

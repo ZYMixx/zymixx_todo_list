@@ -9,7 +9,7 @@ import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/todo_item_widget.dart';
 
-const platform = MethodChannel('ru.zymixx/simulateMouseClick');
+const platform = MethodChannel('ru.zymixx/zymixxWindowsChannel');
 
 class WorkModScreen extends StatelessWidget {
   const WorkModScreen({super.key});
@@ -19,7 +19,6 @@ class WorkModScreen extends StatelessWidget {
     return WorkModWidget();
   }
 }
-
 
 Future<void> setIgnore(bool ignore) async {
   return await windowManager.setIgnoreMouseEvents(ignore);
@@ -40,7 +39,7 @@ class _WorkModWidgetState extends State<WorkModWidget> {
   Widget build(BuildContext context) {
     AllItemControlBloc allBloc = Get.find<AllItemControlBloc>();
     List<int> idList =
-    Get.find<ListTodoScreenBloc>().state.getPositionItemList(allBloc.state.todoActiveItemList);
+        Get.find<ListTodoScreenBloc>().state.getPositionItemList(allBloc.state.todoActiveItemList);
     TodoItem? todoItem;
     if (idList.isNotEmpty) {
       todoItem =
@@ -60,7 +59,7 @@ class _WorkModWidgetState extends State<WorkModWidget> {
                 duration: Duration(milliseconds: 70),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color:  Colors.transparent,
+                    color: Colors.transparent,
                   ),
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   gradient: RadialGradient(
@@ -80,12 +79,12 @@ class _WorkModWidgetState extends State<WorkModWidget> {
                 child: IgnorePointer(
                   child: todoItem != null
                       ? TodoItemWidget(
-                    todoItem: todoItem,
-                    bgColor: Colors.transparent,
-                  )
+                          todoItem: todoItem,
+                          bgColor: Colors.transparent,
+                        )
                       : Center(
-                    child: Text('no any todo to show'),
-                  ),
+                          child: Text('no any todo to show'),
+                        ),
                 ),
               ),
             ),
@@ -94,7 +93,6 @@ class _WorkModWidgetState extends State<WorkModWidget> {
       ),
     );
   }
-
 
   void _onEnter(PointerEvent details) {
     mouseExitScreen = false;
@@ -130,15 +128,9 @@ class _WorkModWidgetState extends State<WorkModWidget> {
   _onPress(TapDownDetails details) async {
     await setIgnore(true);
     await platform.invokeMethod('simulateMouseClick');
-    print('dx ${details.globalPosition.dx} - dy ${details.globalPosition.dy}');
     _timer?.cancel();
     _timer = Timer(Duration(milliseconds: 500), () async {
       await setIgnore(false);
     });
   }
-
-  _onUpPress(TapUpDetails details) async {
-    await setIgnore(false);
-  }
-
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:get/get.dart' as GetX;
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
@@ -10,25 +11,30 @@ import 'mapper_database.dart';
 import '../../domain/todo_item.dart';
 
 class DaoDatabase {
-  AppDatabase db = AppDatabase.instance;
+  AppDatabase db = GetX.Get.find<AppDatabase>();
+  MapperDatabase _mapperDatabase = GetX.Get.find<MapperDatabase>();
 
   Future<List<TodoItem>> getActiveTodoItems() async =>
-      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
-            ..where((tbl) =>
-                tbl.category.equals(EnumTodoCategory.active.name) |
-                tbl.category.equals(EnumTodoCategory.social.name)))
+      _mapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
+            ..where(
+              (tbl) =>
+                  tbl.category.equals(EnumTodoCategory.active.name) |
+                  tbl.category.equals(EnumTodoCategory.social.name),
+            ))
           .get());
 
   Future<List<TodoItem>> getDailyTodoItems() async =>
-      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
-            ..where((tbl) => tbl.category.equals(EnumTodoCategory.daily.name)))
+      _mapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
+            ..where(
+              (tbl) => tbl.category.equals(EnumTodoCategory.daily.name),
+            ))
           .get());
 
   Future<List<TodoItem>> getTodayDailyTodoItems() async {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    return MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
+    return _mapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
           ..where((tbl) {
             return tbl.category.equals(EnumTodoCategory.daily.name) &
                 tbl.targetDateTime.isBetweenValues(todayStart, todayEnd);
@@ -37,7 +43,7 @@ class DaoDatabase {
   }
 
   Future<List<TodoItem>> getHistoryTodoItems() async =>
-      MapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
+      _mapperDatabase.listToEntityTodoItem(await (db.select(db.todoItemDB)
             ..where((tbl) =>
                 tbl.category.equals(EnumTodoCategory.history.name) |
                 tbl.category.equals(EnumTodoCategory.history_social.name)))
@@ -49,11 +55,11 @@ class DaoDatabase {
     if (dbModel == null) {
       return null;
     }
-    return MapperDatabase.toEntityTodoItem(dbModel);
+    return _mapperDatabase.toEntityTodoItem(dbModel);
   }
 
   Future insertTodoItem(TodoItem todoItem) =>
-      db.into(db.todoItemDB).insertOnConflictUpdate(MapperDatabase.toDBTodoItem(todoItem));
+      db.into(db.todoItemDB).insertOnConflictUpdate(_mapperDatabase.toDBTodoItem(todoItem));
 
   Future insertDuplicateTodoItem(TodoItem todoItem) async {
     Log.i(' duplicate $todoItem');
@@ -89,7 +95,8 @@ class DaoDatabase {
     DateTime finalDateTime;
     DateTime today = DateTime.now();
     if (userDateTime == null) {
-      if (today.hour >= 22) { // создаём задачу на следующий день
+      if (today.hour >= 22) {
+        // создаём задачу на следующий день
         finalDateTime = DateTime(today.year, today.month, today.day + 1);
       } else {
         finalDateTime = today;
@@ -108,7 +115,7 @@ class DaoDatabase {
   }
 
   Future deleteTodoItem(TodoItem todoItem) =>
-      db.delete(db.todoItemDB).delete(MapperDatabase.toDBTodoItem(todoItem));
+      db.delete(db.todoItemDB).delete(_mapperDatabase.toDBTodoItem(todoItem));
 
   Future<void> deleteTodoItemById({required int itemId}) async {
     TodoItemDBData? itemForDel =
@@ -154,7 +161,7 @@ class DaoDatabase {
   }) async {
     if ((title?.length ?? 0) > 60) {
       title = title!.substring(0, 60);
-      ToolShowToast.showError('Длинный текст. Сократил до 60');
+      GetX.Get.find<ToolShowToast>().showError('Длинный текст. Сократил до 60');
     }
     await db.update(db.todoItemDB)
       ..where((tbl) => tbl.id.equals(id))
@@ -173,6 +180,6 @@ class DaoDatabase {
   }
 
   editTodoItem(TodoItem todoItem) {
-    db.update(db.todoItemDB).replace(MapperDatabase.toDBTodoItem(todoItem));
+    db.update(db.todoItemDB).replace(_mapperDatabase.toDBTodoItem(todoItem));
   }
 }

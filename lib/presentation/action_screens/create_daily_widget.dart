@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
@@ -33,7 +34,7 @@ class _CreateDailyWidgetState extends State<CreateDailyWidget> with TickerProvid
       child: Stack(
         children: [
           InkWell(
-            onTap: () => ToolShowOverlay.cancelUserData(),
+            onTap: () => Get.find<ToolShowOverlay>().submitUserData(null),
             splashColor: Colors.transparent,
           ),
           Center(
@@ -44,7 +45,7 @@ class _CreateDailyWidgetState extends State<CreateDailyWidget> with TickerProvid
                     padding: const EdgeInsets.only(bottom: 100.0),
                     child: FractionallySizedBox(
                       widthFactor: 0.8,
-                      heightFactor: 0.75,
+                      heightFactor: 0.60,
                       alignment: Alignment.topLeft,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -98,10 +99,8 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
   List<int> dailyDayList = [];
   int period = 0;
 
-
   @override
   void initState() {
-
     super.initState();
     _controller = AnimationController(
       vsync: this,
@@ -301,7 +300,6 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             ),
           ),
           SizedBox(height: 3.0),
-
           FadeTransition(
             opacity: _animation3,
             child: MyAnimatedCard(
@@ -312,7 +310,6 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             ),
           ),
           SizedBox(height: 5.0),
-
           FadeTransition(
             opacity: _animation4,
             child: DecoratedBox(
@@ -331,7 +328,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                 intensity: 0.01,
                 child: ElevatedButton(
                   onPressed: () {
-                    ToolShowOverlay.submitUserData({
+                    Get.find<ToolShowOverlay>().submitUserData({
                       'name': name,
                       'timer': timer,
                       'autoPauseSeconds': autoPauseSeconds,
@@ -345,7 +342,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                     style: TextStyle(fontSize: 18.0, color: Colors.black),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.greenAccent,
+                    primary: ToolThemeData.mainGreenColor,
                     padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 15.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -429,7 +426,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
             child: Radio(
               value: 120,
               splashRadius: 13,
-              fillColor: MaterialStateProperty.all(ToolThemeData.itemBorderColor),
+              fillColor: MaterialStateProperty.all(ToolThemeData.highlightColor),
               groupValue: _selectedValue,
               onChanged: (value) {
                 setState(() {
@@ -458,6 +455,7 @@ class WeekdayRadioButtonWidget extends StatefulWidget {
 
 class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
   List<int> _dailyDayList = [];
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -468,7 +466,7 @@ class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
             overlayColor: MaterialStateProperty.all(Colors.transparent),
             onTap: () {
               setState(() {
-                if (_dailyDayList.contains(i)){
+                if (_dailyDayList.contains(i)) {
                   _dailyDayList.remove(i);
                 } else {
                   _dailyDayList.add(i);
@@ -495,7 +493,7 @@ class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: _dailyDayList.contains(i)  ? Colors.white : Colors.black,
+                  color: _dailyDayList.contains(i) ? Colors.white : Colors.black,
                 ),
               ),
             ),
@@ -548,7 +546,10 @@ class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
           height: 30,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Text(' Период:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),),
+            child: Text(
+              ' Период:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
           ),
         ),
         Row(

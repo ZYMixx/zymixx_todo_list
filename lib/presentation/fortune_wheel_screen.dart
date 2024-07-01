@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:logger/logger.dart';
 import 'package:zymixx_todo_list/data/services/service_audio_player.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
@@ -25,12 +24,8 @@ class FortuneWheelScreen extends StatelessWidget {
         .todoActiveItemList
         .where((e) => e.category == EnumTodoCategory.active.name)
         .toList();
-    //List<String> spinItems = todoItemsList.map((e) => e.title).toList();
-    return DecoratedBox(
-      decoration: ToolThemeData.defBGImageBoxDecoration,
-      child: FortuneWheel(
-        itemsList: todoItemsList,
-      ),
+    return FortuneWheel(
+      itemsList: todoItemsList,
     );
   }
 }
@@ -125,7 +120,10 @@ class _FortuneWheelState extends State<FortuneWheel> with SingleTickerProviderSt
                         ..rotateY(_controller.value == 0 ? 0 : (_controller.value * 2 - 1) * 0.02)
                         ..rotateX(-0.07),
                       child: CardSpinItemWidget(
-                          item: item, index: index, selectedItemNotifier: selectedItemNotifier,),
+                        item: item,
+                        index: index,
+                        selectedItemNotifier: selectedItemNotifier,
+                      ),
                     );
                   },
                 ),
@@ -268,38 +266,39 @@ class _FortuneWheelState extends State<FortuneWheel> with SingleTickerProviderSt
   }
 
   void _setUpSpinWheel(double spinVelocity) {
-    //ii win controller
     final int itemCount = widget.itemsList.length;
     int randomItem = math.Random.secure().nextInt(itemCount);
     final double currentOffset = _scrollController.offset;
     Log.i('      $currentOffset + ($spinVelocity * $randomItem * 1000),');
     if (spinVelocity.abs() > 1) {
-      AudioPlayer? bgMusicAudioPlayer = ServiceAudioPlayer.playFortuneSpinnerMusic();
+      AudioPlayer? bgMusicAudioPlayer = Get.find<ServiceAudioPlayer>().playFortuneSpinnerMusic();
       _scrollController.animateTo(
         currentOffset + (spinVelocity * randomItem * 1000),
         duration: Duration(seconds: 6),
         curve: Curves.easeOut,
       )..then((_) {
-        Future.delayed(Duration(milliseconds: 750)).then((_) async {
-          await bgMusicAudioPlayer?.stop();
-          await bgMusicAudioPlayer?.dispose();
-        });
-        Future.delayed(Duration(milliseconds: 350)).then((_) {
-          ServiceAudioPlayer.playFortuneWinAlert();
-        });
-        Future.delayed(Duration(milliseconds: 850)).then((_) {
-          ServiceAudioPlayer.playFortuneWinMusic(volume: 0.3);
-        });
+          Future.delayed(Duration(milliseconds: 750)).then((_) async {
+            await bgMusicAudioPlayer?.stop();
+            await bgMusicAudioPlayer?.dispose();
+          });
+          Future.delayed(Duration(milliseconds: 350)).then((_) {
+            Get.find<ServiceAudioPlayer>().playFortuneWinAlert();
+          });
+          Future.delayed(Duration(milliseconds: 850)).then((_) {
+            Get.find<ServiceAudioPlayer>().playFortuneWinMusic(volume: 0.3);
+          });
           _controllerCenterRight.play();
-          _controller..stop()..reset();
+          _controller
+            ..stop()
+            ..reset();
           selectedItemNotifier.value = preSelectedItem;
           try {
-            Get.find<ListTodoScreenBloc>().add(
-                SetSpinWinnerEvent(movedItemId: preSelectedItem!.id));
-          } catch(e){
+            Get.find<ListTodoScreenBloc>()
+                .add(SetSpinWinnerEvent(movedItemId: preSelectedItem!.id));
+          } catch (e) {
             Log.e(e);
           }
-      });
+        });
       _controller.repeat(reverse: true);
     }
   }
@@ -336,8 +335,7 @@ class _CardSpinItemWidgetState extends State<CardSpinItemWidget> {
   @override
   void initState() {
     widget.selectedItemNotifier.addListener(() {
-      if (mounted)
-        {
+      if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
           if (widget.selectedItemNotifier.value == widget.item) {
             setState(() {
@@ -367,61 +365,61 @@ class _CardSpinItemWidgetState extends State<CardSpinItemWidget> {
       child: Padding(
         padding: const EdgeInsets.all(1.0),
         child: DecoratedBox(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: isClicked
-                  ? Colors.white
-                  : widget.index % 2 == 0
-                  ? Colors.deepPurpleAccent
-                  : Colors.blueAccent,
-              border: Border.all(),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black87,
-                  blurRadius: 4.0,
-                  spreadRadius: 3.0,
-                  offset: Offset(1, 1),
-                ),
-              ],
-              image: DecorationImage(
-                image: AssetImage('assets/frame_spin.png'),
-                fit: BoxFit.fill,
-                opacity: 0.2,
-                colorFilter: ColorFilter.mode(
-                  Colors.black,
-                  BlendMode.srcATop, // р// ежим наложения
-                ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: isClicked
+                ? Colors.white
+                : widget.index % 2 == 0
+                    ? Colors.deepPurpleAccent
+                    : Colors.blueAccent,
+            border: Border.all(),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black87,
+                blurRadius: 4.0,
+                spreadRadius: 3.0,
+                offset: Offset(1, 1),
+              ),
+            ],
+            image: DecorationImage(
+              image: AssetImage('assets/frame_spin.png'),
+              fit: BoxFit.fill,
+              opacity: 0.2,
+              colorFilter: ColorFilter.mode(
+                Colors.black,
+                BlendMode.srcATop, // режим наложения
               ),
             ),
+          ),
           child: AnimatedContainer(
             duration: Duration(milliseconds: 750),
             alignment: Alignment.center,
-            width: isWinner ? 255: 240,
+            width: isWinner ? 255 : 240,
             height: 130,
-            decoration: isWinner ? BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: isClicked
-                    ? Colors.white
-                    : Colors.orangeAccent,
-                border: Border.all(),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black87,
-                    blurRadius: 4.0,
-                    spreadRadius: 3.0,
-                    offset: Offset(1, 1),
-                  ),
-                ],
-                image: DecorationImage(
-                  image: AssetImage('assets/frame_spin.png'),
-                  fit: BoxFit.fill,
-                  opacity: 0.2,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black,
-                    BlendMode.srcATop, // р// ежим наложения
-                  ),
-                ),
-              ) : null,
+            decoration: isWinner
+                ? BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: isClicked ? Colors.white : Colors.orangeAccent,
+                    border: Border.all(),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black87,
+                        blurRadius: 4.0,
+                        spreadRadius: 3.0,
+                        offset: Offset(1, 1),
+                      ),
+                    ],
+                    image: DecorationImage(
+                      image: AssetImage('assets/frame_spin.png'),
+                      fit: BoxFit.fill,
+                      opacity: 0.2,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black,
+                        BlendMode.srcATop, // р// ежим наложения
+                      ),
+                    ),
+                  )
+                : null,
             child: Padding(
               padding: const EdgeInsets.all(1.0),
               child: Center(

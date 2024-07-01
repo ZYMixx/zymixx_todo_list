@@ -60,7 +60,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
   Future<void> _onChangeTodoDateEvent(
       ChangeTodoDateEvent event, Emitter<CalendarState> emit) async {
     {
-      DateTime? userInput = await ToolShowOverlay.showUserInputOverlay<DateTime>(
+      DateTime? userInput = await Get.find<ToolShowOverlay>().showUserInputOverlay<DateTime>(
         context: event._context,
         child: ChooseDateWidget(),
       );

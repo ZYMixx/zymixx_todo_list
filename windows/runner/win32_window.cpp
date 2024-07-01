@@ -158,11 +158,18 @@ LRESULT CALLBACK Win32Window::WndProc(HWND const window,
                                       UINT const message,
                                       WPARAM const wparam,
                                       LPARAM const lparam) noexcept {
+Win32Window::Point origin(10, 10);
+Win32Window::Size size(450, 720);
+PAINTSTRUCT ps;
+HDC hdc = BeginPaint(window, &ps);
+HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0)); // Создаем кисть с черным цветом
+FillRect(hdc, &ps.rcPaint, hBrush);
+DeleteObject(hBrush);
+EndPaint(window, &ps);
   if (message == WM_NCCREATE) {
     auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
     SetWindowLongPtr(window, GWLP_USERDATA,
                      reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
-
     auto that = static_cast<Win32Window*>(window_struct->lpCreateParams);
     EnableFullDpiSupportIfAvailable(window);
     that->window_handle_ = window;

@@ -1,4 +1,4 @@
-import 'presentation/App.dart';
+import 'presentation/app.dart';
 
 void main() {
   App.start();

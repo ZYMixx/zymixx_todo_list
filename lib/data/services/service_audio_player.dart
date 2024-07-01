@@ -1,12 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 
-// flutter pub add audioplayers
-//   assets:
-//     - assets/
-//     - assets/songs/
-
 class ServiceAudioPlayer {
-  static AudioPlayer? _playAssetsAudio(String assetsPath, {double? volume}) {
+  AudioPlayer? _playAssetsAudio(String assetsPath, {double? volume}) {
     try {
       AudioPlayer audioPlayer = AudioPlayer()..setSource(AssetSource(assetsPath));
       audioPlayer.setVolume(volume ?? 0.75);
@@ -16,19 +11,24 @@ class ServiceAudioPlayer {
     } catch (e) {}
   }
 
-  static playFortuneWinAlert() {
+  playFortuneWinAlert() {
     return _playAssetsAudio('songs/spinner_win_sound.mp3');
   }
 
-  static playFortuneWinMusic({required double volume}) {
+  playFortuneWinMusic({required double volume}) {
     return _playAssetsAudio('songs/spinner_win_music_sound.mp3', volume: volume);
   }
 
-  static AudioPlayer? playFortuneSpinnerMusic() {
+  AudioPlayer? playFortuneSpinnerMusic() {
     return _playAssetsAudio('songs/spinner_gamble_sound.mp3');
   }
 
-  static playTimerAlert() {
+  playTimerAlert() {
     _playAssetsAudio('songs/timer_music_alert.mp3', volume: 0.4);
   }
 }
+
+// flutter pub add audioplayers
+//   assets:
+//     - assets/
+//     - assets/songs/

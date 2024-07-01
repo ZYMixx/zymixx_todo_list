@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:zymixx_todo_list/presentation/app.dart';
 
 abstract class ToolThemeData {
-
   static const double itemWidth = 600;
   static const double itemHeight = 50;
   static const double itemOpenHeight = 110;
@@ -10,8 +10,8 @@ abstract class ToolThemeData {
   static const itemBorderColor = Color(0xFF651FFF);
   static const highlightColor = Colors.purpleAccent;
   static const specialItemColor = Colors.orangeAccent;
- // static const itemBorderColor = Color(0xFF6200EA);
-  //static const itemBorderColor = Colors.deepPurple;
+  static const mainGreenColor = Color(0xFF00C853);
+  static const highlightGreenColor = Color(0xFF00E676);
 
   static const BoxDecoration defShadowBox = BoxDecoration(
     boxShadow: [
@@ -31,16 +31,44 @@ abstract class ToolThemeData {
       blurRadius: 1.5,
     ),
   ];
+}
 
-  static const defBGImageBoxDecoration = BoxDecoration(
-    image: DecorationImage(
-      image: AssetImage('assets/wood_bg_1.jpg'),
-      fit: BoxFit.fitHeight,
-      colorFilter: ColorFilter.mode(
-        Colors.black38,
-        BlendMode.darken,
+class MyDefBgDecoration extends StatelessWidget {
+  final Widget child;
+
+  const MyDefBgDecoration({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(App.isRelease ? 'assets/zerowell.png' : 'assets/wood_bg.jpg'),
+          fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
+          colorFilter: ColorFilter.mode(
+            Colors.black26,
+            BlendMode.darken,
+          ),
+        ),
       ),
-    ),
-  );
-
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.center,
+            radius: 0.9,
+            colors: [
+              Colors.transparent,
+              Colors.black26,
+              Colors.black38,
+              Colors.deepPurpleAccent,
+            ],
+            stops: [0.2, 0.7, 0.75, 1.0],
+          ),
+          backgroundBlendMode: BlendMode.softLight,
+        ),
+        child: child,
+      ),
+    );
+  }
 }

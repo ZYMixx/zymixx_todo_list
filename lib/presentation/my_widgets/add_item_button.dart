@@ -34,16 +34,14 @@ class AddItemButton extends StatelessWidget {
           width: ToolThemeData.itemWidth,
           height: 30,
           decoration: BoxDecoration(
-            color: bgColor ?? Colors.green,
+            color: bgColor ?? ToolThemeData.mainGreenColor,
             border: Border.all(
               color: ToolThemeData.itemBorderColor,
             ),
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
-          child: MoveWindow(
-            child: Center(
-              child: Icon(Icons.add),
-            ),
+          child: Center(
+            child: Icon(Icons.add),
           ),
         ),
       ),
