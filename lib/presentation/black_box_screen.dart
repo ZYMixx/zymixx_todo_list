@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gap/gap.dart';
@@ -13,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
+import 'package:zymixx_todo_list/presentation/app.dart';
 import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc/black_box_bloc.dart';
 import 'package:zymixx_todo_list/presentation/my_bottom_navigator_screen.dart';
@@ -225,15 +224,6 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
               },
               child: Text("Cancel"),
             ),
-            // TextButton(
-            //   onPressed: () {
-            //     final oldName = Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
-            //     Get.find<BlackBoxBloc>()
-            //         .add(RenameFolderEvent(oldName: oldName, newName: _controller.text));
-            //     Navigator.pop(context);
-            //   },
-            //   child: Text("Rename"),
-            // ),
           ],
         );
       },
@@ -265,10 +255,6 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
         Offset.zero & overlay.size,
       ),
       items: [
-        // PopupMenuItem(
-        //   child: Text("Rename"),
-        //   value: "Rename",
-        // ),
         PopupMenuItem(
           child: Text("Set Image"),
           value: "Set Image",
@@ -418,38 +404,6 @@ class _NotesScreenState extends State<NotesScreen> {
     );
   }
 
-  void _addNoteDialog(BuildContext context, String folderName) {
-    TextEditingController _controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Add Note"),
-          content: TextField(
-            controller: _controller,
-            decoration: InputDecoration(hintText: "Note text"),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                Get.find<BlackBoxBloc>()
-                    .add(AddNoteEvent(folderName: folderName, noteText: _controller.text));
-                Navigator.pop(context);
-              },
-              child: Text("Add"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _deleteNoteDialog(BuildContext context, String key, String? folderName) {
     showDialog(
       context: context,
@@ -498,65 +452,113 @@ class EditNoteScreen extends StatelessWidget {
           brightness: Brightness.dark,
           primarySwatch: Colors.blue,
         ),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('Edit Note'),
-          ),
-          body: Stack(
-            children: [
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  color: Colors.black,
-                  child: MoveWindow(onDoubleTap: () => {}),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
-                child: Hero(
-                  tag: 'note_${noteKey}',
-                  child: Material(
+        child: PopScope(
+          canPop: false,
+          onPopInvoked: (didPop) async {
+            if (textNote == _controller.text){
+              ToolNavigator.pop();
+            } else {
+              bool? saveData = await _confirmSaveOnExit(
+                  bContext: context, folderName: folderName, notedText: _controller.text);
+              if (saveData == null) {
+                return;
+              }
+              else if (saveData) {
+                Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
+                    folderName: folderName, noteText: _controller.text, noteKey: noteKey));
+              }
+              ToolNavigator.pop();
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text('Edit Note'),
+            ),
+            body: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    height: 45,
                     color: Colors.black,
-                    textStyle: TextStyle(color: Colors.white),
-                    child: Container(
-                      child: TextSelectionTheme(
-                        data: TextSelectionThemeData(
-                          selectionColor: ToolThemeData.itemBorderColor,
-                          cursorColor: ToolThemeData.highlightColor,
-                        ),
-                        child: TextField(
-                          controller: _controller,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                    child: MoveWindow(onDoubleTap: () => {}),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
+                  child: Hero(
+                    tag: 'note_${noteKey}',
+                    child: Material(
+                      color: Colors.black,
+                      textStyle: TextStyle(color: Colors.white),
+                      child: Container(
+                        child: TextSelectionTheme(
+                          data: TextSelectionThemeData(
+                            selectionColor: ToolThemeData.itemBorderColor,
+                            cursorColor: ToolThemeData.highlightColor,
                           ),
-                          maxLines: null,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            fillColor: Colors.red,
-                            labelText: 'Note',
+                          child: TextField(
+                            controller: _controller,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                            maxLines: null,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              fillColor: Colors.red,
+                              labelText: 'Note',
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                  folderName: folderName, noteText: _controller.text, noteKey: noteKey));
-              ToolNavigator.pop();
-            },
-            child: Icon(Icons.save),
-            tooltip: 'Save Note',
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
+                    folderName: folderName, noteText: _controller.text, noteKey: noteKey));
+                ToolNavigator.pop();
+              },
+              child: Icon(Icons.save),
+              tooltip: 'Save Note',
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Future<bool?> _confirmSaveOnExit({
+    required BuildContext bContext,
+    required String folderName,
+    required String notedText,
+  }) async {
+    return await showDialog<bool>(
+      context: bContext,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Выйти без сохранения?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: Text("Save", style: TextStyle(color: ToolThemeData.mainGreenColor),),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: Text("Exit", style: TextStyle(color: ToolThemeData.highlightColor),),
+            ),
+          ],
+        );
+      },
     );
   }
 }
