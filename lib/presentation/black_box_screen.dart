@@ -436,7 +436,8 @@ class _NotesScreenState extends State<NotesScreen> {
     ToolNavigator.push(screen: EditNoteScreen(noteKey: noteKey));
   }
 }
-
+//content
+//
 class EditNoteScreen extends StatelessWidget {
   final String noteKey;
 
