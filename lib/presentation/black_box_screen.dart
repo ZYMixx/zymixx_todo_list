@@ -8,6 +8,7 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
@@ -455,19 +456,19 @@ class EditNoteScreen extends StatelessWidget {
         child: PopScope(
           canPop: false,
           onPopInvoked: (didPop) async {
-            if (textNote == _controller.text){
-              ToolNavigator.pop();
-            } else {
-              bool? saveData = await _confirmSaveOnExit(
-                  bContext: context, folderName: folderName, notedText: _controller.text);
-              if (saveData == null) {
-                return;
+            if (!didPop) {
+              if (textNote == _controller.text) {
+                ToolNavigator.pop();
+              } else {
+                bool? saveData = await _confirmSaveOnExit(
+                    bContext: context, folderName: folderName, notedText: _controller.text);
+                if (saveData == null) {
+                } else if (saveData) {
+                  Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
+                      folderName: folderName, noteText: _controller.text, noteKey: noteKey));
+                }
+                ToolNavigator.pop();
               }
-              else if (saveData) {
-                Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                    folderName: folderName, noteText: _controller.text, noteKey: noteKey));
-              }
-              ToolNavigator.pop();
             }
           },
           child: Scaffold(
@@ -524,7 +525,12 @@ class EditNoteScreen extends StatelessWidget {
                     folderName: folderName, noteText: _controller.text, noteKey: noteKey));
                 ToolNavigator.pop();
               },
-              child: Icon(Icons.save),
+              child: GestureDetector(
+                onSecondaryTap: Get.find<ServiceWindowManager>().onHideWindowPressed,
+                child: Center(
+                  child: Icon(Icons.save),
+                ),
+              ),
               tooltip: 'Save Note',
             ),
           ),
@@ -538,7 +544,7 @@ class EditNoteScreen extends StatelessWidget {
     required String folderName,
     required String notedText,
   }) async {
-    return await showDialog<bool>(
+    return showDialog<bool>(
       context: bContext,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -546,15 +552,25 @@ class EditNoteScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context, true);
+                WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                  Navigator.pop(context, true);
+                });
               },
-              child: Text("Save", style: TextStyle(color: ToolThemeData.mainGreenColor),),
+              child: Text(
+                "Save",
+                style: TextStyle(color: ToolThemeData.mainGreenColor),
+              ),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context, false);
+                WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                  Navigator.pop(context, false);
+                });
               },
-              child: Text("Exit", style: TextStyle(color: ToolThemeData.highlightColor),),
+              child: Text(
+                "Exit",
+                style: TextStyle(color: ToolThemeData.highlightColor),
+              ),
             ),
           ],
         );
