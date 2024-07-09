@@ -28,6 +28,9 @@ class ChooseDateWidget extends StatelessWidget {
                   initialDisplayDate:
                       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
                   toggleDaySelection: true,
+                  monthViewSettings: DateRangePickerMonthViewSettings(
+                    firstDayOfWeek: 1,
+                  ),
                   showActionButtons: true,
                   showNavigationArrow: true,
                   onSubmit: (data) {
