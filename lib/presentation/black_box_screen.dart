@@ -2,12 +2,15 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
@@ -438,16 +441,38 @@ class _NotesScreenState extends State<NotesScreen> {
 }
 //content
 //
-class EditNoteScreen extends StatelessWidget {
+
+class EditNoteScreen extends StatefulWidget {
   final String noteKey;
 
   EditNoteScreen({required this.noteKey});
 
   @override
+  _EditNoteScreenState createState() => _EditNoteScreenState();
+}
+
+class _EditNoteScreenState extends State<EditNoteScreen> {
+  late TextEditingController _controller;
+  late String textNote;
+  late String folderName;
+  bool _isEditMode = true;
+
+  @override
+  void initState() {
+    super.initState();
+    textNote = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]?['noteText'] ?? 'no data';
+    folderName = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]?['folderName'] ?? 'no data';
+    _controller = TextEditingController(text: textNote);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String textNote = Get.find<BlackBoxBloc>().state.notes[noteKey]?['noteText'] ?? 'no data';
-    String folderName = Get.find<BlackBoxBloc>().state.notes[noteKey]?['folderName'] ?? 'no data';
-    TextEditingController _controller = TextEditingController(text: textNote);
     return MyScreenBoxDecorationWidget(
       child: Theme(
         data: ThemeData(
@@ -466,7 +491,7 @@ class EditNoteScreen extends StatelessWidget {
                 if (saveData == null) {
                 } else if (saveData) {
                   Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                      folderName: folderName, noteText: _controller.text, noteKey: noteKey));
+                      folderName: folderName, noteText: _controller.text, noteKey: widget.noteKey));
                 }
                 ToolNavigator.pop();
               }
@@ -490,7 +515,7 @@ class EditNoteScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
                   child: Hero(
-                    tag: 'note_${noteKey}',
+                    tag: 'note_${widget.noteKey}',
                     child: Material(
                       color: Colors.black,
                       textStyle: TextStyle(color: Colors.white),
@@ -500,7 +525,8 @@ class EditNoteScreen extends StatelessWidget {
                             selectionColor: ToolThemeData.itemBorderColor,
                             cursorColor: ToolThemeData.highlightColor,
                           ),
-                          child: TextField(
+                          child: _isEditMode
+                              ? TextField(
                             controller: _controller,
                             style: TextStyle(
                               color: Colors.white,
@@ -512,6 +538,36 @@ class EditNoteScreen extends StatelessWidget {
                               fillColor: Colors.red,
                               labelText: 'Note',
                             ),
+                          )
+                              : SingleChildScrollView(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.white60, width: 0.6),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16),
+                                child: Linkify(
+                                  onOpen: (link) async {
+                                    Log.e('try open ${link.url}');
+                                    if (await canLaunchUrl(Uri.parse(link.url))) {
+                                      Log.e('try open 2${link.url}');
+                                            await launchUrl(Uri.parse(link.url));
+                                    } else {
+                                      throw 'Could not launch $link';
+                                    }
+                                  },
+                                  text: _controller.text,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                  ),
+                                  linkStyle: TextStyle(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -520,19 +576,36 @@ class EditNoteScreen extends StatelessWidget {
                 ),
               ],
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                    folderName: folderName, noteText: _controller.text, noteKey: noteKey));
-                ToolNavigator.pop();
-              },
-              child: GestureDetector(
-                onSecondaryTap: Get.find<ServiceWindowManager>().onHideWindowPressed,
-                child: Center(
-                  child: Icon(Icons.save),
+            floatingActionButton: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    setState(() {
+                      _isEditMode = !_isEditMode;
+                    });
+                  },
+                  heroTag: 'empty',
+                  mini: true,
+                  child: Icon(_isEditMode ? Icons.visibility : Icons.edit),
+                  tooltip: 'Toggle Mode',
                 ),
-              ),
-              tooltip: 'Save Note',
+                SizedBox(width: 10),
+                FloatingActionButton(
+                  onPressed: () {
+                    Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
+                        folderName: folderName, noteText: _controller.text, noteKey: widget.noteKey));
+                    ToolNavigator.pop();
+                  },
+                  child: GestureDetector(
+                    onSecondaryTap: Get.find<ServiceWindowManager>().onHideWindowPressed,
+                    child: Center(
+                      child: Icon(Icons.save),
+                    ),
+                  ),
+                  tooltip: 'Save Note',
+                ),
+              ],
             ),
           ),
         ),
@@ -577,6 +650,103 @@ class EditNoteScreen extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class LinkTextPainter extends CustomPainter {
+  final String text;
+  final TextSelection selection;
+  final TextStyle textStyle;
+
+  late TextPainter textPainter;
+
+  LinkTextPainter({
+    required this.text,
+    required this.selection,
+    required this.textStyle,
+  }) {
+    textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: textStyle,
+      ),
+      textDirection: TextDirection.ltr,
+    );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    textPainter.layout(minWidth: size.width, maxWidth: size.width);
+    textPainter.paint(canvas, Offset.zero);
+
+    final List<InlineSpan> children = _getSpans(text);
+    final TextPainter linkTextPainter = TextPainter(
+      text: TextSpan(children: children),
+      textDirection: TextDirection.ltr,
+    );
+    linkTextPainter.layout(minWidth: size.width, maxWidth: size.width);
+    linkTextPainter.paint(canvas, Offset.zero);
+
+    if (selection.isValid) {
+      final selectionPainter = TextPainter(
+        text: TextSpan(
+          text: text.substring(selection.start, selection.end),
+          style: textStyle.copyWith(
+            backgroundColor: Colors.blue.withOpacity(0.3),
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      selectionPainter.layout(minWidth: size.width, maxWidth: size.width);
+      selectionPainter.paint(canvas, textPainter.getOffsetForCaret(selection.base, Rect.zero));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return true;
+  }
+
+  List<InlineSpan> _getSpans(String text) {
+    final RegExp linkExp = RegExp(
+      r'((https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])',
+      caseSensitive: false,
+    );
+
+    final List<InlineSpan> spans = [];
+    final Iterable<RegExpMatch> matches = linkExp.allMatches(text);
+
+    int lastMatchEnd = 0;
+    for (final RegExpMatch match in matches) {
+      if (match.start != lastMatchEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastMatchEnd, match.start),
+          style: textStyle,
+        ));
+      }
+      spans.add(TextSpan(
+        text: match.group(0),
+        style: textStyle.copyWith(color: Colors.blue),
+        recognizer: TapGestureRecognizer()..onTap = () => _launchUrl(match.group(0)!),
+      ));
+      lastMatchEnd = match.end;
+    }
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastMatchEnd),
+        style: textStyle,
+      ));
+    }
+
+    return spans;
+  }
+
+  void _launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
 
