@@ -9,7 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
-import 'package:zymixx_todo_list/presentation/black_box_screen/black_box_screen.dart';
+
+import 'black_box_screen.dart';
 
 const allFolderKey = 'all_folder_key';
 

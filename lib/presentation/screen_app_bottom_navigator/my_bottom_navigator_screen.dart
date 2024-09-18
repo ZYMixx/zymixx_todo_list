@@ -8,15 +8,14 @@ import 'package:zymixx_todo_list/data/flame/wall_bg_flame_widget.dart';
 import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
-
-import '../black_box_screen/black_box_screen.dart';
-import '../calendar_screen/calendar_screen.dart';
-import '../daily_todo_screen/daily_todo_screen.dart';
-import '../fortune_wheel_screen/fortune_wheel_screen.dart';
-import '../history_screen/history_screen.dart';
-import '../main_todo_list_screen/main_todo_list_screen.dart';
-import '../statistic_screen/statistic_screen.dart';
+import '../app_widgets/my_animated_card.dart';
+import '../screen_black_box/black_box_screen.dart';
+import '../screen_calendar/calendar_screen.dart';
+import '../screen_daily_todo/daily_todo_screen.dart';
+import '../screen_fortune_wheel/fortune_wheel_screen.dart';
+import '../screen_history/history_screen.dart';
+import '../screen_main_todo_list/main_todo_list_screen.dart';
+import '../screen_statistic/statistic_screen.dart';
 
 class MyBottomNavigatorScreen extends StatelessWidget {
   const MyBottomNavigatorScreen({

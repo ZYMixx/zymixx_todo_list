@@ -5,13 +5,12 @@ import 'package:get/get.dart';
 
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/presentation/main_todo_list_screen/widgets/todo_item_widget.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
-
+import 'package:zymixx_todo_list/presentation/app_widgets/add_item_button.dart';
+import '../app_widgets/my_animated_card.dart';
 import '../../domain/todo_item.dart';
 import '../bloc_global/all_item_control_bloc.dart';
 import '../bloc_global/list_todo_screen_bloc.dart';
-import '../my_widgets/add_item_button.dart';
+import 'widgets/todo_item_widget.dart';
 
 class MainTodoListScreen extends StatelessWidget {
   MainTodoListScreen({Key? key}) : super(key: key);

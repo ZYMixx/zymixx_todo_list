@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
-import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
+import '../app_widgets/my_animated_card.dart';
 
 class StatisticScreen extends StatelessWidget {
   const StatisticScreen({super.key});

@@ -26,13 +26,13 @@ import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
-import 'package:zymixx_todo_list/presentation/work_mod_screen/work_mod_screen.dart';
 import '../data/services/service_window_manager.dart';
-import 'black_box_screen/black_box_bloc.dart';
 import 'bloc_global/all_item_control_bloc.dart';
 import 'bloc_global/list_todo_screen_bloc.dart';
-import 'daily_todo_screen/daily_todo_bloc.dart';
-import 'my_bottom_navigator_screen/my_bottom_navigator_screen.dart';
+import 'screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
+import 'screen_black_box/black_box_bloc.dart';
+import 'screen_daily_todo/daily_todo_bloc.dart';
+import 'screen_work_mod/work_mod_screen.dart';
 
 class App {
   static late final GlobalKey<NavigatorState> navigatorKey;

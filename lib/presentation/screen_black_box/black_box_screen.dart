@@ -17,7 +17,7 @@ import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
-import '../my_bottom_navigator_screen/my_bottom_navigator_screen.dart';
+import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
 import 'black_box_bloc.dart';
 
 class BlackBoxScreen extends StatelessWidget {

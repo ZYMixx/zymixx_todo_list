@@ -11,7 +11,7 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 
 import '../../domain/todo_item.dart';
-import '../daily_todo_screen/daily_todo_bloc.dart';
+import '../screen_daily_todo/daily_todo_bloc.dart';
 
 class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState> {
   final DaoDatabase _daoDB;
