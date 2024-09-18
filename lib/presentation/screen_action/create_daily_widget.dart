@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
-
+import '../app_widgets/my_animated_card.dart';
 class CreateDailyWidget extends StatefulWidget {
   const CreateDailyWidget({super.key});
 

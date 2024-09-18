@@ -6,7 +6,7 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_expansion_panel.dart';
+import 'package:zymixx_todo_list/presentation/app_widgets/my_expansion_panel.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
 

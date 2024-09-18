@@ -12,10 +12,10 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
-import 'package:zymixx_todo_list/presentation/action_screens/create_daily_widget.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_confirm_delete_dialog.dart';
+import 'package:zymixx_todo_list/presentation/app_widgets/my_confirm_delete_dialog.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
+import '../screen_action/create_daily_widget.dart';
 
 class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
   final _daoDatabase = DaoDatabase();

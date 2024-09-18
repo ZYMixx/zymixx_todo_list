@@ -14,7 +14,7 @@ import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.
 
 import '../../../data/tools/tool_time_string_converter.dart';
 import '../../../domain/todo_item.dart';
-import '../../my_widgets/my_animated_card.dart';
+import '../../app_widgets/my_animated_card.dart';
 import '../todo_item_bloc.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 

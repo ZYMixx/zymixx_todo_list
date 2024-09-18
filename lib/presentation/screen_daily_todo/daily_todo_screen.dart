@@ -7,9 +7,8 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/add_item_button.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
-
+import 'package:zymixx_todo_list/presentation/app_widgets/add_item_button.dart';
+import '../app_widgets/my_animated_card.dart';
 import '../bloc_global/all_item_control_bloc.dart';
 import 'daily_todo_bloc.dart';
 

@@ -8,7 +8,7 @@ import 'package:zymixx_todo_list/domain/todo_item.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
 import '../bloc_global/list_todo_screen_bloc.dart';
-import '../main_todo_list_screen/widgets/todo_item_widget.dart';
+import '../screen_main_todo_list/widgets/todo_item_widget.dart';
 
 const platform = MethodChannel('ru.zymixx/zymixxWindowsChannel');
 

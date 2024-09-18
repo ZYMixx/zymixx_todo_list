@@ -1,8 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/presentation/my_widgets/my_animated_card.dart';
-
+import '../app_widgets/my_animated_card.dart';
 class AddItemButton extends StatelessWidget {
 
   VoidCallback onTapAction;
