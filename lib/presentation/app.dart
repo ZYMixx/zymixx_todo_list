@@ -11,6 +11,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:zymixx_todo_list/data/db/app_database.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/db/mapper_database.dart';
+import 'package:zymixx_todo_list/data/flame/hover_observer.dart';
+import 'package:zymixx_todo_list/data/flame/wall_bg_flame_widget.dart';
 import 'package:zymixx_todo_list/data/services/service_audio_player.dart';
 import 'package:zymixx_todo_list/data/services/service_background_key_listener.dart';
 import 'package:zymixx_todo_list/data/services/service_image_plugin_work.dart';
@@ -24,13 +26,13 @@ import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
-import 'package:zymixx_todo_list/presentation/bloc/black_box_bloc.dart';
-import 'package:zymixx_todo_list/presentation/bloc/daily_todo_bloc.dart';
-import 'package:zymixx_todo_list/presentation/bloc/list_todo_screen_bloc.dart';
-import 'package:zymixx_todo_list/presentation/my_bottom_navigator_screen.dart';
-import 'package:zymixx_todo_list/presentation/work_mod_screen.dart';
+import 'package:zymixx_todo_list/presentation/work_mod_screen/work_mod_screen.dart';
 import '../data/services/service_window_manager.dart';
-import 'bloc/all_item_control_bloc.dart';
+import 'black_box_screen/black_box_bloc.dart';
+import 'bloc_global/all_item_control_bloc.dart';
+import 'bloc_global/list_todo_screen_bloc.dart';
+import 'daily_todo_screen/daily_todo_bloc.dart';
+import 'my_bottom_navigator_screen/my_bottom_navigator_screen.dart';
 
 class App {
   static late final GlobalKey<NavigatorState> navigatorKey;
@@ -63,7 +65,8 @@ class App {
             supportedLocales: [
               const Locale('ru'),
             ],
-            home: MyBottomNavigatorScreen()),
+            home: MyBottomNavigatorScreen()
+        ),
       );
     }, (error, stackTrace) {
       print('Error occurred: $error');
@@ -93,6 +96,7 @@ class App {
     Get.put<ServiceStreamController>(ServiceStreamController());
     Get.put<ServiceSystemTray>(ServiceSystemTray());
     Get.put<ServiceWindowManager>(ServiceWindowManager());
+    Get.put<CursorPositionService>(CursorPositionService());
     //init tools
     Get.put<ToolDateFormatter>(ToolDateFormatter());
     Get.put<ToolMergeJson>(ToolMergeJson());
@@ -104,6 +108,8 @@ class App {
     Get.put<ListTodoScreenBloc>(ListTodoScreenBloc());
     Get.put<DailyTodoBloc>(DailyTodoBloc());
     Get.put<BlackBoxBloc>(BlackBoxBloc()..add(LoadNotesEvent()));
+    //Flame BG
+    Get.put<WallBgFlameWidget>(WallBgFlameWidget());
 
   }
 

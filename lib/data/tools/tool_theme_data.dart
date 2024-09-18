@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:zymixx_todo_list/data/flame/wall_bg_flame_widget.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
 
 abstract class ToolThemeData {
@@ -52,22 +54,27 @@ class MyDefBgDecoration extends StatelessWidget {
           ),
         ),
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 0.9,
-            colors: [
-              Colors.transparent,
-              Colors.black26,
-              Colors.black38,
-              Colors.deepPurpleAccent,
-            ],
-            stops: [0.2, 0.7, 0.75, 1.0],
+      child: Stack(
+        children: [
+          Get.find<WallBgFlameWidget>(),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment.center,
+                radius: 0.9,
+                colors: [
+                  Colors.transparent,
+                  Colors.black26,
+                  Colors.black38,
+                  Colors.deepPurpleAccent,
+                ],
+                stops: [0.2, 0.7, 0.75, 1.0],
+              ),
+              backgroundBlendMode: BlendMode.softLight,
+            ),
+            child: child,
           ),
-          backgroundBlendMode: BlendMode.softLight,
-        ),
-        child: child,
+        ],
       ),
     );
   }

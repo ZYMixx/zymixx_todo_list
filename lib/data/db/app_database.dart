@@ -6,7 +6,7 @@ import 'package:drift/native.dart';
 
 part '../../generated/data/db/app_database.g.dart';
 
-@DriftDatabase(tables: [TodoItemDB])
+@DriftDatabase(tables: [TodoItemDB, WorkOnSideTodoItemDB])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(QueryExecutor exec) : super(exec);
 
@@ -48,6 +48,20 @@ class TodoItemDB extends Table {
   IntColumn get autoPauseSeconds => integer().nullable().withDefault(const Constant(0))();
 
   BoolColumn get isDone => boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get targetDateTime => dateTime().nullable()();
+}
+
+class WorkOnSideTodoItemDB extends Table {
+  IntColumn get id => integer().nullable().autoIncrement()();
+
+  TextColumn get title => text().withLength(min: 6, max: 60)();
+
+  IntColumn get secondsSpent => integer().nullable().withDefault(const Constant(0))();
+
+  IntColumn get feelingScore => integer().nullable().withDefault(const Constant(0))();
+
+  IntColumn get usefulScore => integer().nullable().withDefault(const Constant(0))();
 
   DateTimeColumn get targetDateTime => dateTime().nullable()();
 }

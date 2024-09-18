@@ -52,7 +52,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APP_ICON            ICON                    "C:\\Users\\ZYMixx\\AndroidStudioProjects\\zymixx_todo_list\\assets\\imready256х256.ico"
+IDI_APP_ICON            ICON                    "C:\\Users\\makc-\\AndroidStudioProjects\\zymixx_todo_list\\assets\\imready256х256.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

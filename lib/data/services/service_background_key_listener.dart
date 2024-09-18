@@ -5,9 +5,9 @@ import 'package:keyboard_event/keyboard_event.dart' as kEvent;
 import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
-import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
-import 'package:zymixx_todo_list/presentation/work_mod_screen.dart';
 import 'package:get/get.dart';
+
+import '../../presentation/bloc_global/all_item_control_bloc.dart';
 
 class ServiceBackgroundKeyListener {
   List<CodeCallBack> userCallBacks = [];

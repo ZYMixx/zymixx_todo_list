@@ -7,9 +7,9 @@ import 'package:zymixx_todo_list/presentation/app.dart';
 class ServiceSystemTray{
 
   String _iconPath =
-      'C:\\Users\\ZYMixx\\AndroidStudioProjects\\zymixx_todo_list\\assets\\imready256х256.ico';
+      'C:\\Users\\makc-\\AndroidStudioProjects\\zymixx_todo_list\\assets\\imready256х256.ico';
   String _debagIconPath =
-      'C:\\Users\\ZYMixx\\AndroidStudioProjects\\zymixx_todo_list\\assets\\app_icon.ico';
+      'C:\\Users\\makc-\\AndroidStudioProjects\\zymixx_todo_list\\assets\\app_icon.ico';
 
   Future<void> initSystemTray() async {
     final SystemTray systemTray = SystemTray();
