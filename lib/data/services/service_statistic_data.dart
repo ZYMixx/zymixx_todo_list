@@ -6,7 +6,7 @@ import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
-import 'package:zymixx_todo_list/presentation/bloc/all_item_control_bloc.dart';
+import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 class ServiceStatisticData {
   String weekKey = 'week_data';

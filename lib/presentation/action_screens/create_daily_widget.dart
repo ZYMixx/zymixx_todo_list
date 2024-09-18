@@ -342,7 +342,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                     style: TextStyle(fontSize: 18.0, color: Colors.black),
                   ),
                   style: ElevatedButton.styleFrom(
-                    primary: ToolThemeData.mainGreenColor,
+                    backgroundColor: ToolThemeData.mainGreenColor,
                     padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 15.0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
