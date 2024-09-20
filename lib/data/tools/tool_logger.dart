@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 class Log {
   static Logger logger = Logger(
@@ -15,8 +16,12 @@ class Log {
   }
 
   //Info log
-  static i(dynamic text) {
-    logger.i(text.toString());
+  static i(dynamic text, [dynamic object]) {
+    if ( object != null){
+      logger.i(text.toString() + ' ' + object.toString());
+    } else {
+      logger.i(text.toString());
+    }
   }
 
   //Warning log

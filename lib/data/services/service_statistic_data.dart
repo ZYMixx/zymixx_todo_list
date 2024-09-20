@@ -57,6 +57,9 @@ class ServiceStatisticData {
 
   List<StatisticWeekHolder> _calculateWeekDateHolder(Map<String, List<TodoItem>> weekMap) {
     List<StatisticWeekHolder> statisticHolderList = [];
+    DateTime now = DateTime.now();
+    String currentWeekKey = _calculateWeek(now);
+
     for (var weekStringKey in weekMap.keys) {
       List<TodoItem> itemList = weekMap[weekStringKey]!;
       String weekName = weekStringKey;
@@ -64,7 +67,7 @@ class ServiceStatisticData {
       int dailyFails = 0;
       int storyItems = 0;
       int weekScore = 0;
-      DateTime today = DateTime.now();
+
       for (var item in itemList) {
         int? prise;
         try {
@@ -73,15 +76,16 @@ class ServiceStatisticData {
             prise = data['prise'];
           }
         } catch (e) {}
+
         if (item.category == EnumTodoCategory.daily.name &&
-            !item.targetDateTime!.isSameDay(today) &&
+            !item.targetDateTime!.isSameDay(now) &&
             item.isDone == false) {
           dailyFails++;
           weekScore -= _dailyPenalty;
         }
-        // дэйлики с наградой
+
         if (item.category == EnumTodoCategory.daily.name && item.isDone == true && prise != null) {
-          weekScore += (prise) * 60;
+          weekScore += prise * 60;
         }
         if (item.category == EnumTodoCategory.history_social.name) {
           storyItems++;
@@ -96,17 +100,26 @@ class ServiceStatisticData {
           }
         }
       }
+
       String scoreString = (weekScore / 3600).toStringAsFixed(1);
       double finalWeekScore = double.parse(scoreString);
+
+      // Определяем, активна ли неделя
+      bool isInactiveWeek = (weekStringKey != currentWeekKey && itemList.length < 12);
+
+      // Добавляем StatisticWeekHolder для недели
       statisticHolderList.add(
         StatisticWeekHolder(
-            weekName: weekName,
-            todoItemCount: todoItemCount,
-            dailyFails: dailyFails,
-            storyItems: storyItems,
-            weekScore: finalWeekScore),
+          weekName: weekName,
+          todoItemCount: todoItemCount,
+          dailyFails: dailyFails,
+          storyItems: storyItems,
+          weekScore: finalWeekScore,
+          isInactiveWeek: isInactiveWeek, // Устанавливаем статус активности недели
+        ),
       );
     }
+
     return statisticHolderList;
   }
 
@@ -117,6 +130,7 @@ class ServiceStatisticData {
       List<TodoItem> itemList = dayMap[dayStringKey]!;
       String dayName = dayStringKey;
       int dayScore = 0;
+      bool isInactiveDay = true;
       DateTime today = DateTime.now();
       late DateTime itemDay;
       for (var item in itemList) {
@@ -136,9 +150,11 @@ class ServiceStatisticData {
         // дэйлики с наградой
         if (item.category == EnumTodoCategory.daily.name && item.isDone == true && prise != null) {
           dayScore += prise * 60;
+          isInactiveDay = false;
         }
         if (item.category == EnumTodoCategory.history_social.name) {
           dayScore += _storyCost;
+          isInactiveDay = false;
         }
         if (item.category == EnumTodoCategory.history.name) {
           dayScore += item.secondsSpent;
@@ -146,16 +162,19 @@ class ServiceStatisticData {
           if (item.secondsSpent < 60) {
             dayScore += _todoIndividualSinglePrise;
           }
+          isInactiveDay = false;
         }
       }
       String scoreString = (dayScore / 3600).toStringAsFixed(1);
       double finalDayScore = double.parse(scoreString);
       statisticDayHolderList.add(
         StatisticDayHolder(
-            dayName: dayName,
-            dayScore: finalDayScore,
-            isMonday: mondayMap[dayName]!,
-            dateTime: itemDay),
+          dayName: dayName,
+          dayScore: finalDayScore,
+          isMonday: mondayMap[dayName]!,
+          isInactiveDay: isInactiveDay,
+          dateTime: itemDay,
+        ),
       );
     }
     return statisticDayHolderList;
@@ -186,6 +205,7 @@ class StatisticWeekHolder {
   int dailyFails;
   int storyItems;
   double weekScore;
+  bool isInactiveWeek;
 
   StatisticWeekHolder({
     required this.weekName,
@@ -193,6 +213,7 @@ class StatisticWeekHolder {
     required this.dailyFails,
     required this.storyItems,
     required this.weekScore,
+    this.isInactiveWeek = false,
   });
 }
 
@@ -201,11 +222,13 @@ class StatisticDayHolder {
   double dayScore;
   bool isMonday;
   DateTime dateTime;
+  bool isInactiveDay;
 
   StatisticDayHolder({
     required this.dayName,
     required this.dayScore,
     required this.isMonday,
     required this.dateTime,
+    this.isInactiveDay = false,
   });
 }

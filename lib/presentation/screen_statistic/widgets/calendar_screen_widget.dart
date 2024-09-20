@@ -1,69 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'package:gap/gap.dart';
+import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
-import '../app_widgets/my_animated_card.dart';
-import '../bloc_global/all_item_control_bloc.dart';
-import 'calendar_bloc.dart';
-import 'widgets/day_data_block_widget.dart';
-
-class CalendarScreen extends StatelessWidget {
-  const CalendarScreen({super.key});
-
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider<AllItemControlBloc>(
-        create: (_) => Get.find<AllItemControlBloc>(),
-        child: BlocProvider(create: (_) => CalendarBloc(), child: CalendarScreenWidget()));
-  }
-}
+import 'package:zymixx_todo_list/presentation/app_widgets/my_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 class CalendarScreenWidget extends StatelessWidget {
+  final List<StatisticDayHolder> dayData;
+
   const CalendarScreenWidget({
     super.key,
+    required this.dayData,
   });
 
   @override
   Widget build(BuildContext context) {
     DateRangePickerController _calendarController = DateRangePickerController();
-    var itemList = context.select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList);
-    Set<DateTime> storyItemDateList = context
-        .read<AllItemControlBloc>()
-        .state
-        .todoActiveItemList
-        .where(
-            (item) => item.targetDateTime != null && item.category == EnumTodoCategory.social.name)
-        .map((e) => e.targetDateTime!)
-        .toSet();
-    Set<DateTime> setNotEmptyDate = context
-        .read<AllItemControlBloc>()
-        .state
-        .todoActiveItemList
-        .where((item) => item.targetDateTime != null)
-        .map((e) => e.targetDateTime!)
-        .toSet();
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          Gap(10),
-          Flexible(
-            flex: 4,
-            child: MyAnimatedCard(
-              intensity: 0.005,
-              child: Material(
-                elevation: 10,
+      body: MyAnimatedCard(
+        intensity: 0.005,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            right: 12.0,
+            left: 12.0,
+            top: 6.0,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            elevation: 10,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(width: 0.7),
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
                     minHeight: 500,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.only(right: 12.0, left: 12.0, top: 12.0),
                     child: FractionallySizedBox(
                       heightFactor: 1.00,
                       widthFactor: 0.9,
@@ -83,72 +63,72 @@ class CalendarScreenWidget extends StatelessWidget {
                         controller: _calendarController,
                         cellBuilder:
                             (BuildContext context, DateRangePickerCellDetails cellDetails) {
-                          //ii начало build
                           DateTime date = cellDetails.date;
                           var cellColor = Colors.white;
-                          bool isStoryDay = false;
                           DateTime today = DateTime.now();
                           bool isToday = date.isSameDay(DateTime.now());
-                          for (var targetData in setNotEmptyDate) {
-                            if (targetData.isSameDay(date)) {
-                              cellColor = Colors.redAccent;
+                          double dayScore = 0.0;
+                          bool inactiveDay = false;
+                          for (var targetDataItem in dayData) {
+                            if (targetDataItem.dateTime.isSameDay(date)) {
+                              dayScore = targetDataItem.dayScore;
+                              inactiveDay = targetDataItem.isInactiveDay;
                             }
                           }
-                          for (var targetData in storyItemDateList) {
-                            if (targetData.isSameDay(date)) {
-                              isStoryDay = true;
+                          String titleDayScore = dayScore.toString();
+                          if(inactiveDay) {
+                            cellColor = Colors.grey[300]!;
+                            titleDayScore = '—';
+                          } else if (date.isBefore(today)) {
+                            if (dayScore == 0){
+                              inactiveDay = true;
+                              titleDayScore = '—';
+                              cellColor = Colors.grey[300]!;
+                            } else if (dayScore < 1) {
+                              cellColor = Colors.red[100]!;
+                            } else if (dayScore < 1.5) {
+                              cellColor = Colors.greenAccent[100]!;
+                            } else if (dayScore < 2) {
+                              cellColor = ToolThemeData.highlightGreenColor;
+                            } else if (dayScore < 2.5) {
+                              cellColor = ToolThemeData.mainGreenColor;
+                            } else if (dayScore > 2.9) {
+                              cellColor = ToolThemeData.specialItemColor;
                             }
                           }
                           if (_calendarController.view == DateRangePickerView.month) {
                             return Padding(
                               padding: const EdgeInsets.all(1.0),
                               child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: isStoryDay ? Colors.amber!.withOpacity(1) : null,
-                                ),
+                                decoration: BoxDecoration(color: cellColor),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    gradient: isStoryDay
-                                        ? null
-                                        : RadialGradient(
-                                            colors: [
-                                              Colors.white,
-                                              Colors.white,
-                                              cellColor.withOpacity(0.1)
-                                            ],
-                                            stops: [0.5, 0.4, 1.0],
-                                          ),
+                                    gradient: RadialGradient(
+                                      colors: [Colors.white38, Colors.white24, Colors.white12],
+                                      stops: [0.5, 0.4, 1.0],
+                                    ),
                                   ),
-                                  child: Stack(
-                                    children: [
-                                      if (date.isBefore(today) && !isToday)
-                                        Placeholder(
-                                          strokeWidth: 1,
-                                          color: Colors.black26,
-                                        ),
-                                      DecoratedBox(
-                                        decoration: BoxDecoration(
-                                            border: isToday
-                                                ? Border.all(
-                                                    width: 2, color: ToolThemeData.highlightColor)
-                                                : Border.all(width: 0.75, color: Colors.black12),
-                                            shape: BoxShape.rectangle),
-                                        child: Center(
-                                          child: Text(
-                                            date.day.toString(),
-                                            style: TextStyle(
-                                              color: isToday
-                                                  ? ToolThemeData.itemBorderColor
-                                                  : Colors.black,
-                                              fontSize: isToday ? 17 : null,
-                                              fontWeight: FontWeight.bold,
-                                              fontStyle: isToday ? FontStyle.italic : null,
-                                            ),
-                                          ),
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                        border: isToday
+                                            ? Border.all(
+                                                width: 2, color: ToolThemeData.highlightColor)
+                                            : Border.all(width: 0.75, color: Colors.black12),
+                                        shape: BoxShape.rectangle),
+                                    child: Center(
+                                      child: Text(
+                                        titleDayScore,
+                                        style: TextStyle(
+                                          color: isToday
+                                              ? ToolThemeData.itemBorderColor
+                                              : Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: isToday ? FontStyle.italic : null,
                                         ),
                                       ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -205,11 +185,7 @@ class CalendarScreenWidget extends StatelessWidget {
                             );
                           }
                         },
-                        onSelectionChanged: (args) {
-                          context
-                              .read<CalendarBloc>()
-                              .add(SelectDateEvent(selectedDateTime: args.value));
-                        },
+                        onSelectionChanged: (args) {},
                       ),
                     ),
                   ),
@@ -217,8 +193,7 @@ class CalendarScreenWidget extends StatelessWidget {
               ),
             ),
           ),
-          Flexible(flex: 5, fit: FlexFit.loose, child: DayDataBlockWidget()),
-        ],
+        ),
       ),
     );
   }
