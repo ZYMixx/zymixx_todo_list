@@ -21,6 +21,7 @@ import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/services/service_stream_controller.dart';
 import 'package:zymixx_todo_list/data/services/service_system_tray.dart';
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
@@ -54,6 +55,8 @@ class App {
       await Get.find<ServiceSystemTray>().initSystemTray();
       runApp(
         MaterialApp(
+            navigatorObservers: [Get.find<AppNavigatorObserver>()],
+            initialRoute: 'MainScreen',
             debugShowCheckedModeBanner: true,
             navigatorKey: navigatorKey,
             theme: ThemeData.light(),
@@ -82,6 +85,7 @@ class App {
     Timer.periodic(Duration(seconds: 1), (timer) async {});
   }
 
+
   static _initGet() async {
     // db
     Get.put<AppDatabase>(await createDatabase());
@@ -106,6 +110,7 @@ class App {
     //init Singleton bloc
     Get.put<AllItemControlBloc>(AllItemControlBloc()..add(LoadAllItemEvent()));
     Get.put<ListTodoScreenBloc>(ListTodoScreenBloc());
+    Get.put<AppNavigatorObserver>(AppNavigatorObserver());
     Get.put<DailyTodoBloc>(DailyTodoBloc());
     Get.put<BlackBoxBloc>(BlackBoxBloc()..add(LoadNotesEvent()));
     //Flame BG
@@ -139,9 +144,11 @@ class App {
         });
       });
     } else {
-      await Get.find<ServiceWindowManager>().workModPosition();
-      ToolNavigator.set(screen: WorkModScreen(), root: PageRootEnum.empty);
-      App.inWorkMod = true;
+      if (Get.find<AppNavigatorObserver>().currentRouteName == '/') {
+        await Get.find<ServiceWindowManager>().workModPosition();
+        ToolNavigator.set(screen: WorkModScreen(), root: PageRootEnum.empty);
+        App.inWorkMod = true;
+      }
     }
   }
 

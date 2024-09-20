@@ -494,7 +494,10 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 if (saveData == null) {
                 } else if (saveData) {
                   Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                      folderName: folderName, noteText: _controller.text, noteKey: widget.noteKey));
+                    folderName: folderName,
+                    noteText: _controller.text,
+                    noteKey: widget.noteKey,
+                  ));
                 }
                 ToolNavigator.pop();
               }
@@ -523,52 +526,52 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                             ),
                             child: _isEditMode
                                 ? TextField(
-                                  controller: _controller,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                  maxLines: null,
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    fillColor: Colors.red,
-                                    labelText: 'Note',
-                                  ),
-                                )
+                                    controller: _controller,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                    maxLines: null,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      fillColor: Colors.red,
+                                      labelText: 'Note',
+                                    ),
+                                  )
                                 : DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.white60, width: 0.6),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: SingleChildScrollView(
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12.0, vertical: 16),
-                                        child: Linkify(
-                                          onOpen: (link) async {
-                                            Log.e('try open ${link.url}');
-                                            if (await canLaunchUrl(Uri.parse(link.url))) {
-                                              Log.e('try open 2${link.url}');
-                                              await launchUrl(Uri.parse(link.url));
-                                            } else {
-                                              throw 'Could not launch $link';
-                                            }
-                                          },
-                                          text: _controller.text,
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                          ),
-                                          linkStyle: TextStyle(
-                                            color: Colors.blue,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.white60, width: 0.6),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0, vertical: 16),
+                                          child: Linkify(
+                                            onOpen: (link) async {
+                                              Log.e('try open ${link.url}');
+                                              if (await canLaunchUrl(Uri.parse(link.url))) {
+                                                Log.e('try open 2${link.url}');
+                                                await launchUrl(Uri.parse(link.url));
+                                              } else {
+                                                throw 'Could not launch $link';
+                                              }
+                                            },
+                                            text: _controller.text,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 17,
+                                            ),
+                                            linkStyle: TextStyle(
+                                              color: Colors.blue,
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
                           ),
                         ),
                       ),

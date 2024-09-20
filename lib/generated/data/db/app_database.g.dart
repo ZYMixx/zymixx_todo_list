@@ -943,73 +943,6 @@ typedef $$TodoItemDBTableUpdateCompanionBuilder = TodoItemDBCompanion Function({
   Value<DateTime?> targetDateTime,
 });
 
-class $$TodoItemDBTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $TodoItemDBTable,
-    TodoItemDBData,
-    $$TodoItemDBTableFilterComposer,
-    $$TodoItemDBTableOrderingComposer,
-    $$TodoItemDBTableCreateCompanionBuilder,
-    $$TodoItemDBTableUpdateCompanionBuilder> {
-  $$TodoItemDBTableTableManager(_$AppDatabase db, $TodoItemDBTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer:
-              $$TodoItemDBTableFilterComposer(ComposerState(db, table)),
-          orderingComposer:
-              $$TodoItemDBTableOrderingComposer(ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int?> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<String> content = const Value.absent(),
-            Value<String> category = const Value.absent(),
-            Value<int> timerSeconds = const Value.absent(),
-            Value<int> stopwatchSeconds = const Value.absent(),
-            Value<int?> secondsSpent = const Value.absent(),
-            Value<int?> autoPauseSeconds = const Value.absent(),
-            Value<bool> isDone = const Value.absent(),
-            Value<DateTime?> targetDateTime = const Value.absent(),
-          }) =>
-              TodoItemDBCompanion(
-            id: id,
-            title: title,
-            content: content,
-            category: category,
-            timerSeconds: timerSeconds,
-            stopwatchSeconds: stopwatchSeconds,
-            secondsSpent: secondsSpent,
-            autoPauseSeconds: autoPauseSeconds,
-            isDone: isDone,
-            targetDateTime: targetDateTime,
-          ),
-          createCompanionCallback: ({
-            Value<int?> id = const Value.absent(),
-            required String title,
-            required String content,
-            Value<String> category = const Value.absent(),
-            Value<int> timerSeconds = const Value.absent(),
-            Value<int> stopwatchSeconds = const Value.absent(),
-            Value<int?> secondsSpent = const Value.absent(),
-            Value<int?> autoPauseSeconds = const Value.absent(),
-            Value<bool> isDone = const Value.absent(),
-            Value<DateTime?> targetDateTime = const Value.absent(),
-          }) =>
-              TodoItemDBCompanion.insert(
-            id: id,
-            title: title,
-            content: content,
-            category: category,
-            timerSeconds: timerSeconds,
-            stopwatchSeconds: stopwatchSeconds,
-            secondsSpent: secondsSpent,
-            autoPauseSeconds: autoPauseSeconds,
-            isDone: isDone,
-            targetDateTime: targetDateTime,
-          ),
-        ));
-}
-
 class $$TodoItemDBTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TodoItemDBTable> {
   $$TodoItemDBTableFilterComposer(super.$state);
@@ -1118,6 +1051,97 @@ class $$TodoItemDBTableOrderingComposer
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
+class $$TodoItemDBTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $TodoItemDBTable,
+    TodoItemDBData,
+    $$TodoItemDBTableFilterComposer,
+    $$TodoItemDBTableOrderingComposer,
+    $$TodoItemDBTableCreateCompanionBuilder,
+    $$TodoItemDBTableUpdateCompanionBuilder,
+    (
+      TodoItemDBData,
+      BaseReferences<_$AppDatabase, $TodoItemDBTable, TodoItemDBData>
+    ),
+    TodoItemDBData,
+    PrefetchHooks Function()> {
+  $$TodoItemDBTableTableManager(_$AppDatabase db, $TodoItemDBTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer:
+              $$TodoItemDBTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$TodoItemDBTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int?> id = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<String> content = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<int> timerSeconds = const Value.absent(),
+            Value<int> stopwatchSeconds = const Value.absent(),
+            Value<int?> secondsSpent = const Value.absent(),
+            Value<int?> autoPauseSeconds = const Value.absent(),
+            Value<bool> isDone = const Value.absent(),
+            Value<DateTime?> targetDateTime = const Value.absent(),
+          }) =>
+              TodoItemDBCompanion(
+            id: id,
+            title: title,
+            content: content,
+            category: category,
+            timerSeconds: timerSeconds,
+            stopwatchSeconds: stopwatchSeconds,
+            secondsSpent: secondsSpent,
+            autoPauseSeconds: autoPauseSeconds,
+            isDone: isDone,
+            targetDateTime: targetDateTime,
+          ),
+          createCompanionCallback: ({
+            Value<int?> id = const Value.absent(),
+            required String title,
+            required String content,
+            Value<String> category = const Value.absent(),
+            Value<int> timerSeconds = const Value.absent(),
+            Value<int> stopwatchSeconds = const Value.absent(),
+            Value<int?> secondsSpent = const Value.absent(),
+            Value<int?> autoPauseSeconds = const Value.absent(),
+            Value<bool> isDone = const Value.absent(),
+            Value<DateTime?> targetDateTime = const Value.absent(),
+          }) =>
+              TodoItemDBCompanion.insert(
+            id: id,
+            title: title,
+            content: content,
+            category: category,
+            timerSeconds: timerSeconds,
+            stopwatchSeconds: stopwatchSeconds,
+            secondsSpent: secondsSpent,
+            autoPauseSeconds: autoPauseSeconds,
+            isDone: isDone,
+            targetDateTime: targetDateTime,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TodoItemDBTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $TodoItemDBTable,
+    TodoItemDBData,
+    $$TodoItemDBTableFilterComposer,
+    $$TodoItemDBTableOrderingComposer,
+    $$TodoItemDBTableCreateCompanionBuilder,
+    $$TodoItemDBTableUpdateCompanionBuilder,
+    (
+      TodoItemDBData,
+      BaseReferences<_$AppDatabase, $TodoItemDBTable, TodoItemDBData>
+    ),
+    TodoItemDBData,
+    PrefetchHooks Function()>;
 typedef $$WorkOnSideTodoItemDBTableCreateCompanionBuilder
     = WorkOnSideTodoItemDBCompanion Function({
   Value<int?> id,
@@ -1136,58 +1160,6 @@ typedef $$WorkOnSideTodoItemDBTableUpdateCompanionBuilder
   Value<int?> usefulScore,
   Value<DateTime?> targetDateTime,
 });
-
-class $$WorkOnSideTodoItemDBTableTableManager extends RootTableManager<
-    _$AppDatabase,
-    $WorkOnSideTodoItemDBTable,
-    WorkOnSideTodoItemDBData,
-    $$WorkOnSideTodoItemDBTableFilterComposer,
-    $$WorkOnSideTodoItemDBTableOrderingComposer,
-    $$WorkOnSideTodoItemDBTableCreateCompanionBuilder,
-    $$WorkOnSideTodoItemDBTableUpdateCompanionBuilder> {
-  $$WorkOnSideTodoItemDBTableTableManager(
-      _$AppDatabase db, $WorkOnSideTodoItemDBTable table)
-      : super(TableManagerState(
-          db: db,
-          table: table,
-          filteringComposer: $$WorkOnSideTodoItemDBTableFilterComposer(
-              ComposerState(db, table)),
-          orderingComposer: $$WorkOnSideTodoItemDBTableOrderingComposer(
-              ComposerState(db, table)),
-          updateCompanionCallback: ({
-            Value<int?> id = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<int?> secondsSpent = const Value.absent(),
-            Value<int?> feelingScore = const Value.absent(),
-            Value<int?> usefulScore = const Value.absent(),
-            Value<DateTime?> targetDateTime = const Value.absent(),
-          }) =>
-              WorkOnSideTodoItemDBCompanion(
-            id: id,
-            title: title,
-            secondsSpent: secondsSpent,
-            feelingScore: feelingScore,
-            usefulScore: usefulScore,
-            targetDateTime: targetDateTime,
-          ),
-          createCompanionCallback: ({
-            Value<int?> id = const Value.absent(),
-            required String title,
-            Value<int?> secondsSpent = const Value.absent(),
-            Value<int?> feelingScore = const Value.absent(),
-            Value<int?> usefulScore = const Value.absent(),
-            Value<DateTime?> targetDateTime = const Value.absent(),
-          }) =>
-              WorkOnSideTodoItemDBCompanion.insert(
-            id: id,
-            title: title,
-            secondsSpent: secondsSpent,
-            feelingScore: feelingScore,
-            usefulScore: usefulScore,
-            targetDateTime: targetDateTime,
-          ),
-        ));
-}
 
 class $$WorkOnSideTodoItemDBTableFilterComposer
     extends FilterComposer<_$AppDatabase, $WorkOnSideTodoItemDBTable> {
@@ -1256,6 +1228,86 @@ class $$WorkOnSideTodoItemDBTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 }
+
+class $$WorkOnSideTodoItemDBTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $WorkOnSideTodoItemDBTable,
+    WorkOnSideTodoItemDBData,
+    $$WorkOnSideTodoItemDBTableFilterComposer,
+    $$WorkOnSideTodoItemDBTableOrderingComposer,
+    $$WorkOnSideTodoItemDBTableCreateCompanionBuilder,
+    $$WorkOnSideTodoItemDBTableUpdateCompanionBuilder,
+    (
+      WorkOnSideTodoItemDBData,
+      BaseReferences<_$AppDatabase, $WorkOnSideTodoItemDBTable,
+          WorkOnSideTodoItemDBData>
+    ),
+    WorkOnSideTodoItemDBData,
+    PrefetchHooks Function()> {
+  $$WorkOnSideTodoItemDBTableTableManager(
+      _$AppDatabase db, $WorkOnSideTodoItemDBTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$WorkOnSideTodoItemDBTableFilterComposer(
+              ComposerState(db, table)),
+          orderingComposer: $$WorkOnSideTodoItemDBTableOrderingComposer(
+              ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<int?> id = const Value.absent(),
+            Value<String> title = const Value.absent(),
+            Value<int?> secondsSpent = const Value.absent(),
+            Value<int?> feelingScore = const Value.absent(),
+            Value<int?> usefulScore = const Value.absent(),
+            Value<DateTime?> targetDateTime = const Value.absent(),
+          }) =>
+              WorkOnSideTodoItemDBCompanion(
+            id: id,
+            title: title,
+            secondsSpent: secondsSpent,
+            feelingScore: feelingScore,
+            usefulScore: usefulScore,
+            targetDateTime: targetDateTime,
+          ),
+          createCompanionCallback: ({
+            Value<int?> id = const Value.absent(),
+            required String title,
+            Value<int?> secondsSpent = const Value.absent(),
+            Value<int?> feelingScore = const Value.absent(),
+            Value<int?> usefulScore = const Value.absent(),
+            Value<DateTime?> targetDateTime = const Value.absent(),
+          }) =>
+              WorkOnSideTodoItemDBCompanion.insert(
+            id: id,
+            title: title,
+            secondsSpent: secondsSpent,
+            feelingScore: feelingScore,
+            usefulScore: usefulScore,
+            targetDateTime: targetDateTime,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$WorkOnSideTodoItemDBTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $WorkOnSideTodoItemDBTable,
+        WorkOnSideTodoItemDBData,
+        $$WorkOnSideTodoItemDBTableFilterComposer,
+        $$WorkOnSideTodoItemDBTableOrderingComposer,
+        $$WorkOnSideTodoItemDBTableCreateCompanionBuilder,
+        $$WorkOnSideTodoItemDBTableUpdateCompanionBuilder,
+        (
+          WorkOnSideTodoItemDBData,
+          BaseReferences<_$AppDatabase, $WorkOnSideTodoItemDBTable,
+              WorkOnSideTodoItemDBData>
+        ),
+        WorkOnSideTodoItemDBData,
+        PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;

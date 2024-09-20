@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:keyboard_event/keyboard_event.dart' as kEvent;
 import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
 import 'package:get/get.dart';
+import 'package:zymixx_todo_list/presentation/screen_black_box/black_box_screen.dart';
 
 import '../../presentation/bloc_global/all_item_control_bloc.dart';
 
@@ -81,6 +83,7 @@ class ServiceBackgroundKeyListener {
   }
 
   _setUpKeyListener() async {
+    // переход в work-mod
     Get.find<ServiceBackgroundKeyListener>().addUserCallBacks(
       codeKey: App.isRelease ? '1' : '4', // 1 3
       needAltDown: true,
@@ -88,12 +91,24 @@ class ServiceBackgroundKeyListener {
         await App.changeAppWorkMod();
       },
     );
-    // переход в work-mod
+    Get.find<ServiceBackgroundKeyListener>().addUserCallBacks(
+      codeKey: App.isRelease ? '8' : '9', // 1 3
+      needAltDown: true,
+      callBack: () async {
+        Log.i('Get.find<AppNavigatorObserver>().currentRouteName',
+            Get.find<AppNavigatorObserver>().currentRouteName);
+        Log.i('Get.find<AppNavigatorObserver>().routeNameStack',
+            Get.find<AppNavigatorObserver>().routeNameStack);
+      },
+    );
+    // свернуть
     Get.find<ServiceBackgroundKeyListener>().addUserCallBacks(
       codeKey: App.isRelease ? 'Z' : 'X', //Z - X
       needAltDown: true,
       callBack: () async {
-        Get.find<ServiceWindowManager>().onHideWindowPressed();
+        if (Get.find<AppNavigatorObserver>().currentRouteName != '${EditNoteScreen}') {
+          Get.find<ServiceWindowManager>().onHideWindowPressed();
+        }
       },
     );
     // создаём новый туду-итем
@@ -123,8 +138,6 @@ class ServiceBackgroundKeyListener {
     );
     await Get.find<ServiceBackgroundKeyListener>().startListening();
   }
-
-
 }
 
 class CodeCallBack {

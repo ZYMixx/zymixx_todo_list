@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:bitsdojo_window_platform_interface/bitsdojo_window_platform_interface.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 
@@ -124,13 +126,13 @@ class ServiceWindowManager extends WindowListener {
   }
 
   onHideWindowPressed() {
-    if (_isHided) {
-      windowManager.show();
-      _isHided = false;
-    } else {
-      windowManager.hide();
-      _isHided = true;
-    }
+      if (_isHided) {
+        windowManager.show();
+        _isHided = false;
+      } else {
+        windowManager.hide();
+        _isHided = true;
+      }
   }
 
   setListener() {

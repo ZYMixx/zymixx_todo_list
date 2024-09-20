@@ -93,7 +93,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
   }
 
   void _onDellAllItemEvent(DellAllItemEvent event, Emitter<ItemControlBlocState> emit) async {
-    // Ваш код обработки DellAllItemEvent
+    // код DellAllItemEvent
   }
 
   void _onDeleteItemEvent(DeleteItemEvent event, Emitter<ItemControlBlocState> emit) async {
