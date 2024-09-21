@@ -133,23 +133,26 @@ class App {
   }
 
   static changeAppWorkMod() async {
-    if (App.inWorkMod) {
-      await Get.find<ServiceWindowManager>().position();
-      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-        ToolNavigator.pop();
-        Future.delayed(Duration(milliseconds: 70)).then((_) {
-          // ждём пока закроются [[TodoItemBloc]]
-          Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
-          App.inWorkMod = false;
-        });
-      });
-    } else {
-      if (Get.find<AppNavigatorObserver>().currentRouteName == '/') {
-        await Get.find<ServiceWindowManager>().workModPosition();
-        ToolNavigator.set(screen: WorkModScreen(), root: PageRootEnum.empty);
-        App.inWorkMod = true;
-      }
-    }
+     if (App.inWorkMod) {
+       await Get.find<ServiceWindowManager>().position();
+       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+         ToolNavigator.pop();
+         Future.delayed(Duration(milliseconds: 70)).then((_) {
+           // ждём пока закроются [[TodoItemBloc]]
+           Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
+           App.inWorkMod = false;
+           Get.find<WallBgFlameWidget>().gameBounce.resumeEngine();
+
+         });
+       });
+     } else {
+       if (Get.find<AppNavigatorObserver>().currentRouteName == '/') {
+         await Get.find<ServiceWindowManager>().workModPosition();
+         ToolNavigator.set(screen: WorkModScreen(), root: PageRootEnum.empty);
+         App.inWorkMod = true;
+         Get.find<WallBgFlameWidget>().gameBounce.pauseEngine();
+       }
+     }
   }
 
 }
