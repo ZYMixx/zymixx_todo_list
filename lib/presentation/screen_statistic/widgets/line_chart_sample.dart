@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/my_animated_card.dart';
-import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 class LineChartSample extends StatefulWidget {
   final List<StatisticWeekHolder> weekData;
