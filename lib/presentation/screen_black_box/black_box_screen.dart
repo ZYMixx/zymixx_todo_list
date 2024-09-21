@@ -493,11 +493,22 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     bContext: context, folderName: folderName, notedText: _controller.text);
                 if (saveData == null) {
                 } else if (saveData) {
-                  Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                    folderName: folderName,
-                    noteText: _controller.text,
-                    noteKey: widget.noteKey,
-                  ));
+                  if (_controller.text.length > 5) {
+                    Get.find<BlackBoxBloc>().add(
+                      ChangeNoteEvent(
+                        folderName: folderName,
+                        noteText: _controller.text,
+                        noteKey: widget.noteKey,
+                      ),
+                    );
+                  } else {
+                    Get.find<BlackBoxBloc>().add(
+                      DeleteNoteEvent(
+                        folderName: folderName,
+                        key: widget.noteKey,
+                      ),
+                    );
+                  }
                 }
                 ToolNavigator.pop();
               }
@@ -606,10 +617,20 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: () {
-                    Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
-                        folderName: folderName,
-                        noteText: _controller.text,
-                        noteKey: widget.noteKey));
+                    if (_controller.text.length > 5) {
+                      Get.find<BlackBoxBloc>().add(ChangeNoteEvent(
+                          folderName: folderName,
+                          noteText: _controller.text,
+                          noteKey: widget.noteKey));
+                    } else {
+                      Get.find<BlackBoxBloc>().add(
+                        DeleteNoteEvent(
+                          folderName: folderName,
+                          key: widget.noteKey,
+                        ),
+                      );
+                    }
+
                     ToolNavigator.pop();
                   },
                   child: GestureDetector(

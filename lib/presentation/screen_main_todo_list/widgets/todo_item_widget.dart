@@ -851,6 +851,7 @@ class _TimerWidgetState extends State<TimerWidget> {
             ),
           ),
           InkWell(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
             onTap: () {
               bloc.add(StopStartTimerEvent());
             },
@@ -859,12 +860,17 @@ class _TimerWidgetState extends State<TimerWidget> {
             },
             child: Row(
               children: [
-                Text(
-                  timerString,
-                  style: TextStyle(
-                    fontSize: 17.5,
-                    fontWeight: FontWeight.w500,
-                    shadows: ToolThemeData.defTextShadow,
+                GestureDetector(
+                  onLongPress: () {
+                    bloc.add(SetTimerNeedSongEvent());
+                  },
+                  child: Text(
+                    timerString,
+                    style: TextStyle(
+                      fontSize: 17.5,
+                      fontWeight: FontWeight.w500,
+                      shadows: ToolThemeData.defTextShadow,
+                    ),
                   ),
                 ),
                 Builder(builder: (context) {
@@ -936,6 +942,8 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     return IconButton(
       onPressed: null,
       icon: InkWell(
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+
         onSecondaryTap: () {
           bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
         },
@@ -950,12 +958,17 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                stopwatchString,
-                style: TextStyle(
-                  fontSize: 17.5,
-                  fontWeight: FontWeight.w500,
-                  shadows: ToolThemeData.defTextShadow,
+              GestureDetector(
+                onLongPress: () {
+                  bloc.add(SetTimerNeedSongEvent());
+                },
+                child: Text(
+                  stopwatchString,
+                  style: TextStyle(
+                    fontSize: 17.5,
+                    fontWeight: FontWeight.w500,
+                    shadows: ToolThemeData.defTextShadow,
+                  ),
                 ),
               ),
               //ii timer arrow
