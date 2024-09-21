@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -38,8 +39,12 @@ class ServiceStatisticData {
     Map<String, List<TodoItem>> dayMap = {};
     Map<String, bool> mondayMap = {};
     var now = DateTime.now();
-
     for (var todoItem in todoItemList) {
+      // if (todoItem.category == EnumTodoCategory.daily) {
+      // if (todoItem.title == 'Зарядка (6 мин)') {
+      //   Log.i('todoItem', todoItem.toStringFull());
+      // }
+      // }
       DateTime date = todoItem.targetDateTime!;
       if (date.isAfter(now)) {
         continue;
@@ -182,13 +187,15 @@ class ServiceStatisticData {
 
   String _calculateWeek(DateTime itemDate) {
     DateTime monday = itemDate.subtract(Duration(days: itemDate.weekday - 1));
-    DateTime sunday = itemDate.add(Duration(days: DateTime.daysPerWeek - itemDate.weekday));
+    // Определяем воскресенье как понедельник + 6 дней
+    DateTime sunday = monday.add(Duration(days: 6));
 
     DateFormat dateFormat1 = DateFormat('dd', 'ru');
     DateFormat dateFormat2 = DateFormat('dd MMM', 'ru');
 
     String formattedMonday = dateFormat1.format(monday);
     String formattedSunday = dateFormat2.format(sunday);
+
     return '$formattedMonday-$formattedSunday';
   }
 
