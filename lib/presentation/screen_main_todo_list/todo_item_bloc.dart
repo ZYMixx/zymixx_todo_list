@@ -50,6 +50,7 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     on<SetAutoPauseSeconds>(_onSetAutoPauseSeconds);
     on<SetTodoItemImageEvent>(_onSetTodoItemImageEvent);
     on<SetTimerActiveEvent>(_onSetTimerActiveEvent);
+    on<SetTimerNeedSongEvent>(_onSetTimerNeedSongEvent);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       resumeBloc();
     });
@@ -105,8 +106,10 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   }
 
   _onTimerEnd() {
+    if (state.needTimerSong) {
+      Get.find<ServiceAudioPlayer>().playTimerAlert();
+    }
     this.add(SetTimerActiveEvent(isActive: false));
-    Get.find<ServiceAudioPlayer>().playTimerAlert();
   }
 
   void _onChangeModEvent(ChangeModEvent event, Emitter<TodoItemBlocState> emit) {
@@ -147,6 +150,12 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
 
   void _onSetTimerActiveEvent(SetTimerActiveEvent event, Emitter<TodoItemBlocState> emit) async {
     emit(state.copyWith(isTimerActive: event.isActive));
+  }
+
+  void _onSetTimerNeedSongEvent(SetTimerNeedSongEvent event, Emitter<TodoItemBlocState> emit) async {
+    emit(state.copyWith(needTimerSong: (!state.needTimerSong)));
+    Log.i('state.needTimerSong', state.needTimerSong);
+
   }
 
   Future<void> _onChangeItemDateEvent(
@@ -355,6 +364,7 @@ class TodoItemBlocState {
   TimeModEnum timerMod;
   bool changeTextMod;
   bool isTimerActive;
+  bool needTimerSong;
   File? imageFile;
 
   TodoItemBlocState({
@@ -362,6 +372,7 @@ class TodoItemBlocState {
     required this.todoItem,
     this.changeTextMod = false,
     this.isTimerActive = false,
+    this.needTimerSong = true,
     this.imageFile,
   })  : todoItemId = todoItem.id,
         dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id) {
@@ -373,11 +384,13 @@ class TodoItemBlocState {
     TimeModEnum? timerMod,
     bool? changeTextMod,
     bool? isTimerActive,
+    bool? needTimerSong,
     File? imageFile,
   }) {
     return TodoItemBlocState(
       todoItem: todoItem ?? this.todoItem,
       timerMod: timerMod ?? this.timerMod,
+      needTimerSong: needTimerSong ?? this.needTimerSong,
       changeTextMod: changeTextMod ?? this.changeTextMod,
       isTimerActive: isTimerActive ?? this.isTimerActive,
       imageFile: imageFile ?? this.imageFile,
@@ -467,4 +480,9 @@ class SetTimerActiveEvent extends TodoItemBlocEvent {
   bool isActive;
 
   SetTimerActiveEvent({required this.isActive});
+}
+
+class SetTimerNeedSongEvent extends TodoItemBlocEvent {
+
+  SetTimerNeedSongEvent();
 }
