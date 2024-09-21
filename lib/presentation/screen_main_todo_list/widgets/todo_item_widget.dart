@@ -413,15 +413,16 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
     DateTime? targetDateTime = bloc.state.todoItem.targetDateTime;
-    String formattedTargetDateTime = Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
+    String formattedTargetDateTime =
+        Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
     return Padding(
       padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
       child: Focus(
         onFocusChange: (focus) {
           if (focus) {
-             _controllerTitle
-               ..selection =
-                   TextSelection(baseOffset: 0, extentOffset: _controllerTitle.text.length);
+            _controllerTitle
+              ..selection =
+                  TextSelection(baseOffset: 0, extentOffset: _controllerTitle.text.length);
           }
           if (!focus) {
             print('focus locc add Event ${_controllerTitle.text.trim()}');
@@ -470,30 +471,28 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                 buildContext: context, restoreFocusCallBack: _restoreSelection),
                           )
                       },
-                      onLongPress: () =>
-                        bloc
-                          ..add(
-                            SaveItemChangeEvent(
-                              titleText: _controllerTitle.text.trim(),
-                              descriptionText: descriptionForSave,
-                              setChangeMod: true,
-                            ),
-                          )
-                          ..add(
-                            SetItemDateEvent(userDateTime: DateTime.now()),
+                      onLongPress: () => bloc
+                        ..add(
+                          SaveItemChangeEvent(
+                            titleText: _controllerTitle.text.trim(),
+                            descriptionText: descriptionForSave,
+                            setChangeMod: true,
                           ),
-                      onSecondaryTap: () =>
-                        bloc
-                          ..add(
-                            SaveItemChangeEvent(
-                              titleText: _controllerTitle.text.trim(),
-                              descriptionText: descriptionForSave,
-                              setChangeMod: true,
-                            ),
-                          )
-                          ..add(
-                            IncreaseItemDateEvent(),
+                        )
+                        ..add(
+                          SetItemDateEvent(userDateTime: DateTime.now()),
+                        ),
+                      onSecondaryTap: () => bloc
+                        ..add(
+                          SaveItemChangeEvent(
+                            titleText: _controllerTitle.text.trim(),
+                            descriptionText: descriptionForSave,
+                            setChangeMod: true,
                           ),
+                        )
+                        ..add(
+                          IncreaseItemDateEvent(),
+                        ),
                       child: Text(
                         formattedTargetDateTime,
                         style: TextStyle(
@@ -667,6 +666,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     TodoItem todoItem = context.select((TodoItemBloc bloc) => bloc.state.todoItem);
+    bool needTimerSong = context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
     int autoPauseSeconds = todoItem.autoPauseSeconds;
     TimeModEnum timerMod = context.select((TodoItemBloc bloc) => bloc.state.timerMod);
     return Stack(
@@ -691,6 +691,24 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                         backgroundColor: autoPauseSeconds == 30
                             ? ToolThemeData.specialItemColor
                             : ToolThemeData.highlightColor),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (!needTimerSong)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0, top: 2.0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(0.5),
+                child: Opacity(
+                  opacity: 1,
+                  child: Icon(
+                    Icons.music_off_outlined,
+                    size: 18,
+                    color: ToolThemeData.itemBorderColor,
                   ),
                 ),
               ),
@@ -748,29 +766,39 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
           children: [
             Flexible(
               fit: FlexFit.loose,
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
-                  });
+              child: GestureDetector(
+                onLongPress: () {
+                  bloc.add(SetTimerNeedSongEvent());
                 },
-                icon: Icon(
-                  Icons.timer,
-                  color: Colors.black87,
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
+                    });
+                  },
+                  icon: Icon(
+                    Icons.timer,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ),
             Flexible(
               fit: FlexFit.tight,
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.timer));
-                  });
+              child: GestureDetector(
+                onLongPress: () {
+                  bloc.add(SetTimerNeedSongEvent());
                 },
-                icon: Icon(
-                  Icons.timelapse_outlined,
-                  color: Colors.black87,
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.timer));
+                    });
+                  },
+                  icon: Icon(
+                    Icons.timelapse_outlined,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ),
@@ -903,7 +931,8 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     int stopwatch = context.select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
     bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    String stopwatchString = Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(stopwatch);
+    String stopwatchString =
+        Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(stopwatch);
     return IconButton(
       onPressed: null,
       icon: InkWell(
