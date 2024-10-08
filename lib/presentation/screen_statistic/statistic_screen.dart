@@ -5,6 +5,7 @@ import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/presentation/screen_statistic/widgets/calendar_screen_widget.dart';
 import 'package:zymixx_todo_list/presentation/screen_statistic/widgets/data_table_widget.dart';
 import 'package:zymixx_todo_list/presentation/screen_statistic/widgets/line_chart_sample.dart';
+import 'package:zymixx_todo_list/presentation/screen_statistic/widgets/streak_widget.dart';
 
 class StatisticScreen extends StatelessWidget {
   const StatisticScreen({super.key});
@@ -38,6 +39,9 @@ class StatisticWidget extends StatelessWidget {
                   Expanded(
                       child: CalendarScreenWidget(
                           dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey])),
+                  StreakWidget(
+                    streakCount: snapshot.data![Get.find<ServiceStatisticData>().streakKey],
+                  ),
                   DataTableWidget(
                     weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
                   ),
@@ -51,7 +55,6 @@ class StatisticWidget extends StatelessWidget {
             child: Text(
               'Build Statistic..',
               style: TextStyle(color: Colors.white),
-
             ),
           );
         }

@@ -78,7 +78,13 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                       },
                       child: InkWell(
                         onTap: () {
-                          ToolNavigator.push(screen: NotesScreen(folderName: foldersKeys[index]));
+                          Log.i('PRESS ${foldersKeys[index]}');
+                          try {
+                            ToolNavigator.push(screen: NotesScreen(folderName: foldersKeys[index]));
+                          } catch(e){
+                            Log.e('zy $e');
+
+                          }
                         },
                         child: Stack(
                           children: [
@@ -333,11 +339,13 @@ class _NotesScreenState extends State<NotesScreen> {
                       },
                       itemCount: notes.length,
                       itemBuilder: (context, itemId) {
+                        Log.i('START LOOP');
+
                         String notTitle = notes[itemId].value['noteText'] ?? '';
                         while (notTitle.startsWith('\n')) {
-                          notTitle.replaceFirst('\n', '');
-                        }
-                        ;
+                          notTitle = notTitle.replaceFirst('\n', '');
+                        };
+                        Log.i('END LO OP');
                         return InkWell(
                           key: ValueKey(itemId),
                           onTap: () {

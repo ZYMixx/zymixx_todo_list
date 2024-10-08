@@ -29,6 +29,9 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
   }
 
   void _initializeEventListeners() {
+    on<ItemControlBlocEvent>((ItemControlBlocEvent event, Emitter<ItemControlBlocState> emit){
+      print(event);
+    });
     Get.find<GlobalDbDao>().broadcastActiveTodoStream.listen((newList) {
       this.add(LoadAllItemEvent());
     });
@@ -49,8 +52,12 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
   void _onUpdateTodoListOnlyEvent(
       UpdateTodoListOnlyEvent event, Emitter<ItemControlBlocState> emit) async {
-    state.todoActiveItemList = await _daoDB.getActiveTodoItems();
-    state.todoDailyItemList = await _daoDB.getDailyTodoItems();
+    final results = await Future.wait([
+      _daoDB.getActiveTodoItems(),
+      _daoDB.getDailyTodoItems(),
+    ]);
+    state.todoActiveItemList = results[0];
+    state.todoDailyItemList = results[1];
   }
 
   void _onLoadAllItemEvent(LoadAllItemEvent event, Emitter<ItemControlBlocState> emit) async {
