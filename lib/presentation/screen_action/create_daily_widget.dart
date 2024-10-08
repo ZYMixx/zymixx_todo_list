@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
+import 'package:zymixx_todo_list/domain/app_data.dart';
 import '../app_widgets/my_animated_card.dart';
 class CreateDailyWidget extends StatefulWidget {
   const CreateDailyWidget({super.key});
@@ -405,7 +406,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Radio(
-              value: 60,
+              value: AppData.dailyMediumAutoPause,
               splashRadius: 13,
               fillColor: MaterialStateProperty.all(Colors.yellowAccent),
               groupValue: _selectedValue,
@@ -423,7 +424,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Radio(
-              value: 120,
+              value: AppData.dailyHardAutoPause,
               splashRadius: 13,
               fillColor: MaterialStateProperty.all(ToolThemeData.highlightColor),
               groupValue: _selectedValue,

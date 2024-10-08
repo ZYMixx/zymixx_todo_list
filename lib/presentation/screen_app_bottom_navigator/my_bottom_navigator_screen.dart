@@ -24,7 +24,7 @@ class MyBottomNavigatorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MyScreenBoxDecorationWidget(child: MyBottomNavigatorWidget());
+    return MyScreenBoxDecorationWidget(child: Get.find<MyBottomNavigatorWidget>());
   }
 }
 
@@ -99,10 +99,15 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
 }
 
 class MyBottomNavigatorWidget extends StatefulWidget {
-  const MyBottomNavigatorWidget({super.key});
+   MyBottomNavigatorWidget({super.key});
+
+   late _MyBottomNavigatorWidgetState state;
 
   @override
-  State<MyBottomNavigatorWidget> createState() => _MyBottomNavigatorWidgetState();
+  State<MyBottomNavigatorWidget> createState() {
+    state = _MyBottomNavigatorWidgetState();
+    return state;
+  }
 }
 
 class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
@@ -172,7 +177,6 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
   late Widget activeScreen = listScreens[selectedItemMenu];
 
 
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -206,7 +210,10 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
                     selectedItemMenu = index;
                   });
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    Get.find<WallBgFlameWidget>().gameBounce.applyRandomMove();
+                    Get
+                        .find<WallBgFlameWidget>()
+                        .gameBounce
+                        .applyRandomMove();
                   });
                 },
                 backgroundColor: Colors.deepPurpleAccent,

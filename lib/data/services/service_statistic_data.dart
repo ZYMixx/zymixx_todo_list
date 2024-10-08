@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
-import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
@@ -12,13 +10,15 @@ import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.
 class ServiceStatisticData {
   String weekKey = 'week_data';
   String dayKey = 'day_data';
+  String streakKey = 'streak_data';
 
   Future<Map<String, dynamic>> requestData() async {
     List<TodoItem> todoItemList = (await Get.find<GlobalDbDao>().getAllTodoItem());
     todoItemList.sort((a, b) => b.targetDateTime!.compareTo(a.targetDateTime!));
     return {
       weekKey: await _requestWeekStat(todoItemList),
-      dayKey: await _requestDaysStat(todoItemList)
+      dayKey: await _requestDaysStat(todoItemList),
+      streakKey: await _requestStreakStat(todoItemList)
     };
   }
 
@@ -53,6 +53,47 @@ class ServiceStatisticData {
       mondayMap.putIfAbsent(_calculateDayName(date), () => date.weekday == 1);
     }
     return _calculateDaysDateHolder(dayMap, mondayMap);
+  }
+
+  int _requestStreakStat(List<TodoItem> todoItemList) {
+    DateTime now = DateTime.now().subtract(Duration(days: 1));
+    int streak = 0;
+
+    // Сортируем задачи по дате
+    todoItemList.sort((a, b) => a.targetDateTime!.compareTo(b.targetDateTime!));
+
+    DateTime? currentDate;  // для отслеживания текущего дня
+
+    bool allTasksDoneForDay = true;  // флаг для проверки всех задач за день
+
+    for (var item in todoItemList.reversed) {
+      if (item.category == EnumTodoCategory.daily.name && item.targetDateTime!.isBefore(now)) {
+        // Если это первый элемент или новый день
+        if (currentDate == null || !item.targetDateTime!.isSameDay(currentDate!)) {
+          if (currentDate != null && allTasksDoneForDay) {
+            // Увеличиваем стрик только если все задачи за предыдущий день были выполнены
+            streak++;
+          }
+
+          // Устанавливаем новый день и сбрасываем флаг
+          currentDate = item.targetDateTime;
+          allTasksDoneForDay = true;
+        }
+
+        // Если задача не выполнена, сбрасываем флаг
+        if (!item.isDone) {
+          allTasksDoneForDay = false;
+          break;
+        }
+      }
+    }
+
+    // Обрабатываем последний день после завершения цикла
+    if (allTasksDoneForDay) {
+      streak++;
+    }
+
+    return streak;
   }
 
   int _storyCost = 60 * 60;

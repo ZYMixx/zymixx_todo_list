@@ -115,6 +115,9 @@ class App {
     Get.put<BlackBoxBloc>(BlackBoxBloc()..add(LoadNotesEvent()));
     //Flame BG
     Get.put<WallBgFlameWidget>(WallBgFlameWidget());
+    //Widgets
+    Get.put<MyBottomNavigatorWidget>(MyBottomNavigatorWidget());
+
 
   }
 

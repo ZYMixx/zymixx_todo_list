@@ -8,11 +8,15 @@ import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/db_todo_item_getter.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/services/service_stream_controller.dart';
+import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
+import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/my_confirm_delete_dialog.dart';
+import 'package:zymixx_todo_list/presentation/screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
+import 'package:zymixx_todo_list/presentation/screen_daily_todo/daily_todo_screen.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
 import '../screen_action/create_daily_widget.dart';
@@ -101,8 +105,10 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     );
   }
 
+  String dailyTimerIdentifier = '_daily_timer';
+  
   Future<void> _onStopStartTimerEvent(CompleteDailyEvent completeEvent, Emitter<DailyTodoState> emit) async {
-    String timerIdentifier = "${completeEvent.itemId}_timer";
+    String timerIdentifier = "${completeEvent.itemId}$dailyTimerIdentifier";
     if (state.activeTimerIdentifier != null && timerIdentifier != state.activeTimerIdentifier) {
       Get.find<ServiceStreamController>().stopStream(state.activeTimerIdentifier!);
       state.activeDailyItemGetter = null;
@@ -126,7 +132,15 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
         Get.find<ServiceStreamController>().stopStream(timerIdentifier);
         return false;
       } else {
-        await _daoDatabase.editTodoItemById(id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
+        if (await state.activeDailyItemGetter?.autoPauseSeconds == 0){
+          await _daoDatabase.editTodoItemById(
+              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
+          return true;
+        }
+        if (Get.find<ServiceStreamController>().isOtherTodoItemRun(dailyTimerIdentifier)) {
+          await _daoDatabase.editTodoItemById(
+              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
+        }
         return true;
       }
     };
@@ -141,7 +155,9 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     );
     StreamSubscription streamSubscription = timerStream.listen((event) async {
       if (event) {
-        Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
+        if (Get.find<MyBottomNavigatorWidget>().state.activeScreen is DailyTodoScreen) {
+          Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
+        }
       }
     });
     Get.find<ServiceStreamController>().addListener(subscription: streamSubscription, identifier: timerIdentifier);

@@ -99,6 +99,14 @@ class BlackBoxBloc extends Bloc<BlackBoxEvent, BlackBoxState> {
         }
       }
     }
+    Log.i('notes $notes');
+    for (var item in notes.values){
+      Log.i('notes $item');
+
+
+    }
+
+
     emit(state.copyWith(folders: folders, notes: notes));
   }
 

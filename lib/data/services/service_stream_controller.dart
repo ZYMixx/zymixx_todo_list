@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/services/service_background_key_listener.dart';
 
 class ServiceStreamController {
- List<StreamItem> streamItemsList = [];
- Map<String, StreamSubscription> subList = {};
+  List<StreamItem> streamItemsList = [];
+  Map<String, StreamSubscription> subList = {};
 
- Stream<bool> addStreamItem<T extends Bloc>({
+  Stream<bool> addStreamItem<T extends Bloc>({
     required String identifier,
     required Future<bool> Function() callBack,
     required Function() finishCallBack,
@@ -30,7 +30,19 @@ class ServiceStreamController {
     return newItem._stream;
   }
 
- Stream<bool>? resumeStreamListener(
+  bool isOtherTodoItemRun(String identifier) {
+    for (var stream in streamItemsList) {
+      if (stream.identifier.contains(identifier)) {
+        continue;
+      }
+      if (stream.isRun) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Stream<bool>? resumeStreamListener(
       {required String identifier, Function()? finishCallBack, int? autoPauseSeconds}) {
     for (var item in streamItemsList) {
       if (item.identifier == identifier) {
@@ -46,7 +58,7 @@ class ServiceStreamController {
     return null;
   }
 
- bool stopStream(String identifier) {
+  bool stopStream(String identifier) {
     StreamItem? foundItem;
     for (var item in streamItemsList) {
       if (item.identifier == identifier) {
@@ -61,14 +73,14 @@ class ServiceStreamController {
     return false;
   }
 
- addListener({required StreamSubscription subscription, required String identifier}) async {
+  addListener({required StreamSubscription subscription, required String identifier}) async {
     if (subList[identifier] != null) {
       await subList[identifier]?.cancel();
     }
     subList[identifier] = subscription;
   }
 
- removeListener({required String identifier}) async {
+  removeListener({required String identifier}) async {
     if (subList[identifier] != null) {
       await subList[identifier]?.cancel();
     }
