@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
+import 'package:zymixx_todo_list/domain/app_data.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/add_item_button.dart';
 import '../app_widgets/my_animated_card.dart';
@@ -226,68 +227,74 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (widget.dailyTodoItem.timerSeconds > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2.0),
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: DecoratedBox(
-                            position: DecorationPosition.background,
-                            decoration: BoxDecoration(
-                              border: Border.all(width: 1),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 2.0,
-                                  spreadRadius: 1.0,
-                                  offset: Offset(0, 0),
+                BlocBuilder<DailyTodoBloc, DailyTodoState> (
+                  builder: (context, state) {
+                    String timerIdentifier = "${widget.dailyTodoItem.id}${AppData.dailyTimerIdentifier}";
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (state.activeTimerIdentifier == timerIdentifier) RunDailyIndicatorWidget(),
+                        if (widget.dailyTodoItem.timerSeconds > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: DecoratedBox(
+                                position: DecorationPosition.background,
+                                decoration: BoxDecoration(
+                                  border: Border.all(width: 1),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 2.0,
+                                      spreadRadius: 1.0,
+                                      offset: Offset(0, 0),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                                child: Padding(
+                                  padding: const EdgeInsets.all(0.5),
+                                  child: CircleAvatar(
+                                    radius: 6.0,
+                                    backgroundColor: widget.dailyTodoItem.autoPauseSeconds == 0
+                                        ? Colors.grey[400]
+                                        : widget.dailyTodoItem.autoPauseSeconds == 60
+                                            ? Colors.yellowAccent
+                                            : ToolThemeData.highlightColor,
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(0.5),
-                              child: CircleAvatar(
-                                radius: 6.0,
-                                backgroundColor: widget.dailyTodoItem.autoPauseSeconds == 0
-                                    ? Colors.grey[400]
-                                    : widget.dailyTodoItem.autoPauseSeconds == 60
-                                        ? Colors.yellowAccent
-                                        : ToolThemeData.highlightColor,
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              widget.dailyTodoItem.timerSeconds == 0
+                                  ? ''
+                                  : '${Get.find<ToolTimeStringConverter>().formatSecondsToTimeWithoutZero(widget.dailyTodoItem.timerSeconds ?? 0)}',
+                              style: TextStyle(
+                                fontSize: 21.1,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                                shadows: timerIsRun
+                                    ? [
+                                        Shadow(
+                                          color: ToolThemeData.mainGreenColor,
+                                          offset: Offset(1, 1.5),
+                                          blurRadius: 1.6,
+                                        )
+                                      ]
+                                    : null,
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          widget.dailyTodoItem.timerSeconds == 0
-                              ? ''
-                              : '${Get.find<ToolTimeStringConverter>().formatSecondsToTimeWithoutZero(widget.dailyTodoItem.timerSeconds ?? 0)}',
-                          style: TextStyle(
-                            fontSize: 21.1,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                            shadows: timerIsRun
-                                ? [
-                                    Shadow(
-                                      color: ToolThemeData.mainGreenColor,
-                                      offset: Offset(1, 1.5),
-                                      blurRadius: 1.6,
-                                    )
-                                  ]
-                                : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  }
                 ),
                 if (jsonDecode(widget.dailyTodoItem.content)['prise'] != 0)
                   Align(
@@ -315,7 +322,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                         ),
                         Icon(
                           Icons.emoji_events,
-                          size: widget.dailyTodoItem.isDone ? 22 : 14,
+                          size: widget.dailyTodoItem.isDone ? 20 : 14,
                           color: widget.dailyTodoItem.isDone
                               ? ToolThemeData.specialItemColor
                               : Colors.black,
@@ -324,7 +331,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                       ],
                     ),
                   ),
-                Padding(
+                if (!widget.dailyTodoItem.isDone) Padding(
                   padding: const EdgeInsets.only(right: 6.0),
                   child: Align(
                     alignment: Alignment.bottomRight,
@@ -339,6 +346,32 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class RunDailyIndicatorWidget extends StatefulWidget {
+  const RunDailyIndicatorWidget({
+    super.key,
+  });
+
+  @override
+  State<RunDailyIndicatorWidget> createState() => _RunDailyIndicatorWidgetState();
+}
+
+class _RunDailyIndicatorWidgetState extends State<RunDailyIndicatorWidget> {
+
+  bool animationBool = false;
+
+  @override
+  Widget build(BuildContext context) {
+    animationBool = !animationBool;
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 900),
+      transform: Matrix4.identity()..scale(animationBool ? 1.1 : 1.15),
+
+      padding: EdgeInsets.only(right: animationBool ? 6 : 4, bottom:  animationBool ? 2 : 4),
+      child: Icon(Icons.directions_run, size: 16, color: animationBool ? Colors.black : Colors.deepPurple[800]),
     );
   }
 }

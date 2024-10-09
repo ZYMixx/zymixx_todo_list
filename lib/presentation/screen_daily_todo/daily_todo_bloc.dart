@@ -14,6 +14,7 @@ import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
+import 'package:zymixx_todo_list/domain/app_data.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/my_confirm_delete_dialog.dart';
 import 'package:zymixx_todo_list/presentation/screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
 import 'package:zymixx_todo_list/presentation/screen_daily_todo/daily_todo_screen.dart';
@@ -105,25 +106,28 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     );
   }
 
-  String dailyTimerIdentifier = '_daily_timer';
+
   
   Future<void> _onStopStartTimerEvent(CompleteDailyEvent completeEvent, Emitter<DailyTodoState> emit) async {
-    String timerIdentifier = "${completeEvent.itemId}$dailyTimerIdentifier";
+    String timerIdentifier = "${completeEvent.itemId}${AppData.dailyTimerIdentifier}";
     if (state.activeTimerIdentifier != null && timerIdentifier != state.activeTimerIdentifier) {
       Get.find<ServiceStreamController>().stopStream(state.activeTimerIdentifier!);
       state.activeDailyItemGetter = null;
       state.activeTimerIdentifier = null;
       Get.find<ToolShowToast>().showError('Был остановлен другой активный Daily.');
+      emit(state.copyWithTimerIdentifierNull());
       return;
     }
 
     if (Get.find<ServiceStreamController>().stopStream(timerIdentifier)) {
+      emit(state.copyWithTimerIdentifierNull());
       return;
     }
 
     if (state.activeDailyItemGetter == null) {
       state.activeDailyItemGetter = DbTodoItemGetter(itemId: completeEvent.itemId);
       state.activeTimerIdentifier = timerIdentifier;
+      emit(state.copyWith(activeTimerIdentifier: timerIdentifier));
     }
 
     Future<bool> Function() callBack = () async {
@@ -137,7 +141,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
               id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
           return true;
         }
-        if (Get.find<ServiceStreamController>().isOtherTodoItemRun(dailyTimerIdentifier)) {
+        if (Get.find<ServiceStreamController>().isOtherTodoItemRun(AppData.dailyTimerIdentifier)) {
           await _daoDatabase.editTodoItemById(
               id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
         }
@@ -211,6 +215,17 @@ class DailyTodoState {
     return DailyTodoState(
       activeDailyItemGetter: activeDailyItemGetter ?? this.activeDailyItemGetter,
       activeTimerIdentifier: activeTimerIdentifier ?? this.activeTimerIdentifier,
+      yesterdayDailyMod: yesterdayDailyMod ?? this.yesterdayDailyMod,
+    );
+  }
+
+  DailyTodoState copyWithTimerIdentifierNull({
+    DbTodoItemGetter? activeDailyItemGetter,
+    bool? yesterdayDailyMod,
+  }) {
+    return DailyTodoState(
+      activeDailyItemGetter: null,
+      activeTimerIdentifier: null,
       yesterdayDailyMod: yesterdayDailyMod ?? this.yesterdayDailyMod,
     );
   }

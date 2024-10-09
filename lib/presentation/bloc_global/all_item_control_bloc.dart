@@ -29,7 +29,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
   }
 
   void _initializeEventListeners() {
-    on<ItemControlBlocEvent>((ItemControlBlocEvent event, Emitter<ItemControlBlocState> emit){
+    on<ItemControlBlocEvent>((ItemControlBlocEvent event, Emitter<ItemControlBlocState> emit) {
       print(event);
     });
     Get.find<GlobalDbDao>().broadcastActiveTodoStream.listen((newList) {
@@ -87,6 +87,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       'prise': event.prise,
       'dailyDayList': event.dailyDayList,
       'period': event.period,
+      'fullTimerSeconds': event.timer,
       '${DailyTodoBloc.delDataBaseKey}': false
     };
     await _daoDB.insertDailyItem(
@@ -121,9 +122,14 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
   createDalyBloc() async {
     List<TodoItem> todayDailyList = await _daoDB.getTodayDailyTodoItems();
+   // _daoDB.updateContentByTitle(
+   //     title: 'Видео-Блог',
+   //     newContent: '{"prise":40,"dailyDayList":[7],"period":0,"wasRemoved":false, "fullTimerSeconds":1200}');
+
     if (todayDailyList.isNotEmpty) {
       return;
     }
+
 
     List<TodoItem> dailyList = (await _daoDB.getDailyTodoItems())
         .where((element) => jsonDecode(element.content)[DailyTodoBloc.delDataBaseKey] == false)
@@ -137,6 +143,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
       int period = contentMap['period'] ?? 0;
       List<int> dailyDayList = List<int>.from(contentMap['dailyDayList'] ?? []);
+      int timerSeconds = contentMap['fullTimerSeconds'] ?? 0;
 
       if (shouldCreateDaily(period, dailyDayList, dailyList, dailyItem.title)) {
         _daoDB.insertDuplicateTodoItem(
@@ -144,6 +151,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
             targetDateTime: DateTime.now(),
             isDone: false,
             secondsSpent: 0,
+            timerSeconds: timerSeconds,
           ),
         );
       }
