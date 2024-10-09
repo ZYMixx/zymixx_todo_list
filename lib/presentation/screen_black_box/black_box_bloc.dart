@@ -34,7 +34,6 @@ class BlackBoxBloc extends Bloc<BlackBoxEvent, BlackBoxState> {
   void _onReorderNoteEvent(ReorderNoteEvent event, Emitter<BlackBoxState> emit) async {
     final prefs = await SharedPreferences.getInstance();
     final folderNotes = prefs.getStringList(event.folderName) ?? [];
-    Log.d('folderNotes $folderNotes');
     for (var item in folderNotes) {
       Log.d(prefs.getString(item));
     }
@@ -68,7 +67,6 @@ class BlackBoxBloc extends Bloc<BlackBoxEvent, BlackBoxState> {
     Map<String, String> folders = decodedMap.map((key, value) => MapEntry(key, value.toString()));
 
     final notes = <String, Map<String, String>>{};
-    Log.i('folders $folders');
     for (var folderKey in folders.keys) {
       if (folders[folderKey] != '') {
         try {
@@ -99,13 +97,6 @@ class BlackBoxBloc extends Bloc<BlackBoxEvent, BlackBoxState> {
         }
       }
     }
-    Log.i('notes $notes');
-    for (var item in notes.values){
-      Log.i('notes $item');
-
-
-    }
-
 
     emit(state.copyWith(folders: folders, notes: notes));
   }

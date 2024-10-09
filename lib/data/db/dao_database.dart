@@ -62,17 +62,18 @@ class DaoDatabase {
       db.into(db.todoItemDB).insertOnConflictUpdate(_mapperDatabase.toDBTodoItem(todoItem));
 
   Future insertDuplicateTodoItem(TodoItem todoItem) async {
-    Log.i(' duplicate $todoItem');
+    Log.i('duplicate ${todoItem.toStringFull()}');
     await db.into(db.todoItemDB).insert(TodoItemDBCompanion.insert(
           id: Value<int?>(null),
           title: todoItem.title!,
-          content: todoItem.content ?? '',
+          content: todoItem.content,
           category: Value(todoItem.category),
           timerSeconds: Value(todoItem.timerSeconds),
           stopwatchSeconds: Value(todoItem.stopwatchSeconds),
           secondsSpent: Value(todoItem.secondsSpent),
           isDone: Value(todoItem.isDone),
           targetDateTime: Value(todoItem.targetDateTime),
+      autoPauseSeconds: Value(todoItem.autoPauseSeconds),
         ));
   }
 
