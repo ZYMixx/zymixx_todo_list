@@ -1,6 +1,9 @@
 import 'package:audioplayers/audioplayers.dart';
 
 class ServiceAudioPlayer {
+
+  List<int> ignoreTodoItemIdList = [];
+
   AudioPlayer? _playAssetsAudio(String assetsPath, {double? volume}) {
     try {
       AudioPlayer audioPlayer = AudioPlayer()..setSource(AssetSource(assetsPath));

@@ -127,8 +127,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
   }
 
-  void _onIncreaseItemDateEvent(
-      IncreaseItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
+  void _onIncreaseItemDateEvent(IncreaseItemDateEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     DateTime tDate = (await state.dbTodoItemGetter.targetDateTime)!;
     DateTime increasedTargetDate = DateTime(tDate.year, tDate.month, tDate.day + 1);
     await _daoDatabase.editTodoItemById(id: state.todoItemId, targetDateTime: increasedTargetDate);
@@ -143,23 +143,29 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
   }
 
-  void _onSetTodoItemImageEvent(
-      SetTodoItemImageEvent event, Emitter<TodoItemBlocState> emit) async {
-    emit(state.copyWith(imageFile: Get.find<ServiceImagePluginWork>().checkFileExist(state.todoItem)));
+  void _onSetTodoItemImageEvent(SetTodoItemImageEvent event,
+      Emitter<TodoItemBlocState> emit) async {
+    emit(state.copyWith(
+        imageFile: Get.find<ServiceImagePluginWork>().checkFileExist(state.todoItem)));
   }
 
   void _onSetTimerActiveEvent(SetTimerActiveEvent event, Emitter<TodoItemBlocState> emit) async {
     emit(state.copyWith(isTimerActive: event.isActive));
   }
 
-  void _onSetTimerNeedSongEvent(SetTimerNeedSongEvent event, Emitter<TodoItemBlocState> emit) async {
-    emit(state.copyWith(needTimerSong: (!state.needTimerSong)));
+  void _onSetTimerNeedSongEvent(SetTimerNeedSongEvent event,
+      Emitter<TodoItemBlocState> emit) async {
+    if (Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.contains(state.todoItemId)){
+      Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.remove(state.todoItemId);
+    } else {
+      Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.add(state.todoItemId);
+    }
+    emit(state.copyWith());
     Log.i('state.needTimerSong', state.needTimerSong);
-
   }
 
-  Future<void> _onChangeItemDateEvent(
-      RequestChangeItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onChangeItemDateEvent(RequestChangeItemDateEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     {
       DateTime? userInput = await Get.find<ToolShowOverlay>().showUserInputOverlay<DateTime>(
         context: event.buildContext,
@@ -176,14 +182,14 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     }
   }
 
-  Future<void> _onTimerSecondTickEvent(
-      TimerSecondTickEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onTimerSecondTickEvent(TimerSecondTickEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     int remainSeconds = await state.dbTodoItemGetter.timerSeconds;
     emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: remainSeconds)));
   }
 
-  Future<void> _onStopStartTimerEvent(
-      StopStartTimerEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onStopStartTimerEvent(StopStartTimerEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     if (Get.find<ServiceStreamController>().stopStream(timerIdentifier)) {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
@@ -215,11 +221,12 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Get.find<ServiceStreamController>().addListener(
         subscription: streamSubscription, identifier: timerIdentifier);
     this.add(SetTimerActiveEvent(isActive: true));
-    Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier); //останавливаем секундомер если он был
+    Get.find<ServiceStreamController>().stopStream(
+        stopwatchIdentifier); //останавливаем секундомер если он был
   }
 
-  Future<void> _onStopStartStopwatchEvent(
-      StopStartStopwatchEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onStopStartStopwatchEvent(StopStartStopwatchEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     if (Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier)) {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
@@ -252,11 +259,12 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Get.find<ServiceStreamController>().addListener(
         subscription: streamSubscription, identifier: stopwatchIdentifier);
     this.add(SetTimerActiveEvent(isActive: true));
-    Get.find<ServiceStreamController>().stopStream(timerIdentifier); //останавливаем таймер если он был
+    Get.find<ServiceStreamController>().stopStream(
+        timerIdentifier); //останавливаем таймер если он был
   }
 
-  void _onStopwatchSecondTickEvent(
-      StopwatchSecondTickEvent event, Emitter<TodoItemBlocState> emit) {
+  void _onStopwatchSecondTickEvent(StopwatchSecondTickEvent event,
+      Emitter<TodoItemBlocState> emit) {
     int time = state.todoItem.stopwatchSeconds + 1;
     emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: time)));
   }
@@ -274,26 +282,35 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: newTimer)));
   }
 
-  Future<void> _onSaveItemChangeEvent(
-      SaveItemChangeEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onSaveItemChangeEvent(SaveItemChangeEvent event,
+      Emitter<TodoItemBlocState> emit) async {
     if (state.imageFile != null) {
       if (state.todoItem.title != event.titleText) {
         //т.к. картинка привязана к title меняем её path
         try {
           final directory = state.imageFile!.parent;
           String newName =
-          Get.find<ServiceImagePluginWork>().validFileName(title: event.titleText, id: state.todoItemId);
+          Get.find<ServiceImagePluginWork>().validFileName(
+              title: event.titleText, id: state.todoItemId);
           final newFilePath = '${directory.path}/$newName';
-          Get.find<ServiceImagePluginWork>().filesList.remove(state.imageFile);
+          Get
+              .find<ServiceImagePluginWork>()
+              .filesList
+              .remove(state.imageFile);
           state.imageFile = await state.imageFile!.rename(newFilePath);
-          Get.find<ServiceImagePluginWork>().filesList.add(state.imageFile!);
+          Get
+              .find<ServiceImagePluginWork>()
+              .filesList
+              .add(state.imageFile!);
           Log.e('Файл успешно переименован!');
         } catch (e) {
           Log.e('Ошибка при переименовании файла: $e');
         }
       }
     }
-    if (!Get.find<ToolShowOverlay>().isOpen) {
+    if (!Get
+        .find<ToolShowOverlay>()
+        .isOpen) {
       try {
         await _daoDatabase.editTodoItemById(
             id: state.todoItemId, title: event.titleText, content: event.descriptionText);
@@ -343,13 +360,15 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
           Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
         });
       };
-      Get.find<ToolShowToast>().showWithCallBack(message: 'Задача удаленна.', callback: returnItemCallBack);
+      Get.find<ToolShowToast>().showWithCallBack(
+          message: 'Задача удаленна.', callback: returnItemCallBack);
     }
     Future.delayed(Duration.zero, () {
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
     });
     if (state.imageFile != null) {
-      Get.find<ServiceImagePluginWork>().deleteImage(todoItem: state.todoItem, updateCallBack: () => ());
+      Get.find<ServiceImagePluginWork>().deleteImage(
+          todoItem: state.todoItem, updateCallBack: () => ());
     }
     Log.i('diss miss end');
   }
@@ -372,12 +391,14 @@ class TodoItemBlocState {
     required this.todoItem,
     this.changeTextMod = false,
     this.isTimerActive = false,
-    this.needTimerSong = true,
     this.imageFile,
-  })  : todoItemId = todoItem.id,
+  })
+      : todoItemId = todoItem.id,
+        needTimerSong = (!Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.contains(todoItem.id)),
         dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id) {
     imageFile = Get.find<ServiceImagePluginWork>().checkFileExist(todoItem);
   }
+
 
   TodoItemBlocState copyWith({
     TodoItem? todoItem,
@@ -390,7 +411,6 @@ class TodoItemBlocState {
     return TodoItemBlocState(
       todoItem: todoItem ?? this.todoItem,
       timerMod: timerMod ?? this.timerMod,
-      needTimerSong: needTimerSong ?? this.needTimerSong,
       changeTextMod: changeTextMod ?? this.changeTextMod,
       isTimerActive: isTimerActive ?? this.isTimerActive,
       imageFile: imageFile ?? this.imageFile,
