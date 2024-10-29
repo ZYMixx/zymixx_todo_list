@@ -113,10 +113,13 @@ class ServiceBackgroundKeyListener {
     );
     // создаём новый туду-итем
     Get.find<ServiceBackgroundKeyListener>().addUserCallBacks(
-      codeKey: App.isRelease ? 'S' : 'not implement',
+      // codeKey: App.isRelease ? 'S' : 'not implement',
+      codeKey: App.isRelease ? 'S' : 'V',
       needAltDown: true,
       callBack: () async {
-        Get.find<AllItemControlBloc>().add(AddNewItemEvent());
+        if(Get.find<AllItemControlBloc>().state.todoActiveItemList.where((item) => item.title == 'New Title').isEmpty){
+          Get.find<AllItemControlBloc>().add(AddNewItemEvent());
+        }
       },
     );
     //двигаем в лево
