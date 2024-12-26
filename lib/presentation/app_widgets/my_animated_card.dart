@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-// При наведение виджет реагирует и чуть-чуть приподнимается
+// Виджет с анимацией при наведении, который увеличивает элемент из центра
 class MyAnimatedCard extends StatefulWidget {
   final Widget child;
   final double intensity;
@@ -10,7 +10,7 @@ class MyAnimatedCard extends StatefulWidget {
     super.key,
     required this.child,
     required this.intensity,
-    this.directionUp = true,
+    this.directionUp = false,
   });
 
   @override
@@ -22,18 +22,16 @@ class MyAnimatedCardState extends State<MyAnimatedCard> {
 
   @override
   Widget build(BuildContext context) {
-    double scaleIntensity = widget.intensity % 1 + 1;
-    double translateIntensity = widget.intensity % 1 * -100;
+    // Учитываем интенсивность для масштаба
+    double scaleIntensity = widget.intensity % 1 + 1.007;
+
     return MouseRegion(
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 75),
-        transform: isHovered
-            ? (Matrix4.identity()
-              ..scale(scaleIntensity, scaleIntensity)
-              ..translate(translateIntensity, translateIntensity))
-            : Matrix4.identity(),
+      child: AnimatedScale(
+        scale: isHovered ? scaleIntensity : 1.0, // Масштабирование при наведении
+        duration: Duration(milliseconds: 50), // Длительность анимации
+        alignment: Alignment.center, // Центрируем анимацию
         child: widget.child,
       ),
     );

@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/app_data.dart';
-import '../app_widgets/my_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/app_widgets/my_radio_icon.dart';
+import '../../app_widgets/my_animated_card.dart';
+
 class CreateDailyWidget extends StatefulWidget {
   const CreateDailyWidget({super.key});
 
@@ -98,6 +100,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
   int autoPauseSeconds = 0;
   List<int> dailyDayList = [];
   int period = 0;
+  bool autoStart = false;
 
   @override
   void initState() {
@@ -286,6 +289,8 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
               intensity: 0.005,
               child: RadioButtonWidget(valueCallBack: (int value) {
                 this.autoPauseSeconds = value;
+              }, autoStartCallBack: (bool autoStart) {
+                this.autoStart = autoStart;
               }),
             ),
           ),
@@ -335,6 +340,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                       'prise': prise,
                       'dailyDayList': dailyDayList,
                       'period': period,
+                      'autoStart': autoStart,
                     });
                   },
                   child: Text(
@@ -366,9 +372,11 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
 
 class RadioButtonWidget extends StatefulWidget {
   Function valueCallBack;
+  Function autoStartCallBack;
 
   RadioButtonWidget({
     required this.valueCallBack,
+    required this.autoStartCallBack,
   });
 
   @override
@@ -380,6 +388,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
 
   @override
   Widget build(BuildContext context) {
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -433,6 +442,24 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
                   widget.valueCallBack.call(value);
                   _selectedValue = value!;
                 });
+              },
+            ),
+          ),
+        ),
+        Transform.scale(
+          scale: 1.1,
+          child: MyAnimatedCard(
+            intensity: 0.007,
+            child: MyRadioIcon(
+              unselectedColor: Colors.black,
+              selectedColor: Colors.amberAccent,
+              onSelect: () {
+                widget.autoStartCallBack.call(true);
+              },
+              iconData: Icons.run_circle_outlined,
+              size: 33,
+              onDeselect: () {
+                widget.autoStartCallBack.call(false);
               },
             ),
           ),

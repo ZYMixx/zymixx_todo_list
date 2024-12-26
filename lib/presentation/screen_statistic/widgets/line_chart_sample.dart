@@ -299,7 +299,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
     for (var key in dayStatisticMap.keys) {
       double data = dayStatisticMap[key]!.dayScore;
       listFLSpot.add(HighlightFlSpot(key.toDouble(), data));
-      if (data > heightScore) {
+      if (data >= heightScore) {
         listFLSpot.add(HighlightFlSpot(key.toDouble(), data, isHighlight: true));
       }
     }

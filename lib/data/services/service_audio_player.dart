@@ -7,7 +7,7 @@ class ServiceAudioPlayer {
   AudioPlayer? _playAssetsAudio(String assetsPath, {double? volume}) {
     try {
       AudioPlayer audioPlayer = AudioPlayer()..setSource(AssetSource(assetsPath));
-      audioPlayer.setVolume(volume ?? 0.75);
+      audioPlayer.setVolume(volume ?? 0.15);
       audioPlayer.onPlayerComplete.listen((event) => audioPlayer.dispose());
       audioPlayer.resume();
       return audioPlayer;
@@ -27,7 +27,7 @@ class ServiceAudioPlayer {
   }
 
   playTimerAlert() {
-    _playAssetsAudio('songs/timer_music_alert.mp3', volume: 0.4);
+    _playAssetsAudio('songs/timer_music_alert.mp3', volume: 0.10);
   }
 }
 

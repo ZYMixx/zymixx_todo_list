@@ -72,6 +72,7 @@ class App {
         ),
       );
     }, (error, stackTrace) {
+      Log.e("ZYYYYMIIIIXX");
       print('Error occurred: $error');
       if (error is InvalidDataException) {
         InvalidDataException e = error;
@@ -81,6 +82,14 @@ class App {
         );
       }
       print('Stack trace: $stackTrace');
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.dumpErrorToConsole(details);
+
+        // Печать контекста и трассировки
+        print('Caught error in widget tree: ${details.exceptionAsString()}');
+        print('Widget context: ${details.context}');
+        print('Element tree path:\n${WidgetInspectorService.instance?.toString()}');
+      };
     });
     Timer.periodic(Duration(seconds: 1), (timer) async {});
   }

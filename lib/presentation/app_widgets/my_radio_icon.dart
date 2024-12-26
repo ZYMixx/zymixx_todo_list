@@ -13,8 +13,8 @@ class MyRadioIcon extends StatefulWidget {
   }) : super(key: key);
   final double? size;
   final IconData iconData;
-  final MaterialColor? selectedColor;
-  final MaterialColor? unselectedColor;
+  final Color? selectedColor;
+  final Color? unselectedColor;
   final Function onSelect;
   final Function onDeselect;
   final bool? initStatus;
