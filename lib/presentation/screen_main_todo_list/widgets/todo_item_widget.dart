@@ -192,7 +192,6 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
   void initState() {
     super.initState();
     widget.setAnimation = (double value, bool right) {
-      Log.i('call set state mounted $mounted ${isRightArrow}');
       if (mounted) {
         setState(() {
           isRightArrow = right;

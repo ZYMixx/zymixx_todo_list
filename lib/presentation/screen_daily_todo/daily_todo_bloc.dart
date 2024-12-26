@@ -20,7 +20,7 @@ import 'package:zymixx_todo_list/presentation/screen_app_bottom_navigator/my_bot
 import 'package:zymixx_todo_list/presentation/screen_daily_todo/daily_todo_screen.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
-import '../screen_action/create_daily_widget.dart';
+import 'widgets/create_daily_widget.dart';
 
 class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
   final _daoDatabase = DaoDatabase();
@@ -72,6 +72,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
         prise: userInputDataMap['prise'],
         dailyDayList: userInputDataMap['dailyDayList'],
         period: userInputDataMap['period'],
+        autoStart: userInputDataMap['autoStart'],
       ));
     } catch (e) {
       Log.i('error $e');
@@ -164,7 +165,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
         }
       }
     });
-    Get.find<ServiceStreamController>().addListener(subscription: streamSubscription, identifier: timerIdentifier);
+    Get.find<ServiceStreamController>().addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
   }
 
   void checkOnActiveTimer({required int itemId, required Function(int) updateCallBack}) {
@@ -180,7 +181,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
           Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
         }
       });
-      Get.find<ServiceStreamController>().addListener(subscription: streamSubscription, identifier: timerIdentifier);
+      Get.find<ServiceStreamController>().addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
       Log.i('resubscribe Timer');
     }
   }

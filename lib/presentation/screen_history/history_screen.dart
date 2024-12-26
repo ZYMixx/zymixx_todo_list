@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
-import 'package:zymixx_todo_list/presentation/app_widgets/my_expansion_panel.dart';
 
 import '../bloc_global/all_item_control_bloc.dart';
 
@@ -20,7 +18,6 @@ class HistoryScreen extends StatelessWidget {
         create: (_) => Get.find<AllItemControlBloc>(), child: HistoryScreenWidget());
   }
 }
-
 
 class HistoryScreenWidget extends StatefulWidget {
   const HistoryScreenWidget({Key? key}) : super(key: key);
@@ -35,7 +32,7 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
   @override
   Widget build(BuildContext context) {
     List<TodoItem> todoHistoryItemList =
-    context.select((AllItemControlBloc bloc) => bloc.state.todoHistoryItemList);
+        context.select((AllItemControlBloc bloc) => bloc.state.todoHistoryItemList);
     Map<String, List<TodoItem>> groupedMap = groupItemsByWeek(todoHistoryItemList);
     List<String> weekKeys = groupedMap.keys.toList()
       ..sort((a, b) {
@@ -53,13 +50,13 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
           itemBuilder: (context, index) {
             String weekKey = weekKeys[index];
             List<TodoItem> items = groupedMap[weekKey]!;
-            for (var item in items){
-                Log.d('item ${item.category}');
-            }
 
-            int socialCount = items.where((item) => item.category == EnumTodoCategory.history_social.name).length;
-            int allSecondsSpent = items.fold(0, (previousValue, element) => previousValue + element.secondsSpent);
-            List<Widget> itemWidgets = items.map((item) => TodoHistoryItem(todoItem: item)).toList();
+            int socialCount =
+                items.where((item) => item.category == EnumTodoCategory.history_social.name).length;
+            int allSecondsSpent =
+                items.fold(0, (previousValue, element) => previousValue + element.secondsSpent);
+            List<Widget> itemWidgets =
+                items.map((item) => TodoHistoryItem(todoItem: item)).toList();
             return Card(
               color: Color(0xFF2E2E4E),
               shape: RoundedRectangleBorder(
@@ -91,6 +88,7 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
       ),
     );
   }
+
   DateTime _parseWeekKey(String weekKey) {
     // Строка "01 Янв - 07 Янв" преобразуется в 01 Янв
     List<String> dates = weekKey.split(' - ');
@@ -99,6 +97,7 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
     // Преобразуем строку начала недели в дату
     return dateFormat.parse(dates[0]);
   }
+
   // Метод для группировки по неделям
   Map<String, List<TodoItem>> groupItemsByWeek(List<TodoItem> items) {
     Map<String, List<TodoItem>> groupedItems = {};
@@ -165,22 +164,24 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                 Expanded(
                   child: isClicked
                       ? Text(
-                    widget.todoItem.content!.isEmpty ? 'Нет описания' : widget.todoItem.content!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
-                    ),
-                  )
+                          widget.todoItem.content!.isEmpty
+                              ? 'Нет описания'
+                              : widget.todoItem.content!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        )
                       : Text(
-                    widget.todoItem.title!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                  ),
+                          widget.todoItem.title!,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
                 ),
                 if (!isClicked && widget.todoItem.secondsSpent > 60)
                   Text(
@@ -193,7 +194,8 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                   ),
                 SizedBox(width: 10),
                 InkWell(
-                  onTap: () => Get.find<AllItemControlBloc>().add(DeleteItemEvent(todoItem: widget.todoItem)),
+                  onTap: () => Get.find<AllItemControlBloc>()
+                      .add(DeleteItemEvent(todoItem: widget.todoItem)),
                   child: Icon(
                     Icons.delete_outline,
                     color: Color(0xFFFF5555),
@@ -208,7 +210,7 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                   )),
                   child: Icon(
                     Icons.undo,
-                    color:  Colors.black,
+                    color: Colors.black,
                     size: 24,
                   ),
                 ),

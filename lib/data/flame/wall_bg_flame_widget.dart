@@ -15,28 +15,23 @@ import 'package:zymixx_todo_list/data/flame/components/wall_bounce.dart';
 
 class WallBgFlameWidget extends StatelessWidget {
   WallBgFlameWidget({super.key});
+
   late GameBounce gameBounce;
 
   @override
   Widget build(BuildContext context) {
     gameBounce = GameBounce();
     return Center(
-      child: IgnorePointer(
-        ignoring: true,
-        child: GameWidget(game: gameBounce,
-            autofocus: true,
-        ),
+      child: GameWidget(
+        game: gameBounce,
+        autofocus: false,
       ),
     );
   }
-
 }
 
-
 class GameBounce extends Forge2DGame {
-
   GameBounce() : super(world: WorldBounce());
-
 
   void applyRandomMove() {
     (world as WorldBounce).applyRandomMove();
@@ -61,7 +56,7 @@ class WorldBounce extends Forge2DWorld with events.TapCallbacks, events.PointerM
     gravity = Vector2.zero();
     add(WallBounce());
     for (var i = 0; i < 30; i++) {
-      add(CircleBounce(initPosition: Vector2((i*1)%10,0+i/10)));
+      add(CircleBounce(initPosition: Vector2((i * 1) % 10, 0 + i / 10)));
     }
   }
 
@@ -73,10 +68,10 @@ class WorldBounce extends Forge2DWorld with events.TapCallbacks, events.PointerM
   @override
   void onPointerMove(events.PointerMoveEvent event) {
     mouseEvent = event;
-   // print('MOVE');
+    // print('MOVE');
   }
 
-  applyRandomMove(){
+  applyRandomMove() {
     for (var child in children) {
       if (child is CircleBounce) {
         child.applyRandomForce(3000);

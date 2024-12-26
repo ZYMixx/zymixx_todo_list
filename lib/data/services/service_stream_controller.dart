@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/services/service_background_key_listener.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 
 class ServiceStreamController {
   List<StreamItem> streamItemsList = [];
@@ -59,30 +60,32 @@ class ServiceStreamController {
   }
 
   bool stopStream(String identifier) {
+    Log.w('stop stt te $streamItemsList');
     StreamItem? foundItem;
     for (var item in streamItemsList) {
       if (item.identifier == identifier) {
         foundItem = item;
-      } else {}
-    }
-    if (foundItem != null) {
-      foundItem.stop();
-      streamItemsList.remove(foundItem);
-      return true;
+        foundItem.stop();
+        streamItemsList.remove(foundItem);
+
+        return true;
+      }
     }
     return false;
   }
 
-  addListener({required StreamSubscription subscription, required String identifier}) async {
+  addStreamListener({required StreamSubscription subscription, required String identifier}) async {
     if (subList[identifier] != null) {
       await subList[identifier]?.cancel();
     }
     subList[identifier] = subscription;
   }
 
-  removeListener({required String identifier}) async {
+  removeStreamListener({required String identifier}) async {
+    stopStream(identifier);
     if (subList[identifier] != null) {
       await subList[identifier]?.cancel();
+      await subList.remove(identifier);
     }
   }
 }

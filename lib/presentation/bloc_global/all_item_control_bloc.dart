@@ -30,7 +30,6 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
 
   void _initializeEventListeners() {
     on<ItemControlBlocEvent>((ItemControlBlocEvent event, Emitter<ItemControlBlocState> emit) {
-      print(event);
     });
     Get.find<GlobalDbDao>().broadcastActiveTodoStream.listen((newList) {
       this.add(LoadAllItemEvent());
@@ -88,6 +87,7 @@ class AllItemControlBloc extends Bloc<ItemControlBlocEvent, ItemControlBlocState
       'dailyDayList': event.dailyDayList,
       'period': event.period,
       'fullTimerSeconds': event.timer,
+      'autoStart': event.autoStart,
       '${DailyTodoBloc.delDataBaseKey}': false
     };
     await _daoDB.insertDailyItem(
@@ -236,6 +236,7 @@ class AddNewDailyItemEvent extends ItemControlBlocEvent {
   int autoPauseSeconds;
   List<int> dailyDayList;
   int period;
+  bool autoStart;
 
   AddNewDailyItemEvent({
     required this.name,
@@ -244,6 +245,7 @@ class AddNewDailyItemEvent extends ItemControlBlocEvent {
     required this.timer,
     required this.dailyDayList,
     required this.period,
+    required this.autoStart,
   });
 }
 
