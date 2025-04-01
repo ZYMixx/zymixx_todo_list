@@ -11,12 +11,12 @@ import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
+import 'package:zymixx_todo_list/presentation/bloc_global/list_todo_screen_bloc.dart';
 
 import '../../../data/tools/tool_time_string_converter.dart';
 import '../../../domain/todo_item.dart';
 import '../../app_widgets/my_animated_card.dart';
 import '../todo_item_bloc.dart';
-import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 // основной виджет со всеми активностями
 
@@ -85,87 +85,97 @@ class _TodoItemBodyState extends State<TodoItemBody> {
               : ToolThemeData.itemHeight,
         ),
         duration: Duration(milliseconds: 250),
-        child: Dismissible(
-          key: UniqueKey(),
-          background: dismissArrow,
-          onDismissed: (DismissDirection direction) {
-            bloc.add(DismissEvent(direction: direction));
+        child: GestureDetector(
+          onSecondaryTap: () {
+            bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
           },
-          onUpdate: (value) {
-            if (value.direction == DismissDirection.startToEnd) {
-              dismissArrow.setAnimation?.call(value.progress, true);
-            } else {
-              dismissArrow.setAnimation?.call(value.progress, false);
-            }
+          onSecondaryLongPress: () {
+            bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
+            Get.find<ListTodoScreenBloc>()
+                .add(MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
           },
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                  ? ToolThemeData.specialItemColor
-                  : widget.bgColor,
-              gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                  ? LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        ToolThemeData.specialItemColor,
-                        widget.bgColor,
-                      ],
-                      transform: GradientRotation(-0.04),
-                      stops: [0.5, 1],
-                    )
-                  : null,
-              border: Border.all(
-                color: widget.bgColor == Colors.transparent
-                    ? Colors.transparent
-                    : ToolThemeData.itemBorderColor,
-              ),
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            //? начало фронт-графики
-            child: Row(
-              children: [
-                Flexible(
-                  flex: 12,
-                  fit: FlexFit.tight,
-                  child: GestureDetector(
-                    onLongPress: () {},
-                    onTap: () {},
-                    child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
-                  ),
+          child: Dismissible(
+            key: UniqueKey(),
+            background: dismissArrow,
+            onDismissed: (DismissDirection direction) {
+              bloc.add(DismissEvent(direction: direction));
+            },
+            onUpdate: (value) {
+              if (value.direction == DismissDirection.startToEnd) {
+                dismissArrow.setAnimation?.call(value.progress, true);
+              } else {
+                dismissArrow.setAnimation?.call(value.progress, false);
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 3),
+              decoration: BoxDecoration(
+                color: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                    ? ToolThemeData.specialItemColor
+                    : widget.bgColor,
+                gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          ToolThemeData.specialItemColor,
+                          widget.bgColor,
+                        ],
+                        transform: GradientRotation(-0.04),
+                        stops: [0.5, 1],
+                      )
+                    : null,
+                border: Border.all(
+                  color: widget.bgColor == Colors.transparent
+                      ? Colors.transparent
+                      : ToolThemeData.itemBorderColor,
                 ),
-                MyAnimatedCard(
-                  intensity: 0.01,
-                  directionUp: false,
-                  child: AnimatedCirclesWidget(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black45,
-                              blurRadius: 1.5,
-                              spreadRadius: 1.0,
-                              offset: Offset(0, 0),
-                            ),
-                          ],
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              //? начало фронт-графики
+              child: Row(
+                children: [
+                  Flexible(
+                    flex: 12,
+                    fit: FlexFit.tight,
+                    child: GestureDetector(
+                      onLongPress: () {},
+                      onTap: () {},
+                      child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
+                    ),
+                  ),
+                  MyAnimatedCard(
+                    intensity: 0.01,
+                    directionUp: false,
+                    child: AnimatedCirclesWidget(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black45,
+                                blurRadius: 1.5,
+                                spreadRadius: 1.0,
+                                offset: Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: ColoredBox(
+                              color:
+                                  targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                              child: SizedBox(
+                                width: 3.5,
+                                height: double.infinity,
+                              )),
                         ),
-                        child: ColoredBox(
-                            color:
-                                targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
-                            child: SizedBox(
-                              width: 3.5,
-                              height: double.infinity,
-                            )),
                       ),
                     ),
                   ),
-                ),
-                Flexible(flex: 6, child: TimerWorkWidget()),
-                //SizedBox(width: 10),
-              ],
+                  Flexible(flex: 6, child: TimerWorkWidget()),
+                  //SizedBox(width: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -942,7 +952,6 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
       onPressed: null,
       icon: InkWell(
         borderRadius: BorderRadius.all(Radius.circular(20)),
-
         onSecondaryTap: () {
           bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
         },

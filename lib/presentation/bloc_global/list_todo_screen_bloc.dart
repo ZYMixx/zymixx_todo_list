@@ -4,6 +4,7 @@ import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/global_db_dao.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
+import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
   final DaoDatabase _daoDB = DaoDatabase();
@@ -33,6 +34,17 @@ class ListTodoScreenBloc extends Bloc<ListTodoEvent, ListTodoState> {
       list.insertAll(replacePos, [event.movedItemId]);
       emit(await state.copyWith(primaryPositionList: list));
     });
+    on<MoveItemToFirstEvent>((event, emit) async {
+      // Создаем копию списка для изменения
+      List<int> list = [...state._primaryPositionList];
+      // Удаляем элемент из текущего положения
+      list.removeWhere((element) => element == event.movedItemId);
+      // Ставим элемент на первое место
+      list.insert(list.length, event.movedItemId);
+      // Обновляем состояние с новым списком
+      emit(await state.copyWith(primaryPositionList: list));
+    });
+
     on<SetSpinWinnerEvent>((event, emit) async {
       await _daoDB.editTodoItemById(id: event.movedItemId, targetDateTime: DateTime.now());
       List<int> list = [...state._primaryPositionList];
@@ -51,7 +63,7 @@ class ListTodoState {
   bool isShowTodayOnlyMod;
 
   ListTodoState({
-    this.isShowTodayOnlyMod = false,
+    this.isShowTodayOnlyMod = true,
     required List<int> primaryPositionList,
   }) : _primaryPositionList = primaryPositionList;
 
@@ -69,6 +81,16 @@ class ListTodoState {
     } else {
       return _primaryPositionList;
     }
+  }
+
+  bool hasTasksForToday() {
+    var todoItemList = Get.find<AllItemControlBloc>().state.todoActiveItemList;
+    // Фильтруем задачи, у которых дата совпадает с сегодняшней
+    var filteredTodoItemList =
+        todoItemList.where((e) => e.targetDateTime?.isSameDay(DateTime.now()) ?? false).toList() ??
+            [];
+    // Проверяем, есть ли задачи после фильтрации
+    return filteredTodoItemList.length > 0;
   }
 
   Future<List<int>> initPositionList() async {
@@ -114,6 +136,14 @@ class ChangeOrderEvent extends ListTodoEvent {
   });
 }
 
+class MoveItemToFirstEvent extends ListTodoEvent {
+  int movedItemId;
+
+  MoveItemToFirstEvent({
+    required this.movedItemId,
+  });
+}
+
 class SetSpinWinnerEvent extends ListTodoEvent {
   int movedItemId;
 
@@ -123,23 +153,21 @@ class SetSpinWinnerEvent extends ListTodoEvent {
 }
 
 //grp extension
-extension StringExtension on String {
-  String capStart() {
-    if (this.isEmpty) {
-      return this;
-    }
-    return '${this[0].toUpperCase()}${this.substring(1)}';
-  }
+// extension StringExtension on String {
+//   String capStart() {
+//     if (this.isEmpty) {
+//       return this;
+//     }
+//     return '${this[0].toUpperCase()}${this.substring(1)}';
+//   }
+// }
 
-}
-
-
-extension DateTimeExtension on DateTime {
-  bool isSameDay(DateTime date) {
-    if (date.day == this.day && date.month == this.month && date.year == this.year) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-}
+// extension DateTimeExtension on DateTime {
+//   bool isSameDay(DateTime date) {
+//     if (date.day == this.day && date.month == this.month && date.year == this.year) {
+//       return true;
+//     } else {
+//       return false;
+//     }
+//   }
+// }
