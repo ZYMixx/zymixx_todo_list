@@ -44,7 +44,7 @@ class _WorkModWidgetState extends State<WorkModWidget> {
     TodoItem? todoItem;
     if (idList.isNotEmpty) {
       todoItem =
-          allBloc.state.todoActiveItemList.firstWhere((element) => element.id == idList.first);
+          allBloc.state.todoActiveItemList.firstWhere((element) => element.id == idList.last);
     }
     return Scaffold(
       backgroundColor: Colors.transparent,

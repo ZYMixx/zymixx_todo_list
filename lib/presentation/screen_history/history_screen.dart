@@ -50,7 +50,6 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
           itemBuilder: (context, index) {
             String weekKey = weekKeys[index];
             List<TodoItem> items = groupedMap[weekKey]!;
-
             int socialCount =
                 items.where((item) => item.category == EnumTodoCategory.history_social.name).length;
             int allSecondsSpent =
@@ -66,7 +65,7 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
                 backgroundColor: Colors.transparent,
                 collapsedIconColor: Colors.white,
                 title: Text(
-                  '$weekKey',
+                  weekKey.split('(').first.trim(), // Берем только визуальную часть
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -90,12 +89,13 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
   }
 
   DateTime _parseWeekKey(String weekKey) {
-    // Строка "01 Янв - 07 Янв" преобразуется в 01 Янв
-    List<String> dates = weekKey.split(' - ');
-    DateFormat dateFormat = DateFormat('dd MMM', 'ru');
+    // Берем только внутренний формат (часть с годом)
+    List<String> parts = weekKey.split('(');
+    String internalKey = parts.last.replaceAll(')', '').trim().split(' - ').first;
 
-    // Преобразуем строку начала недели в дату
-    return dateFormat.parse(dates[0]);
+    // Парсим внутренний формат с годом
+    DateFormat fullDateFormat = DateFormat('dd MMM yyyy', 'ru');
+    return fullDateFormat.parse(internalKey);
   }
 
   // Метод для группировки по неделям
@@ -114,11 +114,15 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
     DateTime monday = itemDate.subtract(Duration(days: itemDate.weekday - 1));
     DateTime sunday = monday.add(Duration(days: 6));
 
-    DateFormat dateFormat = DateFormat('dd MMM', 'ru');
-    String formattedMonday = dateFormat.format(monday);
-    String formattedSunday = dateFormat.format(sunday);
+    // Форматы для внутреннего использования и отображения
+    DateFormat fullDateFormat = DateFormat('dd MMM yyyy', 'ru'); // С годом
+    DateFormat shortDateFormat = DateFormat('dd MMM', 'ru'); // Без года
 
-    return '$formattedMonday - $formattedSunday';
+    // Сохраняем ключ с годом для внутренней сортировки, но отображаем только день и месяц
+    String formattedMonday = shortDateFormat.format(monday);
+    String formattedSunday = shortDateFormat.format(sunday);
+
+    return '$formattedMonday - $formattedSunday (${fullDateFormat.format(monday)} - ${fullDateFormat.format(sunday)})';
   }
 }
 

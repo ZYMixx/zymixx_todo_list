@@ -1,13 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-
 import 'package:zymixx_todo_list/data/tools/tool_date_formatter.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/add_item_button.dart';
-import '../app_widgets/my_animated_card.dart';
+
 import '../../domain/todo_item.dart';
+import '../app_widgets/my_animated_card.dart';
 import '../bloc_global/all_item_control_bloc.dart';
 import '../bloc_global/list_todo_screen_bloc.dart';
 import 'widgets/todo_item_widget.dart';
@@ -19,6 +18,10 @@ class MainTodoListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) {
+          ListTodoScreenBloc listBloc = Get.find<ListTodoScreenBloc>();
+          if (!listBloc.state.hasTasksForToday()) {
+            listBloc.add(ChangeTodayOnlyModEvent(false));
+          }
           return Get.find<AllItemControlBloc>();
         },
         child: BlocProvider(
@@ -30,7 +33,7 @@ class MainTodoListScreen extends StatelessWidget {
 }
 
 class ItemBoxWidget extends StatelessWidget {
-  const ItemBoxWidget({
+  ItemBoxWidget({
     super.key,
   });
 
@@ -38,10 +41,14 @@ class ItemBoxWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     bool isShowTodayOnlyMod =
         context.select((ListTodoScreenBloc bloc) => bloc.state.isShowTodayOnlyMod);
-    List<TodoItem> todoItemList =
-        context.select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList);
-    List<int> posItemList =
-        context.select((ListTodoScreenBloc bloc) => bloc.state.getPositionItemList(todoItemList));
+    List<TodoItem> todoItemList = context
+        .select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList)
+        .reversed
+        .toList();
+    List<int> posItemList = context
+        .select((ListTodoScreenBloc bloc) => bloc.state.getPositionItemList(todoItemList))
+        .reversed
+        .toList();
     return Theme(
       data: ThemeData(canvasColor: Colors.transparent),
       child: Scaffold(

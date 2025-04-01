@@ -3,18 +3,16 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:reorderable_grid/reorderable_grid.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
-import 'package:zymixx_todo_list/presentation/app.dart';
 import 'package:zymixx_todo_list/presentation/bloc_global/all_item_control_bloc.dart';
 
 import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
@@ -42,10 +40,10 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var foldersKeys =
-        context.select((BlackBoxBloc bloc) => bloc.state.folders.keys.toList(growable: false));
-    var foldersImage =
-        context.select((BlackBoxBloc bloc) => bloc.state.folders.values.toList(growable: false));
+    var foldersKeys = context.select(
+        (BlackBoxBloc bloc) => bloc.state.folders.keys.toList(growable: false));
+    var foldersImage = context.select((BlackBoxBloc bloc) =>
+        bloc.state.folders.values.toList(growable: false));
     return Theme(
       data: ThemeData(canvasColor: Colors.transparent),
       child: Scaffold(
@@ -73,17 +71,18 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                     GestureDetector(
                       key: ValueKey(foldersKeys[index]),
                       onSecondaryTapDown: (details) {
-                        _showContextMenu(
-                            context, details.globalPosition, index, foldersImage[index]);
+                        _showContextMenu(context, details.globalPosition, index,
+                            foldersImage[index]);
                       },
                       child: InkWell(
                         onTap: () {
                           Log.i('PRESS ${foldersKeys[index]}');
                           try {
-                            ToolNavigator.push(screen: NotesScreen(folderName: foldersKeys[index]));
-                          } catch(e){
+                            ToolNavigator.push(
+                                screen: NotesScreen(
+                                    folderName: foldersKeys[index]));
+                          } catch (e) {
                             Log.e('zy $e');
-
                           }
                         },
                         child: Stack(
@@ -104,7 +103,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(bottom: 10.0, right: 15, left: 15),
+                              padding: const EdgeInsets.only(
+                                  bottom: 10.0, right: 15, left: 15),
                               child: ClipPath(
                                 clipper: HexagonClipper(),
                                 child: Align(
@@ -116,7 +116,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                                           ? BoxDecoration(
                                               border: Border.all(width: 2),
                                               image: DecorationImage(
-                                                  image: FileImage(File(foldersImage[index])),
+                                                  image: FileImage(File(
+                                                      foldersImage[index])),
                                                   fit: BoxFit.cover),
                                             )
                                           : BoxDecoration(),
@@ -127,7 +128,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.only(right: 10.0, left: 10, top: 20),
+                              padding: const EdgeInsets.only(
+                                  right: 10.0, left: 10, top: 20),
                               child: Center(
                                 child: SizedBox(
                                   width: double.infinity,
@@ -137,7 +139,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                                       child: ColoredBox(
                                         color: Colors.black87,
                                         child: Padding(
-                                          padding: const EdgeInsets.only(bottom: 4.0, top: 2),
+                                          padding: const EdgeInsets.only(
+                                              bottom: 4.0, top: 2),
                                           child: Text(
                                             foldersKeys[index],
                                             maxLines: 2,
@@ -166,9 +169,11 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                   Log.i('newIndex ${newIndex} - oldIndex ${oldIndex}');
 
                   if (newIndex < oldIndex) {
-                    Get.find<BlackBoxBloc>().add(ReorderFolderEvent(oldIndex, newIndex));
+                    Get.find<BlackBoxBloc>()
+                        .add(ReorderFolderEvent(oldIndex, newIndex));
                   } else {
-                    Get.find<BlackBoxBloc>().add(ReorderFolderEvent(oldIndex, newIndex));
+                    Get.find<BlackBoxBloc>()
+                        .add(ReorderFolderEvent(oldIndex, newIndex));
                   }
                 },
               ),
@@ -204,7 +209,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
             ),
             TextButton(
               onPressed: () {
-                Get.find<BlackBoxBloc>().add(AddFolderEvent(folderName: _controller.text));
+                Get.find<BlackBoxBloc>()
+                    .add(AddFolderEvent(folderName: _controller.text));
                 Navigator.pop(context);
               },
               child: Text("Add"),
@@ -217,7 +223,8 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
 
   void _renameFolder(int index) {
     TextEditingController _controller = TextEditingController();
-    _controller.text = Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
+    _controller.text =
+        Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -241,23 +248,27 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
   }
 
   void _deleteFolder(int index) {
-    final folderName = Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
+    final folderName =
+        Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
     Get.find<BlackBoxBloc>().add(DeleteFolderEvent(folderName: folderName));
   }
 
   void _addImageFolder(int index) {
-    final folderName = Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
+    final folderName =
+        Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
     Get.find<BlackBoxBloc>().add(AddImageFolderEvent(folderName: folderName));
   }
 
   void _delImageFolder(int index) {
-    final folderName = Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
+    final folderName =
+        Get.find<BlackBoxBloc>().state.folders.keys.toList()[index];
     Get.find<BlackBoxBloc>().add(DelImageFolderEvent(folderName: folderName));
   }
 
-  void _showContextMenu(
-      BuildContext context, Offset offset, int index, String folderImagePath) async {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+  void _showContextMenu(BuildContext context, Offset offset, int index,
+      String folderImagePath) async {
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     await showMenu(
       context: context,
       position: RelativeRect.fromRect(
@@ -303,6 +314,20 @@ class NotesScreen extends StatefulWidget {
 }
 
 class _NotesScreenState extends State<NotesScreen> {
+  bool isReverse = false;
+  int notesLength = 0;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      isReverse = notesLength > 11;
+      if (isReverse) {
+        setState(() {});
+      }
+    });
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Theme(
@@ -319,32 +344,36 @@ class _NotesScreenState extends State<NotesScreen> {
             ),
             body: Stack(
               children: [
-                BlocBuilder<BlackBoxBloc, BlackBoxState>(builder: (context, state) {
+                BlocBuilder<BlackBoxBloc, BlackBoxState>(
+                    builder: (context, state) {
                   var notes = context
                       .select((BlackBoxBloc bloc) => bloc.state.notes.entries)
-                      .where((entry) => entry.value['folderName'] == widget.folderName)
+                      .where((entry) =>
+                          entry.value['folderName'] == widget.folderName)
                       .toList();
+                  notesLength = notes.length;
                   return Padding(
                     padding: const EdgeInsets.only(right: 6.0),
                     child: ReorderableListView.builder(
+                      reverse: isReverse,
                       onReorder: (int oldIndex, int newIndex) {
                         if (newIndex > oldIndex) {
                           newIndex -= 1;
                         }
-                        Get.find<BlackBoxBloc>()
-                            .add(ReorderNoteEvent(widget.folderName, oldIndex, newIndex));
+                        Get.find<BlackBoxBloc>().add(ReorderNoteEvent(
+                            widget.folderName, oldIndex, newIndex));
                         Future.delayed(Duration.zero).then((_) {
                           setState(() {});
                         });
                       },
                       itemCount: notes.length,
+                      scrollController: ScrollController(initialScrollOffset: notesLength * 10.0),
                       itemBuilder: (context, itemId) {
-                        Log.i('START LOOP');
-
                         String notTitle = notes[itemId].value['noteText'] ?? '';
                         while (notTitle.startsWith('\n')) {
                           notTitle = notTitle.replaceFirst('\n', '');
-                        };
+                        }
+                        ;
                         Log.i('END LO OP');
                         return InkWell(
                           key: ValueKey(itemId),
@@ -352,8 +381,8 @@ class _NotesScreenState extends State<NotesScreen> {
                             _navigateToNoteDetail(notes[itemId].key);
                           },
                           onLongPress: () {
-                            _deleteNoteDialog(
-                                context, notes[itemId].key, notes[itemId].value['folderName']);
+                            _deleteNoteDialog(context, notes[itemId].key,
+                                notes[itemId].value['folderName']);
                           },
                           child: Hero(
                             tag: 'note_${notes[itemId].key}',
@@ -373,7 +402,8 @@ class _NotesScreenState extends State<NotesScreen> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(4.0),
                                     child: Padding(
-                                      padding: const EdgeInsets.only(right: 4.0, left: 6),
+                                      padding: const EdgeInsets.only(
+                                          right: 4.0, left: 6),
                                       child: Text(
                                         notTitle.trim().capStart(),
                                         maxLines: 1,
@@ -405,13 +435,32 @@ class _NotesScreenState extends State<NotesScreen> {
                 ),
               ],
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Get.find<BlackBoxBloc>()
-                    .add(AddNoteEvent(folderName: widget.folderName, noteText: ''));
-              },
-              child: Icon(Icons.add),
-              tooltip: 'Add Note',
+            floatingActionButton: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  height: 42,
+                  width: 42,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      isReverse = !isReverse;
+                      setState(() {});
+                    },
+                    child: Icon(Icons.recycling),
+                    tooltip: 'Add Note',
+                  ),
+                ),
+                SizedBox(width: 8),
+                FloatingActionButton(
+                  onPressed: () {
+                    Get.find<BlackBoxBloc>().add(AddNoteEvent(
+                        folderName: widget.folderName, noteText: ''));
+                  },
+                  child: Icon(Icons.add),
+                  tooltip: 'Add Note',
+                ),
+              ],
             ),
           ),
         ),
@@ -435,7 +484,8 @@ class _NotesScreenState extends State<NotesScreen> {
             ),
             TextButton(
               onPressed: () {
-                Get.find<BlackBoxBloc>().add(DeleteNoteEvent(key: key, folderName: folderName));
+                Get.find<BlackBoxBloc>()
+                    .add(DeleteNoteEvent(key: key, folderName: folderName));
                 Navigator.pop(context);
               },
               child: Text("Delete"),
@@ -471,8 +521,12 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   @override
   void initState() {
     super.initState();
-    textNote = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]?['noteText'] ?? 'no data';
-    folderName = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]?['folderName'] ?? 'no data';
+    textNote = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]
+            ?['noteText'] ??
+        'no data';
+    folderName = Get.find<BlackBoxBloc>().state.notes[widget.noteKey]
+            ?['folderName'] ??
+        'no data';
     _controller = TextEditingController(text: textNote);
   }
 
@@ -498,7 +552,9 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 ToolNavigator.pop();
               } else {
                 bool? saveData = await _confirmSaveOnExit(
-                    bContext: context, folderName: folderName, notedText: _controller.text);
+                    bContext: context,
+                    folderName: folderName,
+                    notedText: _controller.text);
                 if (saveData == null) {
                 } else if (saveData) {
                   if (_controller.text.length > 5) {
@@ -531,7 +587,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 55.0),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0, vertical: 6),
                     child: Hero(
                       tag: 'note_${widget.noteKey}',
                       child: Material(
@@ -559,7 +616,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                                   )
                                 : DecoratedBox(
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.white60, width: 0.6),
+                                      border: Border.all(
+                                          color: Colors.white60, width: 0.6),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: SingleChildScrollView(
@@ -571,9 +629,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                                           child: Linkify(
                                             onOpen: (link) async {
                                               Log.e('try open ${link.url}');
-                                              if (await canLaunchUrl(Uri.parse(link.url))) {
+                                              if (await canLaunchUrl(
+                                                  Uri.parse(link.url))) {
                                                 Log.e('try open 2${link.url}');
-                                                await launchUrl(Uri.parse(link.url));
+                                                await launchUrl(
+                                                    Uri.parse(link.url));
                                               } else {
                                                 throw 'Could not launch $link';
                                               }
@@ -642,7 +702,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ToolNavigator.pop();
                   },
                   child: GestureDetector(
-                    onSecondaryTap: Get.find<ServiceWindowManager>().onHideWindowPressed,
+                    onSecondaryTap:
+                        Get.find<ServiceWindowManager>().onHideWindowPressed,
                     child: Center(
                       child: Icon(Icons.save),
                     ),
@@ -742,7 +803,8 @@ class LinkTextPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       );
       selectionPainter.layout(minWidth: size.width, maxWidth: size.width);
-      selectionPainter.paint(canvas, textPainter.getOffsetForCaret(selection.base, Rect.zero));
+      selectionPainter.paint(
+          canvas, textPainter.getOffsetForCaret(selection.base, Rect.zero));
     }
   }
 
@@ -771,7 +833,8 @@ class LinkTextPainter extends CustomPainter {
       spans.add(TextSpan(
         text: match.group(0),
         style: textStyle.copyWith(color: Colors.blue),
-        recognizer: TapGestureRecognizer()..onTap = () => _launchUrl(match.group(0)!),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => _launchUrl(match.group(0)!),
       ));
       lastMatchEnd = match.end;
     }
