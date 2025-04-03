@@ -58,6 +58,7 @@ flutter:
     - assets/
     - assets/imready256х256.ico
     - assets/songs/
+    - assets/git_gif/
   fonts:
       - family: Consolas
         fonts:

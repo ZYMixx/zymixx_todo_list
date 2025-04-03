@@ -14,7 +14,7 @@
             </ul>
             </td>
             <td style="width: 50%">
-                <img src="https://s10.gifyu.com/images/SrfjW.gif" width="400"/>
+                <img src="assets/git_gif/общий вид.gif.mp4" width="400"/>
             </td>
         </tr>
     </table>
@@ -34,10 +34,10 @@
         </tr>
         <tr>
             <td style="width: 50%; text-align: center; padding: 10px; border: 2px solid purple;">
-                <img src="https://s12.gifyu.com/images/Sra5H.gif" width="100%">
+                <img src="assets/git_gif/основной экран.gif.mp4" width="100%">
             </td>
             <td style="width: 50%; text-align: center; padding: 10px; border: 2px solid purple;">
-                <img src="https://s12.gifyu.com/images/Sra5x.gif" width="100%">
+                <img src="assets/git_gif/дейлики.gif.mp4" width="100%">
             </td>
         </tr>
     </table>
@@ -50,7 +50,7 @@
 ---
 <div align="center">
     <table style="background-color: transparent;">
-        <img src="https://s10.gifyu.com/images/Sra5s.gif" width="50%">
+        <img src="assets/git_gif/work mod.gif.mp4" width="50%">
     </table>
 </div>
 
@@ -65,7 +65,7 @@
     <table style="background-color: transparent;">
         <tr>
             <td style="width: 50%">
-                <img src="https://s12.gifyu.com/images/SrYz4.gif" width="400"/>
+                <img src="assets/git_gif/доп возможности.gif.mp4" width="400"/>
             </td>
             <td style="width: 40%";>
                 <h2 align="center"> Дополнительные функции:</h2>
@@ -89,7 +89,7 @@
             <h3 align="center">✔ Статистика мотивирует пользователя и наглядно показывает успехи в работе.</h3>
             </td>
             <td style="width: 50%">
-                <img src="https://s12.gifyu.com/images/Sra5T.gif" width="400"/>
+                <img src="assets/git_gif/статистика и награды.gif.mp4" width="400"/>
             </td>
         </tr>
     </table>
