@@ -241,19 +241,19 @@ class ServiceStatisticData {
   }
 
   String _calculateDayName(DateTime itemDate) {
-    DateFormat dateFormat = DateFormat('dd MMM', 'ru');
-    String formattedMonday = dateFormat.format(itemDate);
-    return '$formattedMonday';
+    DateFormat dateFormat = DateFormat('dd MMM yyyy', 'ru');
+    String formattedDay = dateFormat.format(itemDate);
+    return formattedDay;
   }
 }
 
 class StatisticWeekHolder {
-  String weekName;
-  int todoItemCount;
-  int dailyFails;
-  int storyItems;
-  double weekScore;
-  bool isInactiveWeek;
+  final String weekName;
+  final int todoItemCount;
+  final int dailyFails;
+  final int storyItems;
+  final double weekScore;
+  final bool isInactiveWeek;
 
   StatisticWeekHolder({
     required this.weekName,

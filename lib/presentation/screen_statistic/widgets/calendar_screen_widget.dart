@@ -94,6 +94,7 @@ class CalendarScreenWidget extends StatelessWidget {
                               cellColor = ToolThemeData.mainGreenColor;
                             } else if (dayScore > 2.9) {
                               cellColor = ToolThemeData.specialItemColor;
+                              titleDayScore = dayScore.toString(); // Явно задаём значение
                             }
                           }
                           if (_calendarController.view == DateRangePickerView.month) {

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import '../app_widgets/my_animated_card.dart';
 class AddItemButton extends StatelessWidget {
-
   VoidCallback onTapAction;
   VoidCallback? onLongTapAction;
   VoidCallback? secondaryAction;
@@ -15,37 +14,40 @@ class AddItemButton extends StatelessWidget {
     this.secondaryAction,
     this.bgColor,
   });
+
   @override
   Widget build(BuildContext context) {
     return MyAnimatedCard(
       intensity: 0.005,
-      child: InkWell(
-        onTap: () {
-          onTapAction.call();
-        },
-        onLongPress: () {
-          onLongTapAction?.call();
-        },
-        onSecondaryTap: () {
-          secondaryAction?.call();
-        },
-        child: Container(
-          width: ToolThemeData.itemWidth,
-          height: 30,
-          decoration: BoxDecoration(
-            color: bgColor ?? ToolThemeData.mainGreenColor,
-            border: Border.all(
-              color: ToolThemeData.itemBorderColor,
+      child: Tooltip(
+        message: 'Alt + S',
+        waitDuration: Duration(milliseconds: 400),
+        child: InkWell(
+          onTap: () {
+            onTapAction.call();
+          },
+          onLongPress: () {
+            onLongTapAction?.call();
+          },
+          onSecondaryTap: () {
+            secondaryAction?.call();
+          },
+          child: Container(
+            width: ToolThemeData.itemWidth,
+            height: 30,
+            decoration: BoxDecoration(
+              color: bgColor ?? ToolThemeData.mainGreenColor,
+              border: Border.all(
+                color: ToolThemeData.itemBorderColor,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          child: Center(
-            child: Icon(Icons.add),
+            child: Center(
+              child: Icon(Icons.add),
+            ),
           ),
         ),
       ),
     );
   }
-
-
 }

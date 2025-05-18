@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -244,8 +245,10 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
   }
 
   Widget bottomTitleDayByDay(double value, TitleMeta meta) {
-    //ii day
+    DateFormat dateFormat = DateFormat('dd MMM yyyy', 'ru');
+    DateFormat shortFormat = DateFormat('dd MMM', 'ru'); // Формат без года
     StatisticDayHolder? statHolder = dayStatisticMap[value.toInt()];
+
     Widget text;
     if (statHolder != null) {
       TextStyle style = TextStyle(
@@ -253,8 +256,10 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
         fontSize: 12,
         color: statHolder.isMonday ? Colors.orange[800] : null,
       );
+      // Парсим dayName и форматируем без года
+      String shortDayName = shortFormat.format(dateFormat.parse(statHolder.dayName));
       text = Text(
-        '${statHolder.dayName}-',
+        '$shortDayName-',
         style: style,
       );
     } else {
@@ -268,7 +273,6 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       ),
     );
   }
-
   Widget leftTitleDayByDay(double value, TitleMeta meta) {
     //ii day
     var style = TextStyle(
