@@ -54,6 +54,7 @@ class _TodoItemBodyState extends State<TodoItemBody> {
 
   @override
   void initState() {
+    super.initState();
     dismissArrow = DismissAnimationWidget();
   }
 
@@ -122,6 +123,21 @@ class _TodoItemBodyState extends State<TodoItemBody> {
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.all(Radius.circular(12)),
+                // Добавляем объём всей карточке
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 4,
+                    spreadRadius: 0,
+                    offset: Offset(0, 2),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -137,6 +153,18 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                         topLeft: Radius.circular(12),
                         bottomLeft: Radius.circular(12),
                       ),
+                      // Объём для accent strip
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isSocial
+                                  ? ToolThemeData.specialItemColor
+                                  : priorityColor)
+                              .withOpacity(0.4),
+                          blurRadius: 3,
+                          spreadRadius: 0,
+                          offset: Offset(1, 0),
+                        ),
+                      ],
                     ),
                   ),
                   // Основное тело карточки
@@ -217,6 +245,15 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                                     decoration: BoxDecoration(
                                       color: priorityColor.withOpacity(0.5),
                                       borderRadius: BorderRadius.circular(2),
+                                      // Объём для разделителя
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: priorityColor.withOpacity(0.3),
+                                          blurRadius: 2,
+                                          spreadRadius: 0,
+                                          offset: Offset(0.5, 0),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -351,10 +388,16 @@ class TitlePresentWidget extends StatelessWidget {
                   letterSpacing: -0.3,
                   wordSpacing: -0.5,
                   height: 1.15,
+                  // Добавляем объём тексту
                   shadows: [
                     Shadow(
-                      color: Colors.black26,
-                      offset: Offset(0, 0.5),
+                      color: Colors.black.withOpacity(0.3),
+                      offset: Offset(0, 1),
+                      blurRadius: 2.0,
+                    ),
+                    Shadow(
+                      color: Colors.white.withOpacity(0.1),
+                      offset: Offset(0, -0.5),
                       blurRadius: 1.0,
                     ),
                   ],
@@ -376,6 +419,15 @@ class TitlePresentWidget extends StatelessWidget {
                               Colors.black,
                       width: 0.5),
                   borderRadius: BorderRadius.circular(ToolThemeData.itemHeight),
+                  // Объём для миниатюры изображения
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 4,
+                      spreadRadius: 0,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: SizedBox(
                   width: ToolThemeData.itemHeight - 10,
@@ -418,6 +470,15 @@ class TitlePresentWidget extends StatelessWidget {
                           width: 0.5),
                       color: Colors.white.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(6),
+                      // Объём для бейджа даты
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 2,
+                          spreadRadius: 0,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
                     )
                   : BoxDecoration(),
               child: Padding(
@@ -433,6 +494,14 @@ class TitlePresentWidget extends StatelessWidget {
                         : FontWeight.w500,
                     fontSize: isSocial ? 12 : 10.5,
                     letterSpacing: 0.2,
+                    // Объём для текста даты
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.2),
+                        offset: Offset(0, 0.5),
+                        blurRadius: 1.0,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -707,6 +776,16 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(20),
+                                        // Объём для кнопки добавления фото
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.15),
+                                            blurRadius: 3,
+                                            spreadRadius: 0,
+                                            offset: Offset(0, 1),
+                                          ),
+                                        ],
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(1.0),
@@ -717,8 +796,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                               opacity: 0.7,
                                               child: Icon(
                                                 Icons.add_a_photo_outlined,
-                                                color:
-                                                    Colors.deepPurple.shade300,
+                                                color: Colors.black87,
                                                 size: 20,
                                               ),
                                             ),
