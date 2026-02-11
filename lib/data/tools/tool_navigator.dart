@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/presentation/app.dart';
 
 class ToolNavigator {
@@ -159,7 +160,7 @@ class AppNavigatorObserver extends NavigatorObserver {
     if (currentRouteName != null) {
       routeNameStack.add(currentRouteName!);  // Добавляем имя в стек
     }
-    print('Navigated to: ${currentRouteName ?? route.runtimeType}');
+    Log.w('Navigated to: ${route.settings.name}');
   }
 
   @override

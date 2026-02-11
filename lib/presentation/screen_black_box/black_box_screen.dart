@@ -184,6 +184,7 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
           onPressed: _addFolder,
           child: Icon(Icons.add),
           tooltip: 'Add Folder',
+          heroTag: 'Main',
         ),
       ),
     );
@@ -367,14 +368,14 @@ class _NotesScreenState extends State<NotesScreen> {
                         });
                       },
                       itemCount: notes.length,
-                      scrollController: ScrollController(initialScrollOffset: notesLength * 10.0),
+                      scrollController: ScrollController(
+                          initialScrollOffset: notesLength * 10.0),
                       itemBuilder: (context, itemId) {
                         String notTitle = notes[itemId].value['noteText'] ?? '';
                         while (notTitle.startsWith('\n')) {
                           notTitle = notTitle.replaceFirst('\n', '');
                         }
                         ;
-                        Log.i('END LO OP');
                         return InkWell(
                           key: ValueKey(itemId),
                           onTap: () {
@@ -448,7 +449,8 @@ class _NotesScreenState extends State<NotesScreen> {
                       setState(() {});
                     },
                     child: Icon(Icons.recycling),
-                    tooltip: 'Add Note',
+                    tooltip: 'Reverse',
+                    heroTag: 'secondory',
                   ),
                 ),
                 SizedBox(width: 8),
@@ -459,6 +461,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   },
                   child: Icon(Icons.add),
                   tooltip: 'Add Note',
+                  heroTag: 'Main',
                 ),
               ],
             ),
@@ -677,7 +680,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                       _isEditMode = !_isEditMode;
                     });
                   },
-                  heroTag: 'empty',
+                  heroTag: 'secondory',
                   mini: true,
                   child: Icon(_isEditMode ? Icons.visibility : Icons.edit),
                   tooltip: 'Toggle Mode',
@@ -709,6 +712,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ),
                   ),
                   tooltip: 'Save Note',
+                  heroTag: 'Main',
                 ),
               ],
             ),

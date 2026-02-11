@@ -65,9 +65,6 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
 
   @override
   Future<void> close() async {
-    Log.i('CALL CLOSE');
-    // Get.find<ServiceStreamController>().removeStreamListener(identifier: timerIdentifier);
-    // Get.find<ServiceStreamController>().removeStreamListener(identifier: stopwatchIdentifier);
     return super.close();
   }
 

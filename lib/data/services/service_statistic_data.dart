@@ -97,7 +97,7 @@ class ServiceStatisticData {
   }
 
   int _storyCost = 60 * 60;
-  int _dailyPenalty = 15 * 60;
+  int _dailyPenalty = 0;
   int _todoIndividualPrise = 5 * 60;
   int _todoIndividualSinglePrise = 3 * 60;
 

@@ -21,10 +21,10 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.18
   window_manager: ^0.3.7
   keyboard_event: ^0.3.4
-  intl: ^0.19.0
+  intl: ^0.20.2
   audioplayers: ^5.2.1
   logger: ^1.4.0
-  syncfusion_flutter_datepicker: 24.2.6
+  syncfusion_flutter_datepicker: ^31.1.19  # Updated version
   gap: ^3.0.1
   fl_chart: ^0.67.0
   file_picker: ^8.0.0+1
@@ -37,7 +37,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   url_launcher: ^6.3.0
   flame: ^1.15.0
-  flame_forge2d: ^0.16.0+5
+  flame_forge2d: ^0.19.2+1
 
 dev_dependencies:
   flutter_test:
