@@ -81,6 +81,7 @@ class _TodoItemBodyState extends State<TodoItemBody> {
             Colors.grey.shade600;
     final bool isSocial =
         bloc.state.todoItem.category == EnumTodoCategory.social.name;
+    final theme = Theme.of(context);
 
     return MyAnimatedCard(
       intensity: 0.003,
@@ -122,20 +123,14 @@ class _TodoItemBodyState extends State<TodoItemBody> {
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                // Добавляем объём всей карточке
+                borderRadius: BorderRadius.circular(16),
+                // Более мягкая и современная тень карточки
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 4,
-                    spreadRadius: 0,
-                    offset: Offset(0, 2),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 8,
-                    spreadRadius: 0,
-                    offset: Offset(0, 1),
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 14,
+                    spreadRadius: 1,
+                    offset: Offset(0, 6),
                   ),
                 ],
               ),
@@ -170,50 +165,37 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                   // Основное тело карточки
                   Expanded(
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: isSocial
-                            ? ToolThemeData.specialItemColor.withOpacity(0.15)
+                            ? ToolThemeData.specialItemColor.withOpacity(0.14)
                             : (widget.bgColor == Colors.transparent
-                                ? Colors.transparent
-                                : widget.bgColor),
+                                ? theme.colorScheme.surface.withOpacity(0.96)
+                                : widget.bgColor.withOpacity(0.98)),
                         gradient: isSocial
                             ? LinearGradient(
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
                                 colors: [
                                   ToolThemeData.specialItemColor
-                                      .withOpacity(0.2),
-                                  widget.bgColor,
+                                      .withOpacity(0.24),
+                                  theme.colorScheme.surface.withOpacity(0.96),
                                 ],
                               )
                             : null,
-                        border: Border(
-                          top: BorderSide(
-                            color: widget.bgColor == Colors.transparent
-                                ? Colors.transparent
-                                : ToolThemeData.itemBorderColor
-                                    .withOpacity(0.5),
-                            width: 0.5,
-                          ),
-                          right: BorderSide(
-                            color: widget.bgColor == Colors.transparent
-                                ? Colors.transparent
-                                : ToolThemeData.itemBorderColor
-                                    .withOpacity(0.5),
-                            width: 0.5,
-                          ),
-                          bottom: BorderSide(
-                            color: widget.bgColor == Colors.transparent
-                                ? Colors.transparent
-                                : ToolThemeData.itemBorderColor
-                                    .withOpacity(0.5),
-                            width: 0.5,
-                          ),
+                        border: Border.all(
+                          color: widget.bgColor == Colors.transparent
+                              ? theme.dividerColor.withOpacity(0.25)
+                              : ToolThemeData.itemBorderColor
+                                  .withOpacity(0.5),
+                          width: 0.6,
                         ),
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(12),
-                          bottomRight: Radius.circular(12),
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(16),
+                          bottomRight: Radius.circular(16),
                         ),
                       ),
                       //? начало фронт-графики
