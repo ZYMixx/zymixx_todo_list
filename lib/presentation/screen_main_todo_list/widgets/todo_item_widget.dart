@@ -24,7 +24,8 @@ class TodoItemWidget extends StatelessWidget {
   final TodoItem todoItem;
   Color bgColor;
 
-  TodoItemWidget({Key? key, required this.todoItem, this.bgColor = Colors.blueAccent})
+  TodoItemWidget(
+      {Key? key, required this.todoItem, this.bgColor = Colors.blueAccent})
       : super(key: key);
 
   @override
@@ -59,18 +60,27 @@ class _TodoItemBodyState extends State<TodoItemBody> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    bool isChangeTextMod = context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
+    bool isChangeTextMod =
+        context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
     String todoContent = bloc.state.todoItem.content;
     int lineSeparator = bloc.state.todoItem.content.split('\n').length - 1;
     int lines = (todoContent.length + (lineSeparator * 8)) ~/ 24;
-    DateTime? targetDateTime =
-        context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
+    DateTime? targetDateTime = context
+        .select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
     if (lines < 2) {
       lines = 2;
     }
     if (lines > 5) {
       lines = 5;
     }
+
+    // Приоритетный цвет для accent strip
+    final Color priorityColor =
+        targetDateTime?.getHighlightColor(targetDateTime) ??
+            Colors.grey.shade600;
+    final bool isSocial =
+        bloc.state.todoItem.category == EnumTodoCategory.social.name;
+
     return MyAnimatedCard(
       intensity: 0.003,
       child: AnimatedContainer(
@@ -108,72 +118,116 @@ class _TodoItemBodyState extends State<TodoItemBody> {
               }
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 3),
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                color: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                    ? ToolThemeData.specialItemColor
-                    : widget.bgColor,
-                gradient: bloc.state.todoItem.category == EnumTodoCategory.social.name
-                    ? LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          ToolThemeData.specialItemColor,
-                          widget.bgColor,
-                        ],
-                        transform: GradientRotation(-0.04),
-                        stops: [0.5, 1],
-                      )
-                    : null,
-                border: Border.all(
-                  color: widget.bgColor == Colors.transparent
-                      ? Colors.transparent
-                      : ToolThemeData.itemBorderColor,
-                ),
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: Colors.transparent,
+                borderRadius: BorderRadius.all(Radius.circular(12)),
               ),
-              //? начало фронт-графики
               child: Row(
                 children: [
-                  Flexible(
-                    flex: 12,
-                    fit: FlexFit.tight,
-                    child: GestureDetector(
-                      onLongPress: () {},
-                      onTap: () {},
-                      child: isChangeTextMod ? TitleChangeWidget() : TitlePresentWidget(),
-                    ),
-                  ),
-                  MyAnimatedCard(
-                    intensity: 0.01,
-                    directionUp: false,
-                    child: AnimatedCirclesWidget(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 5.0, bottom: 5.0, left: 4),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black45,
-                                blurRadius: 1.5,
-                                spreadRadius: 1.0,
-                                offset: Offset(0, 0),
-                              ),
-                            ],
-                          ),
-                          child: ColoredBox(
-                              color:
-                                  targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
-                              child: SizedBox(
-                                width: 3.5,
-                                height: double.infinity,
-                              )),
-                        ),
+                  // Тонкая левая полоска приоритета (accent strip)
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    width: 3.5,
+                    decoration: BoxDecoration(
+                      color: isSocial
+                          ? ToolThemeData.specialItemColor
+                          : priorityColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        bottomLeft: Radius.circular(12),
                       ),
                     ),
                   ),
-                  Flexible(flex: 6, child: TimerWorkWidget()),
-                  //SizedBox(width: 10),
+                  // Основное тело карточки
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: isSocial
+                            ? ToolThemeData.specialItemColor.withOpacity(0.15)
+                            : (widget.bgColor == Colors.transparent
+                                ? Colors.transparent
+                                : widget.bgColor),
+                        gradient: isSocial
+                            ? LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  ToolThemeData.specialItemColor
+                                      .withOpacity(0.2),
+                                  widget.bgColor,
+                                ],
+                              )
+                            : null,
+                        border: Border(
+                          top: BorderSide(
+                            color: widget.bgColor == Colors.transparent
+                                ? Colors.transparent
+                                : ToolThemeData.itemBorderColor
+                                    .withOpacity(0.5),
+                            width: 0.5,
+                          ),
+                          right: BorderSide(
+                            color: widget.bgColor == Colors.transparent
+                                ? Colors.transparent
+                                : ToolThemeData.itemBorderColor
+                                    .withOpacity(0.5),
+                            width: 0.5,
+                          ),
+                          bottom: BorderSide(
+                            color: widget.bgColor == Colors.transparent
+                                ? Colors.transparent
+                                : ToolThemeData.itemBorderColor
+                                    .withOpacity(0.5),
+                            width: 0.5,
+                          ),
+                        ),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(12),
+                          bottomRight: Radius.circular(12),
+                        ),
+                      ),
+                      //? начало фронт-графики
+                      child: Row(
+                        children: [
+                          Flexible(
+                            flex: 12,
+                            fit: FlexFit.tight,
+                            child: GestureDetector(
+                              onLongPress: () {},
+                              onTap: () {},
+                              child: isChangeTextMod
+                                  ? TitleChangeWidget()
+                                  : TitlePresentWidget(),
+                            ),
+                          ),
+                          // Убрали отдельную цветную полоску из середины — она теперь слева
+                          MyAnimatedCard(
+                            intensity: 0.01,
+                            directionUp: false,
+                            child: AnimatedCirclesWidget(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 5.0, bottom: 5.0, left: 4),
+                                child: SizedBox(
+                                  width: 2.5,
+                                  height: double.infinity,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: priorityColor.withOpacity(0.5),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Flexible(flex: 6, child: TimerWorkWidget()),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -225,9 +279,13 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
       child: Transform.translate(
         //offset: Offset(0, 0),
         offset: Offset(
-            400 * (animValue / 2) + (8 * Random().nextDouble()) + (isRightArrow ? -230 : 220), 0),
+            400 * (animValue / 2) +
+                (8 * Random().nextDouble()) +
+                (isRightArrow ? -230 : 220),
+            0),
         child: Container(
-          alignment: isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
+          alignment:
+              isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
           padding: EdgeInsets.only(right: 30),
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -240,7 +298,9 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
                   isRightArrow
                       ? Icons.keyboard_double_arrow_right
                       : Icons.keyboard_double_arrow_left,
-                  color: isRightArrow ? ToolThemeData.mainGreenColor : ToolThemeData.highlightColor,
+                  color: isRightArrow
+                      ? ToolThemeData.mainGreenColor
+                      : ToolThemeData.highlightColor,
                   // Цвет стрелок
                   size: 50,
                 ),
@@ -261,8 +321,13 @@ class TitlePresentWidget extends StatelessWidget {
     var bloc = context.select((TodoItemBloc bloc) => bloc);
     File? todoImageFile = bloc.state.imageFile;
     String title = bloc.state.todoItem.title;
-    DateTime? targetDateTime =
-        context.select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
+    DateTime? targetDateTime = context
+        .select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
+    final bool isSocial =
+        bloc.state.todoItem.category == EnumTodoCategory.social.name;
+    final String? dateStr =
+        Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
+
     return Stack(
       children: [
         InkWell(
@@ -270,18 +335,30 @@ class TitlePresentWidget extends StatelessWidget {
             bloc.add(ChangeModEvent(isChangeMod: true));
           },
           child: Padding(
-            padding: EdgeInsets.only(left: 6.0, bottom: 4.0, right: todoImageFile != null ? 25 : 5),
+            padding: EdgeInsets.only(
+              left: 10.0,
+              top: 6.0,
+              bottom: dateStr != null ? 14.0 : 6.0,
+              right: todoImageFile != null ? 25 : 8,
+            ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                (' ' + (title.capStart() ?? '')) ?? '',
+                (title.capStart() ?? '') ?? '',
                 style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    letterSpacing: -0.5,
-                    wordSpacing: -1.0,
-                    height: 0.9,
-                    shadows: ToolThemeData.defTextShadow),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  letterSpacing: -0.3,
+                  wordSpacing: -0.5,
+                  height: 1.15,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 0.5),
+                      blurRadius: 1.0,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -294,7 +371,9 @@ class TitlePresentWidget extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border.all(
-                      color: targetDateTime?.getHighlightColor(targetDateTime) ?? Colors.black,
+                      color:
+                          targetDateTime?.getHighlightColor(targetDateTime) ??
+                              Colors.black,
                       width: 0.5),
                   borderRadius: BorderRadius.circular(ToolThemeData.itemHeight),
                 ),
@@ -304,15 +383,16 @@ class TitlePresentWidget extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       //ii image top
-                      Get.find<ServiceImagePluginWork>().openImage(todoImageFile);
+                      Get.find<ServiceImagePluginWork>()
+                          .openImage(todoImageFile);
                     },
                     child: MyAnimatedCard(
                       intensity: 0.01,
                       directionUp: false,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius: BorderRadius.circular(10.0),
                         child: Opacity(
-                          opacity: 0.80,
+                          opacity: 0.85,
                           child: Image.file(
                             todoImageFile,
                             fit: BoxFit.fill,
@@ -325,35 +405,39 @@ class TitlePresentWidget extends StatelessWidget {
               ),
             ),
           ),
-        Align(
-            alignment: Alignment.bottomRight,
+        // Дата — аккуратная подстрочная метаинформация
+        if (dateStr != null)
+          Positioned(
+            bottom: 2,
+            left: 10,
             child: DecoratedBox(
               decoration: todoImageFile != null
                   ? BoxDecoration(
                       border: Border.all(
-                          color: ToolThemeData.highlightColor.withOpacity(0.5), width: 0.5),
-                      color: Colors.white.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(12),
+                          color: ToolThemeData.highlightColor.withOpacity(0.3),
+                          width: 0.5),
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(6),
                     )
                   : BoxDecoration(),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Text(
-                  Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '',
+                  dateStr,
                   style: TextStyle(
-                    color: bloc.state.todoItem.category == EnumTodoCategory.social.name
+                    color: isSocial
                         ? ToolThemeData.mainGreenColor
-                        : Colors.black,
-                    fontWeight: bloc.state.todoItem.category == EnumTodoCategory.social.name ||
-                            todoImageFile != null
-                        ? FontWeight.w700
-                        : FontWeight.w600,
-                    fontSize:
-                        bloc.state.todoItem.category == EnumTodoCategory.social.name ? 13 : 11,
+                        : Colors.black54,
+                    fontWeight: isSocial || todoImageFile != null
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                    fontSize: isSocial ? 12 : 10.5,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
-            )),
+            ),
+          ),
       ],
     );
   }
@@ -417,7 +501,8 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    File? todoImageFile = context.select((TodoItemBloc bloc) => bloc.state.imageFile);
+    File? todoImageFile =
+        context.select((TodoItemBloc bloc) => bloc.state.imageFile);
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
     initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
@@ -425,13 +510,13 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     String formattedTargetDateTime =
         Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
     return Padding(
-      padding: const EdgeInsets.only(left: 6.0, bottom: 4.0),
+      padding: const EdgeInsets.only(left: 8.0, bottom: 4.0, right: 2.0),
       child: Focus(
         onFocusChange: (focus) {
           if (focus) {
             _controllerTitle
-              ..selection =
-                  TextSelection(baseOffset: 0, extentOffset: _controllerTitle.text.length);
+              ..selection = TextSelection(
+                  baseOffset: 0, extentOffset: _controllerTitle.text.length);
           }
           if (!focus) {
             print('focus locc add Event ${_controllerTitle.text.trim()}');
@@ -454,14 +539,19 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               maxLines: 1,
               focusNode: _focusNodeTitle,
               style: TextStyle(
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
+                fontSize: 14.5,
+                letterSpacing: -0.2,
               ),
               decoration: InputDecoration(
+                isDense: true,
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 suffixIcon: MyAnimatedCard(
                   intensity: 0.012,
                   child: Container(
                     width: 50,
-                    height: 40,
+                    height: 36,
                     alignment: Alignment.center,
                     child: InkWell(
                       focusNode: FocusNode(skipTraversal: true),
@@ -477,7 +567,8 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                           )
                           ..add(
                             RequestChangeItemDateEvent(
-                                buildContext: context, restoreFocusCallBack: _restoreSelection),
+                                buildContext: context,
+                                restoreFocusCallBack: _restoreSelection),
                           )
                       },
                       onLongPress: () => bloc
@@ -505,9 +596,17 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                       child: Text(
                         formattedTargetDateTime,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          shadows: ToolThemeData.defTextShadow,
+                          color: Colors.black87,
+                          letterSpacing: 0.1,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black12,
+                              offset: Offset(0, 0.5),
+                              blurRadius: 1.0,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -517,9 +616,9 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
             ),
             ScrollbarTheme(
               data: ScrollbarThemeData(
-                thumbColor: MaterialStateProperty.all<Color>(Colors.black),
+                thumbColor: MaterialStateProperty.all<Color>(Colors.black54),
                 thumbVisibility: MaterialStateProperty.all<bool>(true),
-                thickness: MaterialStateProperty.all<double>(5),
+                thickness: MaterialStateProperty.all<double>(4),
               ),
               child: TextField(
                 controller: _controllerDescription,
@@ -528,6 +627,9 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                 selectionControls: MaterialTextSelectionControls(),
                 maxLines: initialText == '' ? 3 : 8,
                 decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                   suffixIconConstraints: todoImageFile == null
                       ? BoxConstraints.tightFor(width: 35, height: 35)
                       : BoxConstraints.tightFor(width: 45, height: 45),
@@ -543,19 +645,23 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                     alignment: Alignment.bottomRight,
                                     child: InkWell(
                                       onTap: () {
-                                        Get.find<ServiceImagePluginWork>().openImage(todoImageFile);
+                                        Get.find<ServiceImagePluginWork>()
+                                            .openImage(todoImageFile);
                                       },
                                       onSecondaryTap: () {},
                                       onLongPress: () {
-                                        Get.find<ServiceImagePluginWork>().deleteImage(
+                                        Get.find<ServiceImagePluginWork>()
+                                            .deleteImage(
                                           todoItem: bloc.state.todoItem,
-                                          updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
+                                          updateCallBack: () =>
+                                              bloc.add(SetTodoItemImageEvent()),
                                         );
                                       },
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12.0),
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
                                         child: Opacity(
-                                          opacity: 0.80,
+                                          opacity: 0.85,
                                           child: AspectRatio(
                                             aspectRatio:
                                                 1.0, // Устанавливаем квадратное соотношение сторон
@@ -580,23 +686,27 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                   focusNode: FocusNode(skipTraversal: true),
                                   onTap: () {
                                     //ii image
-                                    Get.find<ServiceImagePluginWork>().drawImage(
-                                        title: bloc.state.todoItem.title,
-                                        id: bloc.state.todoItem.id,
-                                        updateCallBack: () => bloc.add(SetTodoItemImageEvent()));
+                                    Get.find<ServiceImagePluginWork>()
+                                        .drawImage(
+                                            title: bloc.state.todoItem.title,
+                                            id: bloc.state.todoItem.id,
+                                            updateCallBack: () => bloc
+                                                .add(SetTodoItemImageEvent()));
                                     Log.e('ADD NEW IMAGE');
                                   },
                                   onSecondaryTap: () {
-                                    Get.find<ServiceImagePluginWork>().selectAndSetTodoImage(
+                                    Get.find<ServiceImagePluginWork>()
+                                        .selectAndSetTodoImage(
                                       todoItem: bloc.state.todoItem,
-                                      updateCallBack: () => bloc.add(SetTodoItemImageEvent()),
+                                      updateCallBack: () =>
+                                          bloc.add(SetTodoItemImageEvent()),
                                     );
                                   },
                                   child: Center(
                                     child: DecoratedBox(
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(25),
+                                        color: Colors.white.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(1.0),
@@ -604,10 +714,12 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                           intensity: 0.012,
                                           child: ClipOval(
                                             child: Opacity(
-                                              opacity: 0.9,
+                                              opacity: 0.7,
                                               child: Icon(
                                                 Icons.add_a_photo_outlined,
-                                                color: Colors.purple,
+                                                color:
+                                                    Colors.deepPurple.shade300,
+                                                size: 20,
                                               ),
                                             ),
                                           ),
@@ -620,16 +732,16 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                             ),
                 ),
                 style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  letterSpacing: -0.5,
-                  wordSpacing: -0.5,
-                  height: 0.95,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13.5,
+                  letterSpacing: -0.3,
+                  wordSpacing: -0.3,
+                  height: 1.2,
                   shadows: [
                     Shadow(
                       color: Colors.black12,
                       offset: Offset(0, 0.1),
-                      blurRadius: 1.5,
+                      blurRadius: 1.0,
                     ),
                   ],
                 ),
@@ -657,7 +769,8 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   }
 
   String _formatTextForSave(test) {
-    return _controllerDescription.text.replaceAll(ToolThemeData.lineIndicator, '');
+    return _controllerDescription.text
+        .replaceAll(ToolThemeData.lineIndicator, '');
   }
 }
 
@@ -674,10 +787,13 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   @override
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    TodoItem todoItem = context.select((TodoItemBloc bloc) => bloc.state.todoItem);
-    bool needTimerSong = context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
+    TodoItem todoItem =
+        context.select((TodoItemBloc bloc) => bloc.state.todoItem);
+    bool needTimerSong =
+        context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
     int autoPauseSeconds = todoItem.autoPauseSeconds;
-    TimeModEnum timerMod = context.select((TodoItemBloc bloc) => bloc.state.timerMod);
+    TimeModEnum timerMod =
+        context.select((TodoItemBloc bloc) => bloc.state.timerMod);
     return Stack(
       children: [
         if (autoPauseSeconds > 0)
@@ -688,19 +804,16 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
               child: DecoratedBox(
                 position: DecorationPosition.background,
                 decoration: BoxDecoration(
-                  border: Border.all(width: 1.5, color: Colors.black),
+                  border: Border.all(width: 1.0, color: Colors.black38),
                   shape: BoxShape.circle,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(0.5),
-                  child: Opacity(
-                    opacity: 1,
-                    child: CircleAvatar(
-                        radius: 4,
-                        backgroundColor: autoPauseSeconds == 30
-                            ? ToolThemeData.specialItemColor
-                            : ToolThemeData.highlightColor),
-                  ),
+                  child: CircleAvatar(
+                      radius: 3.5,
+                      backgroundColor: autoPauseSeconds == 30
+                          ? ToolThemeData.specialItemColor
+                          : ToolThemeData.highlightColor),
                 ),
               ),
             ),
@@ -713,11 +826,11 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
               child: Padding(
                 padding: const EdgeInsets.all(0.5),
                 child: Opacity(
-                  opacity: 1,
+                  opacity: 0.6,
                   child: Icon(
                     Icons.music_off_outlined,
-                    size: 18,
-                    color: ToolThemeData.itemBorderColor,
+                    size: 16,
+                    color: Colors.black45,
                   ),
                 ),
               ),
@@ -753,7 +866,8 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
               ).animate(animation);
               return FadeTransition(
                   opacity: animation,
-                  child: SlideTransition(position: slideAnimation, child: child));
+                  child:
+                      SlideTransition(position: slideAnimation, child: child));
             },
             child: buildCrntWidget(bloc: bloc, timerMod: timerMod),
           ),
@@ -762,7 +876,8 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
     );
   }
 
-  Widget buildCrntWidget({required TodoItemBloc bloc, required TimeModEnum timerMod}) {
+  Widget buildCrntWidget(
+      {required TodoItemBloc bloc, required TimeModEnum timerMod}) {
     switch (timerMod) {
       case TimeModEnum.timer:
         return TimerWidget();
@@ -782,12 +897,14 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                 child: IconButton(
                   onPressed: () {
                     setState(() {
-                      bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
+                      bloc.add(
+                          ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
                     });
                   },
                   icon: Icon(
-                    Icons.timer,
-                    color: Colors.black87,
+                    Icons.timer_outlined,
+                    color: Colors.black54,
+                    size: 22,
                   ),
                 ),
               ),
@@ -805,8 +922,9 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                     });
                   },
                   icon: Icon(
-                    Icons.timelapse_outlined,
-                    color: Colors.black87,
+                    Icons.hourglass_empty_outlined,
+                    color: Colors.black54,
+                    size: 22,
                   ),
                 ),
               ),
@@ -830,11 +948,14 @@ class _TimerWidgetState extends State<TimerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    int timer = context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
+    int timer =
+        context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
-    String timerString = Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
-    bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+    String timerString =
+        Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
+    bool isTimerActive =
+        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
 
     return Material(
       color: Colors.transparent,
@@ -854,8 +975,9 @@ class _TimerWidgetState extends State<TimerWidget> {
                 bloc.add(ChangeTimerEvent(changeNum: -3600));
               },
               child: Icon(
-                Icons.remove,
+                Icons.remove_rounded,
                 size: 16,
+                color: Colors.black54,
               ),
             ),
           ),
@@ -876,9 +998,16 @@ class _TimerWidgetState extends State<TimerWidget> {
                   child: Text(
                     timerString,
                     style: TextStyle(
-                      fontSize: 17.5,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      shadows: ToolThemeData.defTextShadow,
+                      letterSpacing: 0.5,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black12,
+                          offset: Offset(0, 0.5),
+                          blurRadius: 1.0,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -898,8 +1027,9 @@ class _TimerWidgetState extends State<TimerWidget> {
                       duration: Duration(seconds: 1),
                       child: Icon(
                         Icons.arrow_downward_outlined,
-                        size: 14,
-                        color: isTimerActive ? Colors.black : Colors.grey[700],
+                        size: 13,
+                        color:
+                            isTimerActive ? Colors.black87 : Colors.grey[500],
                       ),
                     ),
                   );
@@ -918,8 +1048,9 @@ class _TimerWidgetState extends State<TimerWidget> {
               bloc.add(ChangeTimerEvent(changeNum: 3600));
             },
             child: Icon(
-              Icons.add,
+              Icons.add_rounded,
               size: 16,
+              color: Colors.black54,
             ),
           ),
           SizedBox(width: 15),
@@ -943,11 +1074,13 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    int stopwatch = context.select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
-    bool isTimerActive = context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+    int stopwatch = context
+        .select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
+    bool isTimerActive =
+        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    String stopwatchString =
-        Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(stopwatch);
+    String stopwatchString = Get.find<ToolTimeStringConverter>()
+        .formatSecondsToTimeMinute(stopwatch);
     return IconButton(
       onPressed: null,
       icon: InkWell(
@@ -973,9 +1106,16 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                 child: Text(
                   stopwatchString,
                   style: TextStyle(
-                    fontSize: 17.5,
+                    fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    shadows: ToolThemeData.defTextShadow,
+                    letterSpacing: 0.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black12,
+                        offset: Offset(0, 0.5),
+                        blurRadius: 1.0,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -996,8 +1136,8 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                     duration: Duration(seconds: 1),
                     child: Icon(
                       Icons.arrow_upward_outlined,
-                      size: 14,
-                      color: isTimerActive ? Colors.black : Colors.grey[700],
+                      size: 13,
+                      color: isTimerActive ? Colors.black87 : Colors.grey[500],
                     ),
                   ),
                 );
@@ -1014,7 +1154,8 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
 class AnimatedCirclesWidget extends StatefulWidget {
   final Widget child;
 
-  const AnimatedCirclesWidget({Key? key, required this.child}) : super(key: key);
+  const AnimatedCirclesWidget({Key? key, required this.child})
+      : super(key: key);
 
   @override
   _AnimatedCirclesWidgetState createState() => _AnimatedCirclesWidgetState();
@@ -1032,7 +1173,8 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: Duration(milliseconds: 120), vsync: this);
+    _controller =
+        AnimationController(duration: Duration(milliseconds: 120), vsync: this);
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller)
       ..addListener(() {
         setState(() {});
@@ -1099,7 +1241,9 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                     child: InkWell(
                       onTap: () {
                         parentContext.read<TodoItemBloc>().add(
-                            SetAutoPauseSeconds(autoPauseSeconds: index == 0 ? 0 : 30 ~/ index));
+                            SetAutoPauseSeconds(
+                                autoPauseSeconds:
+                                    index == 0 ? 0 : 30 ~/ index));
                         Log.i('set auto pause on ${30 ~/ index}');
                         _handleTapUp();
                       },
