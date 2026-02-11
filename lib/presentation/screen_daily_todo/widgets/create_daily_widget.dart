@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -49,26 +51,32 @@ class _CreateDailyWidgetState extends State<CreateDailyWidget> with TickerProvid
                       widthFactor: 0.8,
                       heightFactor: 0.60,
                       alignment: Alignment.topLeft,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurpleAccent,
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(16.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 6.0,
-                              spreadRadius: 4.0,
-                              offset: Offset(0, 2),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22.0),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.58),
+                              borderRadius: BorderRadius.circular(22.0),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.18),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.65),
+                                  blurRadius: 24.0,
+                                  spreadRadius: 4.0,
+                                  offset: Offset(0, 10),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: CreateDailyContentColumn(),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: CreateDailyContentColumn(),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -175,13 +183,35 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                   onChanged: (value) {
                     name = value;
                   },
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: Colors.white,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Название',
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.68),
+                      fontSize: 14,
                     ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.12),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: Colors.white.withOpacity(0.35),
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      borderSide: BorderSide(
+                        color: ToolThemeData.highlightGreenColor,
+                        width: 1.4,
+                      ),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -197,15 +227,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                   flex: 7,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.45),
-                          blurRadius: 4.0,
-                          spreadRadius: 2.0,
-                          offset: Offset(0, 0),
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: MyAnimatedCard(
                       intensity: 0.007,
@@ -218,19 +240,44 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                         inputFormatters: <TextInputFormatter>[
                           FilteringTextInputFormatter.digitsOnly
                         ],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.white,
+                        ),
                         decoration: InputDecoration(
                           hintText: 'Минуты в день',
-                          prefixIcon: Icon(Icons.timelapse),
-                          hintStyle: TextStyle(fontSize: 13),
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withOpacity(0.68),
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.timelapse,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           suffixText: 'min',
+                          suffixStyle: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
                           counterText: '',
                           filled: true,
-                          fillColor: Colors.grey[100],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                          fillColor: Colors.white.withOpacity(0.12),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.35),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: ToolThemeData.highlightGreenColor,
+                              width: 1.4,
+                            ),
                           ),
                         ),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                       ),
@@ -242,15 +289,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                   flex: 3,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.45),
-                          blurRadius: 4.0,
-                          spreadRadius: 2.0,
-                          offset: Offset(0, 0),
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                     child: MyAnimatedCard(
                       intensity: 0.007,
@@ -263,16 +302,35 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                         inputFormatters: <TextInputFormatter>[
                           FilteringTextInputFormatter.digitsOnly
                         ],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          color: Colors.white,
+                        ),
                         decoration: InputDecoration(
-                          suffixIcon: Icon(Icons.emoji_events),
-                          filled: true,
                           counterText: '',
-                          fillColor: Colors.grey[100],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                          suffixIcon: const Icon(
+                            Icons.emoji_events,
+                            color: Colors.amberAccent,
+                            size: 22,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.12),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.35),
+                              width: 1,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            borderSide: BorderSide(
+                              color: ToolThemeData.highlightGreenColor,
+                              width: 1.4,
+                            ),
                           ),
                         ),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                       ),
@@ -287,11 +345,21 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             opacity: _animation3,
             child: MyAnimatedCard(
               intensity: 0.005,
-              child: RadioButtonWidget(valueCallBack: (int value) {
-                this.autoPauseSeconds = value;
-              }, autoStartCallBack: (bool autoStart) {
-                this.autoStart = autoStart;
-              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(14.0),
+                ),
+                child: RadioButtonWidget(
+                  valueCallBack: (int value) {
+                    this.autoPauseSeconds = value;
+                  },
+                  autoStartCallBack: (bool autoStart) {
+                    this.autoStart = autoStart;
+                  },
+                ),
+              ),
             ),
           ),
           SizedBox(height: 3.0),
@@ -299,9 +367,18 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             opacity: _animation3,
             child: MyAnimatedCard(
               intensity: 0.005,
-              child: WeekdayRadioButtonWidget(valueCallBack: (List<int> value) {
-                this.dailyDayList = value;
-              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(14.0),
+                ),
+                child: WeekdayRadioButtonWidget(
+                  valueCallBack: (List<int> value) {
+                    this.dailyDayList = value;
+                  },
+                ),
+              ),
             ),
           ),
           SizedBox(height: 3.0),
@@ -309,9 +386,18 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             opacity: _animation3,
             child: MyAnimatedCard(
               intensity: 0.005,
-              child: PeriodicRadioButtonWidget(valueCallBack: (int value) {
-                this.period = value;
-              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(14.0),
+                ),
+                child: PeriodicRadioButtonWidget(
+                  valueCallBack: (int value) {
+                    this.period = value;
+                  },
+                ),
+              ),
             ),
           ),
           SizedBox(height: 5.0),
@@ -319,15 +405,7 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
             opacity: _animation4,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.45),
-                    blurRadius: 2.5,
-                    spreadRadius: 1.5,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-                borderRadius: BorderRadius.circular(10.0),
+                borderRadius: BorderRadius.circular(999.0),
               ),
               child: MyAnimatedCard(
                 intensity: 0.01,
@@ -345,14 +423,24 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
                   },
                   child: Text(
                     'Создать',
-                    style: TextStyle(fontSize: 18.0, color: Colors.black),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                      color: Colors.white,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ToolThemeData.mainGreenColor,
-                    padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 15.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40.0,
+                      vertical: 14.0,
                     ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(999.0),
+                    ),
+                    elevation: 4,
+                    shadowColor: Colors.black.withOpacity(0.4),
                   ),
                 ),
               ),
@@ -371,8 +459,8 @@ class _CreateDailyContentColumnState extends State<CreateDailyContentColumn>
 }
 
 class RadioButtonWidget extends StatefulWidget {
-  Function valueCallBack;
-  Function autoStartCallBack;
+  final Function valueCallBack;
+  final Function autoStartCallBack;
 
   RadioButtonWidget({
     required this.valueCallBack,
@@ -393,7 +481,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         Transform.scale(
-          scale: 1.5,
+          scale: 1.2,
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Radio(
@@ -411,7 +499,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
           ),
         ),
         Transform.scale(
-          scale: 1.5,
+          scale: 1.2,
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Radio(
@@ -429,7 +517,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
           ),
         ),
         Transform.scale(
-          scale: 1.5,
+          scale: 1.2,
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Radio(
@@ -451,7 +539,7 @@ class RadioButtonWidgetState extends State<RadioButtonWidget> {
           child: MyAnimatedCard(
             intensity: 0.007,
             child: MyRadioIcon(
-              unselectedColor: Colors.black,
+              unselectedColor: Colors.white70,
               selectedColor: Colors.amberAccent,
               onSelect: () {
                 widget.autoStartCallBack.call(true);
@@ -502,25 +590,29 @@ class _WeekdayRadioButtonWidgetState extends State<WeekdayRadioButtonWidget> {
               });
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 6.5, vertical: 3.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 7.0, vertical: 4.0),
               decoration: BoxDecoration(
-                color: _dailyDayList.contains(i) ? Colors.blueAccent : Colors.transparent,
-                borderRadius: BorderRadius.circular(8.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 2),
-                  ),
-                ],
+                color: _dailyDayList.contains(i)
+                    ? ToolThemeData.highlightColor
+                    : Colors.white.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(999.0),
+                border: Border.all(
+                  color: _dailyDayList.contains(i)
+                      ? ToolThemeData.highlightColor
+                      : Colors.white.withOpacity(0.35),
+                  width: 0.8,
+                ),
               ),
               child: Text(
                 _getWeekday(i),
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: _dailyDayList.contains(i) ? Colors.white : Colors.black,
+                  letterSpacing: 0.1,
+                  color: _dailyDayList.contains(i)
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.95),
                 ),
               ),
             ),
@@ -567,18 +659,19 @@ class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          height: 30,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              ' Период:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
+        const SizedBox(height: 2),
+        Text(
+          'Период:',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
+        const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -597,25 +690,31 @@ class _PeriodicRadioButtonWidgetState extends State<PeriodicRadioButtonWidget> {
                   });
                 },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10.0,
+                    vertical: 4.0,
+                  ),
                   decoration: BoxDecoration(
-                    color: _selectedValue == i ? Colors.blueAccent : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
+                    color: _selectedValue == i
+                        ? ToolThemeData.highlightColor
+                        : Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(999.0),
+                    border: Border.all(
+                      color: _selectedValue == i
+                          ? ToolThemeData.highlightColor
+                          : Colors.white.withOpacity(0.35),
+                      width: 0.8,
+                    ),
                   ),
                   child: Text(
                     i.toString(),
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: _selectedValue == i ? Colors.white : Colors.black,
+                      color: _selectedValue == i
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.95),
                     ),
                   ),
                 ),

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_time_string_converter.dart';
 import 'package:zymixx_todo_list/domain/app_data.dart';
@@ -65,25 +64,44 @@ class DailyTodoWidget extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(2.0),
+          padding: const EdgeInsets.only(top: 6.0, bottom: 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                yesterdayDailyMod ? 'Вчера' : 'Дейлики',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: yesterdayDailyMod ? 30 : 24,
-                  color: Colors.white,
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.45),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.12),
+                    width: 0.8,
+                  ),
                 ),
-              ),
-              Baseline(
-                baseline: yesterdayDailyMod ? 40.0 : 30.0,
-                baselineType: TextBaseline.alphabetic,
-                child: Icon(
-                  yesterdayDailyMod ? Icons.timelapse_outlined : Icons.calendar_month_outlined,
-                  color: Colors.white,
-                  size: yesterdayDailyMod ? 31 : 26,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        yesterdayDailyMod
+                            ? Icons.timelapse_outlined
+                            : Icons.calendar_month_outlined,
+                        color: Colors.white,
+                        size: yesterdayDailyMod ? 22 : 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        yesterdayDailyMod ? 'Вчерашние дейлики' : 'Ежедневные задачи',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 0.1,
+                          color: Colors.white,
+                          shadows: ToolThemeData.defTextShadow,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -91,6 +109,7 @@ class DailyTodoWidget extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
             itemCount: dailyTodoList.length,
             itemBuilder: (context, itemId) {
               return DailyTodoItem(
@@ -99,18 +118,14 @@ class DailyTodoWidget extends StatelessWidget {
             },
           ),
         ),
-        Opacity(
-          opacity: 1,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-            child: AddItemButton(
-              onTapAction: () {
-                context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
-              },
-              onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
-              secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
-              bgColor: Colors.grey,
-            ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+          child: AddItemButton(
+            onTapAction: () {
+              context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
+            },
+            onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
+            secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
           ),
         ),
       ],
@@ -145,30 +160,52 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
 
   @override
   Widget build(BuildContext context) {
-    return MyAnimatedCard(
-      intensity: 0.005,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+    final bool isDone = widget.dailyTodoItem.isDone;
+    final Map<String, dynamic> json =
+        jsonDecode(widget.dailyTodoItem.content) as Map<String, dynamic>;
+    final bool hasPrize = (json['prise'] ?? 0) != 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
+      child: MyAnimatedCard(
+        intensity: 0.005,
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 200),
-          width: double.infinity,
-          height: widget.dailyTodoItem.isDone ? 40 : 60,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
-            color: widget.dailyTodoItem.isDone
-                ? ToolThemeData.highlightGreenColor
-                : Colors.white.withOpacity(0.92),
-            border: Border.all(
-              width: 2,
-              color: ToolThemeData.itemBorderColor,
-            ),
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius: BorderRadius.circular(18),
+            gradient: isDone
+                ? LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      ToolThemeData.highlightGreenColor.withOpacity(0.98),
+                      ToolThemeData.highlightGreenColor.withOpacity(0.86),
+                    ],
+                  )
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withOpacity(0.99),
+                      Colors.white.withOpacity(0.94),
+                    ],
+                  ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.20),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: InkWell(
+            borderRadius: BorderRadius.circular(18),
             onTap: () {
               context.read<DailyTodoBloc>().add(CompleteDailyEvent(
                   isComplete: !widget.dailyTodoItem.isDone,
                   itemId: widget.dailyTodoItem.id,
-                  remainSeconds: widget.dailyTodoItem.timerSeconds ?? 0));
+                  remainSeconds: widget.dailyTodoItem.timerSeconds));
             },
             onLongPress: () {
               context.read<DailyTodoBloc>().add(DeleteDailyEvent(
@@ -177,175 +214,334 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                   content: widget.dailyTodoItem.content,
                   title: widget.dailyTodoItem.title));
             },
-            child: Stack(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    AnimatedScale(
-                      duration: Duration(milliseconds: 200),
-                      scale: widget.dailyTodoItem.isDone ? 1.2 : 0,
-                      child: AnimatedOpacity(
-                        duration: Duration(milliseconds: 150),
-                        opacity: widget.dailyTodoItem.isDone ? 1 : 0,
-                        child: Icon(
-                          Icons.check_outlined,
-                          color: ToolThemeData.highlightColor,
-                          size: 30,
-                        ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axisAlignment: -1,
+                      child: child,
+                    ),
+                  );
+                },
+                child: isDone
+                    ? _CompletedDailyContent(
+                        key: const ValueKey('completed'),
+                        title: widget.dailyTodoItem.title,
+                        hasPrize: hasPrize,
+                        prize: hasPrize ? json['prise'].toString() : null,
+                      )
+                    : _ActiveDailyContent(
+                        key: const ValueKey('active'),
+                        item: widget.dailyTodoItem,
+                        hasPrize: hasPrize,
+                        prize: hasPrize ? json['prise'].toString() : null,
+                        bottomLabel: _buildBottomLabel(json),
                       ),
-                    ),
-                    Padding(
-                      padding: (jsonDecode(widget.dailyTodoItem.content)['prise'] != 0)
-                          ? EdgeInsets.only(top: widget.dailyTodoItem.isDone ? 12.0 : 2)
-                          : EdgeInsets.zero,
-                      child: Center(
-                        child: Text(
-                          widget.dailyTodoItem.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                            letterSpacing: -0.5,
-                            wordSpacing: -1.0,
-                            height: 0.9,
-                          ),
-                        ),
-                      ),
-                    ),
-                    AnimatedScale(
-                      duration: Duration(milliseconds: 200),
-                      scale: widget.dailyTodoItem.isDone ? 1.2 : 0,
-                      child: AnimatedOpacity(
-                        duration: Duration(milliseconds: 100),
-                        opacity: widget.dailyTodoItem.isDone ? 1 : 0,
-                        child: Icon(
-                          Icons.check_outlined,
-                          color: ToolThemeData.highlightColor,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                BlocBuilder<DailyTodoBloc, DailyTodoState> (
-                  builder: (context, state) {
-                    String timerIdentifier = "${widget.dailyTodoItem.id}${AppData.dailyTimerIdentifier}";
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (state.activeTimerIdentifier == timerIdentifier) RunDailyIndicatorWidget(),
-                        if (widget.dailyTodoItem.timerSeconds > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2.0),
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: DecoratedBox(
-                                position: DecorationPosition.background,
-                                decoration: BoxDecoration(
-                                  border: Border.all(width: 1),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 2.0,
-                                      spreadRadius: 1.0,
-                                      offset: Offset(0, 0),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(0.5),
-                                  child: CircleAvatar(
-                                    radius: 6.0,
-                                    backgroundColor: widget.dailyTodoItem.autoPauseSeconds == 0
-                                        ? Colors.grey[400]
-                                        : widget.dailyTodoItem.autoPauseSeconds == 60
-                                            ? Colors.yellowAccent
-                                            : ToolThemeData.highlightColor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              widget.dailyTodoItem.timerSeconds == 0
-                                  ? ''
-                                  : '${Get.find<ToolTimeStringConverter>().formatSecondsToTimeWithoutZero(widget.dailyTodoItem.timerSeconds ?? 0)}',
-                              style: TextStyle(
-                                fontSize: 21.1,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black,
-                                shadows: timerIsRun
-                                    ? [
-                                        Shadow(
-                                          color: ToolThemeData.mainGreenColor,
-                                          offset: Offset(1, 1.5),
-                                          blurRadius: 1.6,
-                                        )
-                                      ]
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                ),
-                if (jsonDecode(widget.dailyTodoItem.content)['prise'] != 0)
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('( '),
-                        Text(
-                          jsonDecode(widget.dailyTodoItem.content)['prise'].toString(),
-                          style: TextStyle(
-                            fontSize: widget.dailyTodoItem.isDone ? 18 : 15,
-                            fontWeight: FontWeight.w600,
-                            color: widget.dailyTodoItem.isDone ? Colors.black : Colors.grey[800],
-                            shadows: timerIsRun
-                                ? [
-                                    Shadow(
-                                      color: ToolThemeData.mainGreenColor,
-                                      offset: Offset(1, 1.5),
-                                      blurRadius: 1.6,
-                                    )
-                                  ]
-                                : null,
-                          ),
-                        ),
-                        Icon(
-                          Icons.emoji_events,
-                          size: widget.dailyTodoItem.isDone ? 20 : 14,
-                          color: widget.dailyTodoItem.isDone
-                              ? ToolThemeData.specialItemColor
-                              : Colors.black,
-                        ),
-                        Text(' )'),
-                      ],
-                    ),
-                  ),
-                if (!widget.dailyTodoItem.isDone) Padding(
-                  padding: const EdgeInsets.only(right: 6.0),
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text(
-                      '${(jsonDecode(widget.dailyTodoItem.content)['dailyDayList'] as List<dynamic>).isNotEmpty ? getWeekdayNames(jsonDecode(widget.dailyTodoItem.content)['dailyDayList']) : jsonDecode(widget.dailyTodoItem.content)['period'] != 0 ? jsonDecode(widget.dailyTodoItem.content)['period'] : ''}',
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  String _buildBottomLabel(Map<String, dynamic> json) {
+    final List<dynamic> days =
+        (json['dailyDayList'] as List<dynamic>?) ?? <dynamic>[];
+    final dynamic periodValue = json['period'];
+    if (days.isNotEmpty) {
+      return getWeekdayNames(days).join(', ');
+    }
+    if (periodValue != 0) {
+      return '$periodValue';
+    }
+    return '';
+  }
+}
+
+class _ActiveDailyContent extends StatelessWidget {
+  final TodoItem item;
+  final bool hasPrize;
+  final String? prize;
+  final String bottomLabel;
+
+  const _ActiveDailyContent({
+    super.key,
+    required this.item,
+    required this.hasPrize,
+    required this.prize,
+    required this.bottomLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Левая цветная полоса / индикатор статуса
+        Container(
+          width: 4,
+          height: 46,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: ToolThemeData.itemBorderColor.withOpacity(0.95),
+          ),
+        ),
+        const SizedBox(width: 10),
+
+        // Заголовок + приз + дни недели / период
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                item.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  letterSpacing: -0.2,
+                  height: 1.25,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasPrize)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color: Colors.black.withOpacity(0.04),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            prize ?? '',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey[900],
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.emoji_events,
+                            size: 18,
+                            color: Colors.orangeAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (bottomLabel.isNotEmpty) ...[
+                    if (hasPrize) const SizedBox(width: 8),
+                    Text(
+                      bottomLabel,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                        color: Colors.black.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(width: 10),
+
+        // Таймер и индикаторы
+        BlocBuilder<DailyTodoBloc, DailyTodoState>(
+          builder: (context, state) {
+            String timerIdentifier =
+                "${item.id}${AppData.dailyTimerIdentifier}";
+            final bool hasTimer = item.timerSeconds > 0;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (state.activeTimerIdentifier == timerIdentifier)
+                      const RunDailyIndicatorWidget(),
+                    if (hasTimer)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4.0),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withOpacity(0.04),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.25),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(1.5),
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.9),
+                                  width: 1.3,
+                                ),
+                                color: item.autoPauseSeconds == 0
+                                    ? Colors.grey[400]
+                                    : item.autoPauseSeconds == 60
+                                        ? Colors.yellowAccent
+                                        : ToolThemeData.highlightColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                if (hasTimer)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color: Colors.black.withOpacity(0.035),
+                      ),
+                      child: Text(
+                        Get.find<ToolTimeStringConverter>()
+                            .formatSecondsToTimeWithoutZero(item.timerSeconds),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _CompletedDailyContent extends StatelessWidget {
+  final String title;
+  final bool hasPrize;
+  final String? prize;
+
+  const _CompletedDailyContent({
+    super.key,
+    required this.title,
+    required this.hasPrize,
+    required this.prize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 4,
+          height: 46,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            color: Colors.white.withOpacity(0.95),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                  letterSpacing: -0.2,
+                  height: 1.25,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              if (hasPrize)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 5.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        color: Colors.white.withOpacity(0.16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            prize ?? '',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.emoji_events,
+                            size: 20,
+                            color: ToolThemeData.specialItemColor,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ],
+                )
+              else
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 22,
+                  color: Colors.white,
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
