@@ -6,12 +6,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/db/dao_database.dart';
 import 'package:zymixx_todo_list/data/db/db_todo_item_getter.dart';
-import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/services/service_stream_controller.dart';
-import 'package:zymixx_todo_list/data/services/service_window_manager.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
 import 'package:zymixx_todo_list/data/tools/tool_merge_json.dart';
-import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_overlay.dart';
 import 'package:zymixx_todo_list/data/tools/tool_show_toast.dart';
 import 'package:zymixx_todo_list/domain/app_data.dart';
@@ -195,6 +192,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
 
   @override
   Future<void> close() async {
+    await super.close();
   }
 }
 class DailyTodoState {

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -111,7 +113,6 @@ class MyBottomNavigatorWidget extends StatefulWidget {
 }
 
 class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
-
   List<BottomNavigationBarItem> listNavigatorItem = [
     BottomNavigationBarItem(
         icon: MyAnimatedCard(
@@ -172,9 +173,47 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
     BlackBoxScreen(),
   ];
 
-  Color selectedItemColor = Colors.white;
   int selectedItemMenu = 1;
-  late Widget activeScreen = listScreens[selectedItemMenu];
+  final List<bool> _altModeByTab = [false, false, false, false];
+  bool _slideFromRight = true;
+  bool _isFadeOnly = false;
+
+  int get _currentPageIndex {
+    if (selectedItemMenu <= 2 && _altModeByTab[selectedItemMenu]) {
+      return selectedItemMenu + 4;
+    }
+    return selectedItemMenu;
+  }
+
+  Widget get activeScreen => listScreens[_currentPageIndex];
+
+  void _setTabFromTap(int index) {
+    setState(() {
+      if (index == selectedItemMenu && index <= 2 && listScreens.length >= index + 5) {
+        // переключение основного/альтернативного экрана для выбранной кнопки
+        _altModeByTab[index] = !_altModeByTab[index];
+        _isFadeOnly = true;
+      } else {
+        _slideFromRight = index > selectedItemMenu;
+        _isFadeOnly = false;
+        selectedItemMenu = index;
+      }
+    });
+  }
+
+  void _setTabFromSwipe(int newIndex) {
+    if (newIndex < 0 || newIndex > 3) return;
+    setState(() {
+      _slideFromRight = newIndex > selectedItemMenu;
+      _isFadeOnly = false;
+      selectedItemMenu = newIndex;
+    });
+  }
+
+  Color get _currentSelectedItemColor {
+    final bool isAlt = selectedItemMenu <= 2 && _altModeByTab[selectedItemMenu];
+    return isAlt ? ToolThemeData.highlightGreenColor : Colors.white;
+  }
 
 
   @override
@@ -191,62 +230,136 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
             padding: const EdgeInsets.only(top: 5.0),
             child: Scaffold(
               backgroundColor: Colors.transparent,
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: selectedItemMenu,
-                onTap: (index) {
-                  setState(() {
-                    if (index == selectedItemMenu && listScreens.length >= index + 5) {
-                      if (selectedItemColor != ToolThemeData.highlightGreenColor) {
-                        activeScreen = listScreens[index + 4];
-                        selectedItemColor = ToolThemeData.highlightGreenColor;
-                      } else {
-                        selectedItemColor = Colors.white;
-                        activeScreen = listScreens[index];
-                      }
-                    } else {
-                      selectedItemColor = Colors.white;
-                      activeScreen = listScreens[index];
-                    }
-                    selectedItemMenu = index;
-                  });
+              bottomNavigationBar: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.55),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.08),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 18,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: BottomNavigationBar(
+                        currentIndex: selectedItemMenu,
+                        onTap: (index) {
+                          _setTabFromTap(index);
+                          WidgetsBinding.instance
+                              .addPostFrameCallback((timeStamp) {
+                            Get.find<WallBgFlameWidget>()
+                                .gameBounce
+                                .applyRandomMove();
+                          });
+                        },
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        selectedItemColor: _currentSelectedItemColor,
+                        unselectedItemColor: Colors.white70,
+                        showSelectedLabels: false,
+                        showUnselectedLabels: false,
+                        selectedIconTheme: const IconThemeData(
+                          size: 31,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black54,
+                              offset: Offset(1.0, 1.60),
+                              blurRadius: 0.6,
+                            ),
+                          ],
+                        ),
+                        selectedFontSize: 0,
+                        unselectedFontSize: 0,
+                        iconSize: 28,
+                        type: BottomNavigationBarType.fixed,
+                        items: listNavigatorItem,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              body: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragEnd: (details) {
+                  final velocity = details.primaryVelocity ?? 0;
+                  if (velocity.abs() < 200) return;
+                  if (velocity < 0 && selectedItemMenu < 3) {
+                    _setTabFromSwipe(selectedItemMenu + 1);
+                  } else if (velocity > 0 && selectedItemMenu > 0) {
+                    _setTabFromSwipe(selectedItemMenu - 1);
+                  }
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    Get
-                        .find<WallBgFlameWidget>()
+                    Get.find<WallBgFlameWidget>()
                         .gameBounce
                         .applyRandomMove();
                   });
                 },
-                backgroundColor: Colors.deepPurpleAccent,
-                selectedItemColor: selectedItemColor,
-                unselectedItemColor: Colors.black,
-                showSelectedLabels: false,
-                showUnselectedLabels: false,
-                selectedIconTheme: IconThemeData(size: 31, shadows: [
-                  Shadow(
-                    color: Colors.black54,
-                    offset: Offset(1.0, 1.60),
-                    blurRadius: 0.6,
+                child: AnimatedSwitcher(
+                  duration: _isFadeOnly
+                      ? const Duration(milliseconds: 75)
+                      : const Duration(milliseconds: 260),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    if (_isFadeOnly) {
+                      // Быстрая выцветающая анимация без движения
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOut,
+                        ),
+                        child: child,
+                      );
+                    } else {
+                      // Полноценный слайд между "слотами" как на телефоне.
+                      // Новый экран едет навстречу, старый уезжает в противоположную сторону.
+                      final bool isCurrent =
+                          child.key is ValueKey<int> &&
+                              (child.key as ValueKey<int>).value ==
+                                  _currentPageIndex;
+
+                      final Offset beginOffset = isCurrent
+                          ? (_slideFromRight
+                              ? const Offset(1.0, 0)
+                              : const Offset(-1.0, 0))
+                          : (_slideFromRight
+                              ? const Offset(-1.0, 0)
+                              : const Offset(1.0, 0));
+
+                      final offsetAnimation = Tween<Offset>(
+                        begin: beginOffset,
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ));
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: FadeTransition(
+                          opacity: CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOut,
+                          ),
+                          child: child,
+                        ),
+                      );
+                    }
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(_currentPageIndex),
+                    child: activeScreen,
                   ),
-                ]),
-                selectedFontSize: 0,
-                unselectedFontSize: 0,
-                iconSize: 28,
-                type: BottomNavigationBarType.fixed,
-                items: listNavigatorItem,
-              ),
-              body: AnimatedSwitcher(
-                duration: Duration(milliseconds: 100),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return FadeTransition(
-                    alwaysIncludeSemantics: false,
-                    opacity: Tween<double>(
-                      begin: 0.0,
-                      end: 1.0,
-                    ).animate(animation),
-                    child: child,
-                  );
-                },
-                child: activeScreen,
+                ),
               ),
             ),
           ),
