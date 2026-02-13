@@ -29,14 +29,14 @@ class StatisticWidget extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return SingleChildScrollView(
-            child: SizedBox(
-              height: 880,
+            child: Flexible(
               child: Column(
                 children: [
                   LineChartSample(
                       weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
                       dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey]),
-                  Expanded(
+                  SizedBox(
+                    height: 300,
                       child: CalendarScreenWidget(
                           dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey])),
                   StreakWidget(

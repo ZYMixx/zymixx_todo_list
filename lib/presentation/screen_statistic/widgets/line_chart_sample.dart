@@ -4,6 +4,7 @@ import 'package:zymixx_todo_list/data/services/service_statistic_data.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/my_animated_card.dart';
+import 'package:zymixx_todo_list/presentation/app_widgets/wave_shimmer_overlay.dart';
 
 class LineChartSample extends StatefulWidget {
   final List<StatisticWeekHolder> weekData;
@@ -19,7 +20,8 @@ class LineChartSample extends StatefulWidget {
   State<LineChartSample> createState() => _LineChartSampleState();
 }
 
-class _LineChartSampleState extends State<LineChartSample> with SingleTickerProviderStateMixin {
+class _LineChartSampleState extends State<LineChartSample>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   List<Color> gradientColors = [
@@ -60,23 +62,27 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color cardColor = colorScheme.surface.withValues(alpha: 0.92);
     return Padding(
       padding: const EdgeInsets.only(top: 5.0),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Card(
-          elevation: 5,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(width: 0.7),
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            padding: EdgeInsets.all(5),
+          elevation: 6,
+          color: cardColor,
+          shadowColor: Colors.black.withValues(alpha: 0.30),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(color: Colors.black12, width: 0.8),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: WaveShimmerOverlay(
+            id: 'stat_line_chart',
             child: MyAnimatedCard(
-              intensity: 0.01,
+              intensity: 0.004,
               child: Padding(
-                padding: const EdgeInsets.all(5.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
                   children: [
                     Center(
@@ -85,7 +91,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 18,
-                          color: Colors.grey[700],
+                          color: Colors.grey[800],
                         ),
                       ),
                     ),
@@ -212,7 +218,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black12),
       ),
       minX: 0,
       maxX: 8,
@@ -236,7 +242,9 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.center,
-              colors: gradientColors.map((color) => color.withOpacity(0.45)).toList(),
+              colors: gradientColors
+                  .map((color) => color.withValues(alpha: 0.45))
+                  .toList(),
             ),
           ),
         ),
@@ -257,7 +265,8 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
         color: statHolder.isMonday ? Colors.orange[800] : null,
       );
       // Парсим dayName и форматируем без года
-      String shortDayName = shortFormat.format(dateFormat.parse(statHolder.dayName));
+      String shortDayName =
+          shortFormat.format(dateFormat.parse(statHolder.dayName));
       text = Text(
         '$shortDayName-',
         style: style,
@@ -273,6 +282,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       ),
     );
   }
+
   Widget leftTitleDayByDay(double value, TitleMeta meta) {
     //ii day
     var style = TextStyle(
@@ -304,7 +314,8 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       double data = dayStatisticMap[key]!.dayScore;
       listFLSpot.add(HighlightFlSpot(key.toDouble(), data));
       if (data >= heightScore) {
-        listFLSpot.add(HighlightFlSpot(key.toDouble(), data, isHighlight: true));
+        listFLSpot
+            .add(HighlightFlSpot(key.toDouble(), data, isHighlight: true));
       }
     }
     return LineChartData(
@@ -335,7 +346,7 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
       ),
       borderData: FlBorderData(
         show: true,
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Colors.black12),
       ),
       clipData: FlClipData.all(),
       minX: 0,
@@ -379,7 +390,9 @@ class _LineChartSampleState extends State<LineChartSample> with SingleTickerProv
               begin: Alignment.bottomCenter,
               end: Alignment.center,
               stops: [0.3, 1],
-              colors: gradientColors.map((color) => color.withOpacity(0.45)).toList(),
+              colors: gradientColors
+                  .map((color) => color.withValues(alpha: 0.45))
+                  .toList(),
             ),
           ),
         ),
