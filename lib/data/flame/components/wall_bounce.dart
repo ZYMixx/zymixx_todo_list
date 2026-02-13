@@ -8,9 +8,11 @@ class WallBounce extends BodyComponent{
   List<Body> wallList = [];
 
   @override
-  Future<void> onLoad() {
+  Future<void> onLoad() async {
+    // Инициализируем ссылку на world через базовый onLoad,
+    // затем уже создаём границы экрана.
+    await super.onLoad();
     buildAll();
-    return super.onLoad();
   }
 
   @override
