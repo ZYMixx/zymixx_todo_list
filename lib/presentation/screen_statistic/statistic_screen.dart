@@ -29,25 +29,23 @@ class StatisticWidget extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return SingleChildScrollView(
-            child: Flexible(
-              child: Column(
-                children: [
-                  LineChartSample(
-                      weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
-                      dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey]),
-                  SizedBox(
-                    height: 300,
-                      child: CalendarScreenWidget(
-                          dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey])),
-                  StreakWidget(
-                    streakCount: snapshot.data![Get.find<ServiceStatisticData>().streakKey],
-                  ),
-                  DataTableWidget(
+            child: Column(
+              children: [
+                LineChartSample(
                     weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
-                  ),
-                  Gap(20),
-                ],
-              ),
+                    dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey]),
+                SizedBox(
+                  height: 300,
+                    child: CalendarScreenWidget(
+                        dayData: snapshot.data![Get.find<ServiceStatisticData>().dayKey])),
+                StreakWidget(
+                  streakCount: snapshot.data![Get.find<ServiceStatisticData>().streakKey],
+                ),
+                DataTableWidget(
+                  weekData: snapshot.data![Get.find<ServiceStatisticData>().weekKey],
+                ),
+                Gap(20),
+              ],
             ),
           );
         } else {
