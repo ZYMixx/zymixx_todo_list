@@ -7,12 +7,16 @@ class AddItemButton extends StatelessWidget {
   final VoidCallback? onLongTapAction;
   final VoidCallback? secondaryAction;
   final Color? bgColor;
+  final String label;
+  final IconData icon;
 
   AddItemButton({
     required this.onTapAction,
     this.onLongTapAction,
     this.secondaryAction,
     this.bgColor,
+    this.label = 'New task',
+    this.icon = Icons.add,
   });
 
   @override
@@ -69,31 +73,38 @@ class AddItemButton extends StatelessWidget {
                   Container(
                     width: 20,
                     height: 20,
+                    margin: EdgeInsets.only(top: 2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(isDark ? 0.10 : 0.18),
+                      color: (Colors.white).withOpacity(isDark ? 0.05 : 0.07),
                     ),
                     child: Icon(
-                      Icons.add,
-                      size: 16,
+                      icon,
+                      size: 18,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'New task',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.35),
-                          offset: Offset(0, 0.8),
-                          blurRadius: 1.6,
-                        ),
-                      ],
+                  const SizedBox(width: 4),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: (Colors.white).withOpacity(isDark ? 0.05 : 0.07),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.35),
+                            offset: Offset(0, 0.8),
+                            blurRadius: 1.6,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

@@ -17,12 +17,10 @@ class DailyTodoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) {
-        return Get.find<AllItemControlBloc>();
-      },
-      child: BlocProvider(
-        create: (_) => Get.find<DailyTodoBloc>(),
+    return BlocProvider.value(
+      value: Get.find<AllItemControlBloc>(),
+      child: BlocProvider.value(
+        value: Get.find<DailyTodoBloc>(),
         child: DailyTodoWidget(),
       ),
     );
@@ -36,20 +34,23 @@ class DailyTodoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     var now = DateTime.now();
     DailyTodoBloc bloc = context.select((DailyTodoBloc bloc) => bloc);
-    bool yesterdayDailyMod = context.select((DailyTodoBloc bloc) => bloc.state.yesterdayDailyMod);
+    bool yesterdayDailyMod =
+        context.select((DailyTodoBloc bloc) => bloc.state.yesterdayDailyMod);
     List<TodoItem> dailyTodoList;
     if (yesterdayDailyMod) {
       dailyTodoList = context
           .select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList)
           .where((element) =>
               element.targetDateTime != null &&
-              element.targetDateTime!.isSameDay(now.subtract(Duration(days: 1))))
+              element.targetDateTime!
+                  .isSameDay(now.subtract(Duration(days: 1))))
           .toList();
     } else {
       dailyTodoList = context
           .select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList)
-          .where(
-              (element) => element.targetDateTime != null && element.targetDateTime!.isSameDay(now))
+          .where((element) =>
+              element.targetDateTime != null &&
+              element.targetDateTime!.isSameDay(now))
           .toList();
     }
     dailyTodoList.sort((a, b) {
@@ -78,7 +79,8 @@ class DailyTodoWidget extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14.0, vertical: 6.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -91,7 +93,9 @@ class DailyTodoWidget extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        yesterdayDailyMod ? 'Вчерашние дейлики' : 'Ежедневные задачи',
+                        yesterdayDailyMod
+                            ? 'Вчерашние дейлики'
+                            : 'Ежедневные задачи',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
@@ -122,10 +126,15 @@ class DailyTodoWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
           child: AddItemButton(
             onTapAction: () {
-              context.read<DailyTodoBloc>().add(RequestAddNewDailyEvent(context: context));
+              context
+                  .read<DailyTodoBloc>()
+                  .add(RequestAddNewDailyEvent(context: context));
             },
             onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
             secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
+            bgColor: Colors.deepPurpleAccent,
+            label: 'New daily',
+            icon: Icons.calendar_month_outlined,
           ),
         ),
       ],
@@ -136,7 +145,8 @@ class DailyTodoWidget extends StatelessWidget {
 class DailyTodoItem extends StatefulWidget {
   final TodoItem dailyTodoItem;
 
-  DailyTodoItem({required this.dailyTodoItem}) : super(key: ValueKey('${dailyTodoItem.title}_${dailyTodoItem.id}'));
+  DailyTodoItem({required this.dailyTodoItem})
+      : super(key: ValueKey('${dailyTodoItem.title}_${dailyTodoItem.id}'));
 
   @override
   State<DailyTodoItem> createState() => _DailyTodoItemState();
@@ -147,8 +157,8 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
 
   @override
   void initState() {
-    Get.find<DailyTodoBloc>()
-        .checkOnActiveTimer(itemId: widget.dailyTodoItem.id, updateCallBack: secondUpdate);
+    Get.find<DailyTodoBloc>().checkOnActiveTimer(
+        itemId: widget.dailyTodoItem.id, updateCallBack: secondUpdate);
     super.initState();
   }
 
@@ -215,7 +225,8 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                   title: widget.dailyTodoItem.title));
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 260),
                 switchInCurve: Curves.easeOutCubic,
@@ -320,7 +331,8 @@ class _ActiveDailyContent extends StatelessWidget {
                 children: [
                   if (hasPrize)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 4.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
                         color: Colors.black.withOpacity(0.04),
@@ -552,11 +564,11 @@ class RunDailyIndicatorWidget extends StatefulWidget {
   });
 
   @override
-  State<RunDailyIndicatorWidget> createState() => _RunDailyIndicatorWidgetState();
+  State<RunDailyIndicatorWidget> createState() =>
+      _RunDailyIndicatorWidgetState();
 }
 
 class _RunDailyIndicatorWidgetState extends State<RunDailyIndicatorWidget> {
-
   bool animationBool = false;
 
   @override
@@ -565,9 +577,11 @@ class _RunDailyIndicatorWidgetState extends State<RunDailyIndicatorWidget> {
     return AnimatedContainer(
       duration: Duration(milliseconds: 900),
       transform: Matrix4.identity()..scale(animationBool ? 1.1 : 1.15),
-
-      padding: EdgeInsets.only(right: animationBool ? 6 : 4, bottom:  animationBool ? 2 : 4),
-      child: Icon(Icons.directions_run, size: 16, color: animationBool ? Colors.black : Colors.deepPurple[800]),
+      padding: EdgeInsets.only(
+          right: animationBool ? 6 : 4, bottom: animationBool ? 2 : 4),
+      child: Icon(Icons.directions_run,
+          size: 16,
+          color: animationBool ? Colors.black : Colors.deepPurple[800]),
     );
   }
 }
