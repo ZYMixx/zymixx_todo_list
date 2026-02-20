@@ -1,17 +1,32 @@
 import 'package:audioplayers/audioplayers.dart';
 
 class ServiceAudioPlayer {
-
   List<int> ignoreTodoItemIdList = [];
+  final List<AudioPlayer> _activePlayers = [];
 
   AudioPlayer? _playAssetsAudio(String assetsPath, {double? volume}) {
     try {
-      AudioPlayer audioPlayer = AudioPlayer()..setSource(AssetSource(assetsPath));
+      AudioPlayer audioPlayer = AudioPlayer()
+        ..setSource(AssetSource(assetsPath));
       audioPlayer.setVolume(volume ?? 0.15);
-      audioPlayer.onPlayerComplete.listen((event) => audioPlayer.dispose());
+      _activePlayers.add(audioPlayer);
+      audioPlayer.onPlayerComplete.listen((event) {
+        _activePlayers.remove(audioPlayer);
+        audioPlayer.dispose();
+      });
       audioPlayer.resume();
       return audioPlayer;
-    } catch (e) {}
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void stopAll() {
+    for (var player in _activePlayers) {
+      player.stop();
+      player.dispose();
+    }
+    _activePlayers.clear();
   }
 
   playFortuneWinAlert() {
@@ -19,7 +34,8 @@ class ServiceAudioPlayer {
   }
 
   playFortuneWinMusic({required double volume}) {
-    return _playAssetsAudio('songs/spinner_win_music_sound.mp3', volume: volume);
+    return _playAssetsAudio('songs/spinner_win_music_sound.mp3',
+        volume: volume);
   }
 
   AudioPlayer? playFortuneSpinnerMusic() {
