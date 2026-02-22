@@ -235,8 +235,8 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
               clipBehavior: Clip.hardEdge,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 8.0,
+                  horizontal: 10.0,
+                  vertical: 6.0,
                 ),
                 // Заменили IntrinsicHeight на Stack для безопасности и производительности
                 child: Stack(
@@ -328,7 +328,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                       (hasPrize ||
                                           _buildBottomLabel(json).isNotEmpty))
                                       ? Padding(
-                                    padding: const EdgeInsets.only(top: 6.0),
+                                    padding: const EdgeInsets.only(top: 2.0),
                                     child: Row(
                                       children: [
                                         if (hasPrize)
@@ -402,7 +402,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOut,
                           width: isDone ? 24 : 5,
-                          height: isDone ? 24 : 60, // Бесконечность заставит заполнить выделенное Center пространство
+                          height: isDone ? 24 : 40, // Бесконечность заставит заполнить выделенное Center пространство
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(999),
                             color: isDone
