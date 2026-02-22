@@ -62,7 +62,7 @@ class _TodoItemBodyState extends State<TodoItemBody> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     bool isChangeTextMod =
-    context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
+        context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
     DateTime? targetDateTime = context
         .select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
 
@@ -91,8 +91,8 @@ class _TodoItemBodyState extends State<TodoItemBody> {
             },
             onSecondaryLongPress: () {
               bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
-              Get.find<ListTodoScreenBloc>()
-                  .add(MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
+              Get.find<ListTodoScreenBloc>().add(
+                  MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
             },
             child: Dismissible(
               key: UniqueKey(),
@@ -122,121 +122,131 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    // Тонкая левая полоска приоритета (accent strip)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: 3.5,
-                      decoration: BoxDecoration(
-                        color: isSocial
-                            ? ToolThemeData.specialItemColor
-                            : priorityColor,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          bottomLeft: Radius.circular(12),
-                        ),
-                        // Объём для accent strip
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isSocial
-                                ? ToolThemeData.specialItemColor
-                                : priorityColor)
-                                .withOpacity(0.4),
-                            blurRadius: 3,
-                            spreadRadius: 0,
-                            offset: const Offset(1, 0),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Основное тело карточки
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Тонкая левая полоска приоритета (accent strip)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: 3.5,
                         decoration: BoxDecoration(
                           color: isSocial
-                              ? ToolThemeData.specialItemColor.withOpacity(0.14)
-                              : (widget.bgColor == Colors.transparent
-                              ? theme.colorScheme.surface.withOpacity(0.96)
-                              : widget.bgColor.withOpacity(0.98)),
-                          gradient: isSocial
-                              ? LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              ToolThemeData.specialItemColor
-                                  .withOpacity(0.24),
-                              theme.colorScheme.surface.withOpacity(0.96),
-                            ],
-                          )
-                              : null,
-                          border: Border.all(
-                            color: widget.bgColor == Colors.transparent
-                                ? theme.dividerColor.withOpacity(0.25)
-                                : ToolThemeData.itemBorderColor
-                                .withOpacity(0.5),
-                            width: 0.6,
-                          ),
+                              ? ToolThemeData.specialItemColor
+                              : priorityColor,
                           borderRadius: const BorderRadius.only(
-                            topRight: Radius.circular(16),
-                            bottomRight: Radius.circular(16),
+                            topLeft: Radius.circular(12),
+                            bottomLeft: Radius.circular(12),
                           ),
+                          // Объём для accent strip
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isSocial
+                                      ? ToolThemeData.specialItemColor
+                                      : priorityColor)
+                                  .withOpacity(0.4),
+                              blurRadius: 3,
+                              spreadRadius: 0,
+                              offset: const Offset(1, 0),
+                            ),
+                          ],
                         ),
-                        //? начало фронт-графики
-                        child: IntrinsicHeight(
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 12,
-                                child: GestureDetector(
-                                  onLongPress: () {},
-                                  onTap: () {},
-                                  child: isChangeTextMod
-                                      ? const TitleChangeWidget()
-                                      : const TitlePresentWidget(),
+                      ),
+                      // Основное тело карточки
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSocial
+                                ? ToolThemeData.specialItemColor
+                                    .withOpacity(0.14)
+                                : (widget.bgColor == Colors.transparent
+                                    ? theme.colorScheme.surface
+                                        .withOpacity(0.96)
+                                    : widget.bgColor.withOpacity(0.98)),
+                            gradient: isSocial
+                                ? LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      ToolThemeData.specialItemColor
+                                          .withOpacity(0.24),
+                                      theme.colorScheme.surface
+                                          .withOpacity(0.96),
+                                    ],
+                                  )
+                                : null,
+                            border: Border.all(
+                              color: widget.bgColor == Colors.transparent
+                                  ? theme.dividerColor.withOpacity(0.25)
+                                  : ToolThemeData.itemBorderColor
+                                      .withOpacity(0.5),
+                              width: 0.6,
+                            ),
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
+                            ),
+                          ),
+                          //? начало фронт-графики
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 12,
+                                  child: GestureDetector(
+                                    onLongPress: () {},
+                                    onTap: () {},
+                                    child: isChangeTextMod
+                                        ? const TitleChangeWidget()
+                                        : const TitlePresentWidget(),
+                                  ),
                                 ),
-                              ),
-                              // Убрали отдельную цветную полоску из середины — она теперь слева
-                              MyAnimatedCard(
-                                intensity: 0.01,
-                                directionUp: false,
-                                child: AnimatedCirclesWidget(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 5.0, bottom: 5.0, left: 4),
-                                    child: SizedBox(
-                                      width: 2.5,
-                                      height: double.infinity,
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: priorityColor.withOpacity(0.5),
-                                          borderRadius: BorderRadius.circular(2),
-                                          // Объём для разделителя
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: priorityColor.withOpacity(0.3),
-                                              blurRadius: 2,
-                                              spreadRadius: 0,
-                                              offset: const Offset(0.5, 0),
-                                            ),
-                                          ],
+                                // Убрали отдельную цветную полоску из середины — она теперь слева
+                                MyAnimatedCard(
+                                  intensity: 0.01,
+                                  directionUp: false,
+                                  child: AnimatedCirclesWidget(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 5.0, bottom: 5.0, left: 4),
+                                      child: SizedBox(
+                                        width: 2.5,
+                                        height: double.infinity,
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                priorityColor.withOpacity(0.5),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                            // Объём для разделителя
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: priorityColor
+                                                    .withOpacity(0.3),
+                                                blurRadius: 2,
+                                                spreadRadius: 0,
+                                                offset: const Offset(0.5, 0),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const Flexible(flex: 6, child: TimerWorkWidget()),
-                            ],
+                                const Flexible(
+                                    flex: 6, child: TimerWorkWidget()),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -294,7 +304,7 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
             0),
         child: Container(
           alignment:
-          isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
+              isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
           padding: const EdgeInsets.only(right: 30),
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -335,7 +345,7 @@ class TitlePresentWidget extends StatelessWidget {
     final bool isSocial =
         bloc.state.todoItem.category == EnumTodoCategory.social.name;
     final String? dateStr =
-    Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
+        Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
 
     return Stack(
       children: [
@@ -370,21 +380,21 @@ class TitlePresentWidget extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: todoImageFile != null
                           ? BoxDecoration(
-                        border: Border.all(
-                            color: ToolThemeData.highlightColor
-                                .withOpacity(0.3),
-                            width: 0.5),
-                        color: Colors.white.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 2,
-                            spreadRadius: 0,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      )
+                              border: Border.all(
+                                  color: ToolThemeData.highlightColor
+                                      .withOpacity(0.3),
+                                  width: 0.5),
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 2,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            )
                           : const BoxDecoration(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -415,8 +425,8 @@ class TitlePresentWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border.all(
                       color:
-                      targetDateTime?.getHighlightColor(targetDateTime) ??
-                          Colors.black,
+                          targetDateTime?.getHighlightColor(targetDateTime) ??
+                              Colors.black,
                       width: 0.5),
                   borderRadius: BorderRadius.circular(ToolThemeData.itemHeight),
                   // Объём для миниатюры изображения
@@ -521,7 +531,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     File? todoImageFile =
-    context.select((TodoItemBloc bloc) => bloc.state.imageFile);
+        context.select((TodoItemBloc bloc) => bloc.state.imageFile);
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
     initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
@@ -568,7 +578,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                   decoration: InputDecoration(
                     isDense: true,
                     contentPadding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                     suffixIcon: MyAnimatedCard(
                       intensity: 0.012,
                       child: Container(
@@ -638,7 +648,8 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                 ),
                 ScrollbarTheme(
                   data: ScrollbarThemeData(
-                    thumbColor: MaterialStateProperty.all<Color>(Colors.black54),
+                    thumbColor:
+                        MaterialStateProperty.all<Color>(Colors.black54),
                     thumbVisibility: MaterialStateProperty.all<bool>(true),
                     thickness: MaterialStateProperty.all<double>(4),
                   ),
@@ -650,117 +661,122 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                     maxLines: initialText == '' ? 3 : 8,
                     decoration: InputDecoration(
                       isDense: true,
-                      contentPadding:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 4),
                       suffixIconConstraints: todoImageFile == null
                           ? const BoxConstraints.tightFor(width: 35, height: 35)
-                          : const BoxConstraints.tightFor(width: 45, height: 45),
+                          : const BoxConstraints.tightFor(
+                              width: 45, height: 45),
                       suffixIcon: (bloc.state.todoItem.title == 'New Title')
                           ? Container()
                           : todoImageFile != null
-                          ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(right: 4.0),
-                            child: Align(
-                              alignment: Alignment.bottomRight,
-                              child: InkWell(
-                                onTap: () {
-                                  Get.find<ServiceImagePluginWork>()
-                                      .openImage(todoImageFile);
-                                },
-                                onSecondaryTap: () {},
-                                onLongPress: () {
-                                  Get.find<ServiceImagePluginWork>()
-                                      .deleteImage(
-                                    todoItem: bloc.state.todoItem,
-                                    updateCallBack: () =>
-                                        bloc.add(SetTodoItemImageEvent()),
-                                  );
-                                },
-                                child: ClipRRect(
-                                  borderRadius:
-                                  BorderRadius.circular(10.0),
-                                  child: Opacity(
-                                    opacity: 0.85,
-                                    child: AspectRatio(
-                                      aspectRatio:
-                                      1.0, // Устанавливаем квадратное соотношение сторон
-                                      child: FittedBox(
-                                        fit: BoxFit.cover,
-                                        child: Image.file(
-                                          todoImageFile,
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 4.0),
+                                      child: Align(
+                                        alignment: Alignment.bottomRight,
+                                        child: InkWell(
+                                          onTap: () {
+                                            Get.find<ServiceImagePluginWork>()
+                                                .openImage(todoImageFile);
+                                          },
+                                          onSecondaryTap: () {},
+                                          onLongPress: () {
+                                            Get.find<ServiceImagePluginWork>()
+                                                .deleteImage(
+                                              todoItem: bloc.state.todoItem,
+                                              updateCallBack: () => bloc
+                                                  .add(SetTodoItemImageEvent()),
+                                            );
+                                          },
+                                          child: ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            child: Opacity(
+                                              opacity: 0.85,
+                                              child: AspectRatio(
+                                                aspectRatio:
+                                                    1.0, // Устанавливаем квадратное соотношение сторон
+                                                child: FittedBox(
+                                                  fit: BoxFit.cover,
+                                                  child: Image.file(
+                                                    todoImageFile,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                          : Container(
-                        child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: InkWell(
-                            focusNode: FocusNode(skipTraversal: true),
-                            onTap: () {
-                              //ii image
-                              Get.find<ServiceImagePluginWork>()
-                                  .drawImage(
-                                  title: bloc.state.todoItem.title,
-                                  id: bloc.state.todoItem.id,
-                                  updateCallBack: () => bloc
-                                      .add(SetTodoItemImageEvent()));
-                              Log.e('ADD NEW IMAGE');
-                            },
-                            onSecondaryTap: () {
-                              Get.find<ServiceImagePluginWork>()
-                                  .selectAndSetTodoImage(
-                                todoItem: bloc.state.todoItem,
-                                updateCallBack: () =>
-                                    bloc.add(SetTodoItemImageEvent()),
-                              );
-                            },
-                            child: Center(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(20),
-                                  // Объём для кнопки добавления фото
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                      Colors.black.withOpacity(0.15),
-                                      blurRadius: 3,
-                                      spreadRadius: 0,
-                                      offset: const Offset(0, 1),
                                     ),
                                   ],
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(1.0),
-                                  child: MyAnimatedCard(
-                                    intensity: 0.012,
-                                    child: const ClipOval(
-                                      child: Opacity(
-                                        opacity: 0.7,
-                                        child: Icon(
-                                          Icons.add_a_photo_outlined,
-                                          color: Colors.black87,
-                                          size: 20,
+                                )
+                              : Container(
+                                  child: Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: InkWell(
+                                      focusNode: FocusNode(skipTraversal: true),
+                                      onTap: () {
+                                        //ii image
+                                        Get.find<ServiceImagePluginWork>()
+                                            .drawImage(
+                                                title:
+                                                    bloc.state.todoItem.title,
+                                                id: bloc.state.todoItem.id,
+                                                updateCallBack: () => bloc.add(
+                                                    SetTodoItemImageEvent()));
+                                        Log.e('ADD NEW IMAGE');
+                                      },
+                                      onSecondaryTap: () {
+                                        Get.find<ServiceImagePluginWork>()
+                                            .selectAndSetTodoImage(
+                                          todoItem: bloc.state.todoItem,
+                                          updateCallBack: () =>
+                                              bloc.add(SetTodoItemImageEvent()),
+                                        );
+                                      },
+                                      child: Center(
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                Colors.white.withOpacity(0.08),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            // Объём для кнопки добавления фото
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withOpacity(0.15),
+                                                blurRadius: 3,
+                                                spreadRadius: 0,
+                                                offset: const Offset(0, 1),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(1.0),
+                                            child: MyAnimatedCard(
+                                              intensity: 0.012,
+                                              child: const ClipOval(
+                                                child: Opacity(
+                                                  opacity: 0.7,
+                                                  child: Icon(
+                                                    Icons.add_a_photo_outlined,
+                                                    color: Colors.black87,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                     style: const TextStyle(
                       fontWeight: FontWeight.w500,
@@ -781,8 +797,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
               ],
             ),
           ),
-        )
-    );
+        ));
   }
 
   void _replaceNewLinesWithEmoji() {
@@ -820,12 +835,12 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     TodoItem todoItem =
-    context.select((TodoItemBloc bloc) => bloc.state.todoItem);
+        context.select((TodoItemBloc bloc) => bloc.state.todoItem);
     bool needTimerSong =
-    context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
+        context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
     int autoPauseSeconds = todoItem.autoPauseSeconds;
     TimeModEnum timerMod =
-    context.select((TodoItemBloc bloc) => bloc.state.timerMod);
+        context.select((TodoItemBloc bloc) => bloc.state.timerMod);
     return Stack(
       children: [
         if (autoPauseSeconds > 0)
@@ -899,7 +914,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
               return FadeTransition(
                   opacity: animation,
                   child:
-                  SlideTransition(position: slideAnimation, child: child));
+                      SlideTransition(position: slideAnimation, child: child));
             },
             child: buildCrntWidget(bloc: bloc, timerMod: timerMod),
           ),
@@ -981,13 +996,13 @@ class _TimerWidgetState extends State<TimerWidget> {
   @override
   Widget build(BuildContext context) {
     int timer =
-    context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
+        context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     String timerString =
-    Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
+        Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     bool isTimerActive =
-    context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
 
     return Material(
       color: Colors.transparent,
@@ -1061,7 +1076,7 @@ class _TimerWidgetState extends State<TimerWidget> {
                         Icons.arrow_downward_outlined,
                         size: 13,
                         color:
-                        isTimerActive ? Colors.black87 : Colors.grey[500],
+                            isTimerActive ? Colors.black87 : Colors.grey[500],
                       ),
                     ),
                   );
@@ -1102,14 +1117,15 @@ class StopwatchWidget extends StatefulWidget {
 class _StopwatchWidgetState extends State<StopwatchWidget> {
   double scale = 1.0;
   double opacity = 1.0;
-  Tween<Offset> positionTween = Tween(begin: const Offset(0, 0), end: const Offset(0, 0.2));
+  Tween<Offset> positionTween =
+      Tween(begin: const Offset(0, 0), end: const Offset(0, 0.2));
 
   @override
   Widget build(BuildContext context) {
     int stopwatch = context
         .select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
     bool isTimerActive =
-    context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     String stopwatchString = Get.find<ToolTimeStringConverter>()
         .formatSecondsToTimeMinute(stopwatch);
@@ -1205,8 +1221,8 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
   @override
   void initState() {
     super.initState();
-    _controller =
-        AnimationController(duration: const Duration(milliseconds: 120), vsync: this);
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 120), vsync: this);
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller)
       ..addListener(() {
         setState(() {});
@@ -1275,7 +1291,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                         parentContext.read<TodoItemBloc>().add(
                             SetAutoPauseSeconds(
                                 autoPauseSeconds:
-                                index == 0 ? 0 : 30 ~/ index));
+                                    index == 0 ? 0 : 30 ~/ index));
                         Log.i('set auto pause on ${30 ~/ index}');
                         _handleTapUp();
                       },

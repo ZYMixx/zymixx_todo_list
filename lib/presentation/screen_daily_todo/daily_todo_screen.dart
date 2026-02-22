@@ -183,7 +183,7 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
         intensity: isDone ? 0.002 : 0.005,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut, // Убрали отскоки, чтобы анимация не "вываливалась"
+          curve: Curves.easeOut,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(isDone ? 18 : 14),
             gradient: isDone
@@ -230,137 +230,200 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
             },
             child: AnimatedSize(
               duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut, // Плавное изменение размера без багов расширения
+              curve: Curves.easeOut,
               alignment: Alignment.topCenter,
               clipBehavior: Clip.hardEdge,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12.0,
-                  vertical: 8.0, // Существенно уменьшили отступы
+                  vertical: 8.0,
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start, // Важно! Предотвращает дергание элементов по вертикали
+                // Заменили IntrinsicHeight на Stack для безопасности и производительности
+                child: Stack(
                   children: [
-                    // Статусный индикатор с морфингом
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                      margin: EdgeInsets.only(top: isDone ? 0 : 2.0), // Выравниваем полоску по тексту
-                      width: isDone ? 24 : 4,
-                      height: isDone ? 24 : 34,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: isDone
-                            ? Colors.white
-                            : ToolThemeData.itemBorderColor.withOpacity(0.95),
-                        boxShadow: isDone
-                            ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.10),
-                            blurRadius: 3,
-                          )
-                        ]
-                            : [],
-                      ),
-                      child: isDone
-                          ? const Center(
-                          child: Icon(Icons.check,
-                              color: Colors.green, size: 16))
-                          : null,
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Контент
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                    // Основной слой: контент задает общую высоту Stack'а
+                    Container(
+                      constraints: const BoxConstraints(minHeight: 24),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOut,
-                            style: TextStyle(
-                              fontWeight:
-                              isDone ? FontWeight.w800 : FontWeight.w700,
-                              fontSize: isDone ? 15 : 16,
-                              letterSpacing: -0.2,
-                              color: isDone ? Colors.white : Colors.black87,
-                              shadows: isDone
-                                  ? [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.40),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2,
-                                ),
-                              ]
-                                  : null,
-                            ),
-                            child: Text(
-                              widget.dailyTodoItem.title,
-                              maxLines: isDone ? 1 : 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-
-                          // Блок наград и дней (появляется/исчезает плавно)
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            switchInCurve: Curves.easeOut,
-                            switchOutCurve: Curves.easeIn,
-                            child: (hasPrize || !isDone)
-                                ? Padding(
-                              padding: EdgeInsets.only(top: isDone ? 4.0 : 6.0),
-                              child: Row(
-                                children: [
-                                  if (hasPrize)
-                                    _AnimatedPrizeBadge(
-                                      prize: prizeValue ?? '',
-                                      isDone: isDone,
-                                    ),
-                                  if (!isDone &&
-                                      _buildBottomLabel(json).isNotEmpty) ...[
-                                    if (hasPrize) const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6.0, vertical: 2.0),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.06),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        _buildBottomLabel(json).toUpperCase(),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 10,
-                                          letterSpacing: 0.5,
-                                          color: Colors.black87,
+                          const SizedBox(width: 34), // Пустое место под индикатор (24 ширина + 10 отступ)
+                          // Контент
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: AnimatedDefaultTextStyle(
+                                        duration: const Duration(milliseconds: 300),
+                                        curve: Curves.easeOut,
+                                        style: TextStyle(
+                                          fontWeight: isDone
+                                              ? FontWeight.w800
+                                              : FontWeight.w700,
+                                          fontSize: isDone ? 15 : 16,
+                                          letterSpacing: -0.2,
+                                          color: isDone
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          shadows: isDone
+                                              ? [
+                                            Shadow(
+                                              color: Colors.black
+                                                  .withOpacity(0.40),
+                                              offset: const Offset(0, 1),
+                                              blurRadius: 2,
+                                            ),
+                                          ]
+                                              : null,
+                                        ),
+                                        child: Text(
+                                          widget.dailyTodoItem.title,
+                                          maxLines: isDone ? 1 : 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
+                                    // Награда выезжает на первую строку при isDone
+                                    AnimatedSwitcher(
+                                      duration: const Duration(milliseconds: 300),
+                                      transitionBuilder: (child, animation) =>
+                                          SizeTransition(
+                                            sizeFactor: animation,
+                                            axis: Axis.horizontal,
+                                            axisAlignment: -1.0,
+                                            child: FadeTransition(
+                                                opacity: animation, child: child),
+                                          ),
+                                      child: (isDone && hasPrize)
+                                          ? Padding(
+                                        padding: const EdgeInsets.only(left: 8.0),
+                                        child: _AnimatedPrizeBadge(
+                                          prize: prizeValue ?? '',
+                                          isDone: true,
+                                        ),
+                                      )
+                                          : const SizedBox.shrink(),
+                                    ),
                                   ],
-                                ],
-                              ),
-                            )
-                                : const SizedBox.shrink(),
+                                ),
+
+                                // Блок наград и дней (пропадает, когда задача выполнена)
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  transitionBuilder: (child, animation) =>
+                                      SizeTransition(
+                                        sizeFactor: animation,
+                                        axis: Axis.vertical,
+                                        axisAlignment: -1.0,
+                                        child: FadeTransition(
+                                            opacity: animation, child: child),
+                                      ),
+                                  child: (!isDone &&
+                                      (hasPrize ||
+                                          _buildBottomLabel(json).isNotEmpty))
+                                      ? Padding(
+                                    padding: const EdgeInsets.only(top: 6.0),
+                                    child: Row(
+                                      children: [
+                                        if (hasPrize)
+                                          _AnimatedPrizeBadge(
+                                            prize: prizeValue ?? '',
+                                            isDone: false,
+                                          ),
+                                        if (_buildBottomLabel(json)
+                                            .isNotEmpty) ...[
+                                          if (hasPrize)
+                                            const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6.0,
+                                                vertical: 2.0),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black
+                                                  .withOpacity(0.06),
+                                              borderRadius:
+                                              BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              _buildBottomLabel(json)
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 10,
+                                                letterSpacing: 0.5,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  )
+                                      : const SizedBox.shrink(),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Правая часть (Таймер)
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, animation) => SizeTransition(
+                              sizeFactor: animation,
+                              axis: Axis.horizontal,
+                              axisAlignment: 1.0,
+                              child: FadeTransition(opacity: animation, child: child),
+                            ),
+                            child: isDone
+                                ? const SizedBox.shrink()
+                                : Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: _TimerSection(item: widget.dailyTodoItem),
+                            ),
                           ),
                         ],
                       ),
                     ),
 
-                    // Правая часть (Таймер) - Анимированное скрытие по ширине, чтобы не ломать высоту текста
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) => SizeTransition(
-                        sizeFactor: animation,
-                        axis: Axis.horizontal,
-                        axisAlignment: 1.0,
-                        child: FadeTransition(opacity: animation, child: child),
-                      ),
-                      child: isDone
-                          ? const SizedBox.shrink()
-                          : Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: _TimerSection(item: widget.dailyTodoItem),
+                    // Слой индикатора: растягивается по высоте Stack (top: 0, bottom: 0)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 24,
+                      child: Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                          width: isDone ? 24 : 4,
+                          height: isDone ? 24 : double.infinity, // Бесконечность заставит заполнить выделенное Center пространство
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            color: isDone
+                                ? Colors.white
+                                : ToolThemeData.itemBorderColor
+                                .withOpacity(0.95),
+                            boxShadow: isDone
+                                ? [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.10),
+                                blurRadius: 3,
+                              )
+                            ]
+                                : [],
+                          ),
+                          child: isDone
+                              ? const Center(
+                              child: Icon(Icons.check,
+                                  color: Colors.green, size: 16))
+                              : null,
+                        ),
                       ),
                     ),
                   ],
@@ -462,10 +525,10 @@ class _TimerSection extends StatelessWidget {
             ),
             if (hasTimer)
               Padding(
-                padding: const EdgeInsets.only(top: 4.0), // Уменьшили отступ таймера
+                padding: const EdgeInsets.only(top: 4.0),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 2.0), // Уменьшили внутренний отступ
+                      horizontal: 6.0, vertical: 2.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     color: Colors.black.withOpacity(0.05),
