@@ -73,7 +73,7 @@ class _CardSpinItemWidgetState extends State<CardSpinItemWidget> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 500),
                 alignment: Alignment.center,
-                width: isWinner ? 265 : 240,
+                width: 265, // Фиксированная ширина для предотвращения скачков текста
                 height: 115,
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001) // Перспектива

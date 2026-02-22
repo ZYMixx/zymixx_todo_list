@@ -116,18 +116,20 @@ class _FortuneWheelState extends State<FortuneWheel>
       _confettiController.play();
     }
 
-    // 4. Музыка победы
-    if (progress > 0.98 && !_isWinMusicPlayed) {
-      _isWinMusicPlayed = true;
-      Get.find<ServiceAudioPlayer>().playFortuneWinMusic(volume: 0.3);
-    }
+    // 4. Музыка победы перенесена в _handleSpinStatus для надежности
   }
 
   void _handleSpinStatus(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
       _shakeController.stop();
       _shakeController.reset();
+      
+      // Останавливаем звук кручения
       Get.find<ServiceAudioPlayer>().stopAll();
+
+      // Запускаем музыку победы только после полной остановки колеса, 
+      // чтобы stopAll ее не прервал
+      Get.find<ServiceAudioPlayer>().playFortuneWinMusic(volume: 0.2);
 
       if (selectedItem != null) {
         try {
