@@ -173,14 +173,16 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
     final bool isDone = widget.dailyTodoItem.isDone;
     final Map<String, dynamic> json =
         jsonDecode(widget.dailyTodoItem.content) as Map<String, dynamic>;
-    final bool hasPrize = (json['prise'] ?? 0) != 0;
+    final bool hasPrize = (json['prize'] ?? json['prise'] ?? 0) != 0;
+    final String? prizeValue =
+        hasPrize ? (json['prize'] ?? json['prise']).toString() : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 7.0),
       child: MyAnimatedCard(
-        intensity: 0.005,
+        intensity: isDone ? 0.002 : 0.005,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
+          duration: const Duration(milliseconds: 320),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
@@ -224,37 +226,46 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                   content: widget.dailyTodoItem.content,
                   title: widget.dailyTodoItem.title));
             },
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 260),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axisAlignment: -1,
-                      child: child,
-                    ),
-                  );
-                },
-                child: isDone
-                    ? _CompletedDailyContent(
-                        key: const ValueKey('completed'),
-                        title: widget.dailyTodoItem.title,
-                        hasPrize: hasPrize,
-                        prize: hasPrize ? json['prise'].toString() : null,
-                      )
-                    : _ActiveDailyContent(
-                        key: const ValueKey('active'),
-                        item: widget.dailyTodoItem,
-                        hasPrize: hasPrize,
-                        prize: hasPrize ? json['prise'].toString() : null,
-                        bottomLabel: _buildBottomLabel(json),
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.0,
+                  vertical: isDone ? 10.0 : 12.0,
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeInOut,
+                  switchOutCurve: Curves.easeInOut,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.05),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
                       ),
+                    );
+                  },
+                  child: isDone
+                      ? _CompletedDailyContent(
+                          key: const ValueKey('completed'),
+                          title: widget.dailyTodoItem.title,
+                          hasPrize: hasPrize,
+                          prize: prizeValue,
+                        )
+                      : _ActiveDailyContent(
+                          key: const ValueKey('active'),
+                          item: widget.dailyTodoItem,
+                          hasPrize: hasPrize,
+                          prize: prizeValue,
+                          bottomLabel: _buildBottomLabel(json),
+                        ),
+                ),
               ),
             ),
           ),
@@ -330,41 +341,33 @@ class _ActiveDailyContent extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (hasPrize)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: Colors.black.withOpacity(0.04),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            prize ?? '',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.grey[900],
-                            ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          prize ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.grey[900],
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.emoji_events,
-                            size: 18,
-                            color: Colors.orangeAccent,
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(
+                          Icons.emoji_events,
+                          size: 16,
+                          color: Colors.orangeAccent,
+                        ),
+                      ],
                     ),
                   if (bottomLabel.isNotEmpty) ...[
-                    if (hasPrize) const SizedBox(width: 8),
+                    if (hasPrize) const SizedBox(width: 6),
                     Text(
                       bottomLabel,
                       style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                        color: Colors.black.withOpacity(0.7),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        color: Colors.black.withOpacity(0.65),
                       ),
                     ),
                   ],
@@ -494,61 +497,51 @@ class _CompletedDailyContent extends StatelessWidget {
             children: [
               Text(
                 title,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 17,
-                  letterSpacing: -0.2,
-                  height: 1.25,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  letterSpacing: -0.1,
+                  height: 1.1,
                   color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.25),
+                      offset: const Offset(0, 1),
+                      blurRadius: 2,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
               if (hasPrize)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10.0, vertical: 5.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: Colors.white.withOpacity(0.16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            prize ?? '',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.emoji_events,
-                            size: 20,
-                            color: ToolThemeData.specialItemColor,
-                          ),
-                        ],
+                    Text(
+                      prize ?? '',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      size: 22,
-                      color: Colors.white,
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.emoji_events,
+                      size: 20,
+                      color: ToolThemeData.specialItemColor,
                     ),
                   ],
-                )
-              else
-                const Icon(
-                  Icons.check_circle_rounded,
-                  size: 22,
-                  color: Colors.white,
+                ) else
+                const Padding(
+                  padding: EdgeInsets.only(top: 2.0),
+                  child: Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
                 ),
             ],
           ),

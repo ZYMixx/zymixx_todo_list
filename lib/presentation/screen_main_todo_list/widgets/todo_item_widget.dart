@@ -68,11 +68,11 @@ class _TodoItemBodyState extends State<TodoItemBody> {
     int lines = (todoContent.length + (lineSeparator * 8)) ~/ 24;
     DateTime? targetDateTime = context
         .select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
-    if (lines < 2) {
-      lines = 2;
+    if (lines < 1) {
+      lines = 1;
     }
-    if (lines > 5) {
-      lines = 5;
+    if (lines > 8) {
+      lines = 8;
     }
 
     // Приоритетный цвет для accent strip
@@ -84,17 +84,17 @@ class _TodoItemBodyState extends State<TodoItemBody> {
     final theme = Theme.of(context);
 
     return MyAnimatedCard(
-      intensity: 0.003,
+      intensity: 0.002,
       child: AnimatedContainer(
         width: ToolThemeData.itemWidth,
         curve: Curves.easeInOut,
         height: isChangeTextMod
-            ? (21 * lines).toDouble() + (ToolThemeData.itemHeight + 18)
-            : (ToolThemeData.itemHeight),
+            ? (20 * lines).toDouble() + (ToolThemeData.itemHeight + 12)
+            : null,
         constraints: BoxConstraints(
           minHeight: isChangeTextMod
-              ? (21 * lines).toDouble() + ToolThemeData.itemHeight
-              : ToolThemeData.itemHeight,
+              ? (20 * lines).toDouble() + ToolThemeData.itemHeight - 10
+              : ToolThemeData.itemHeight - 12,
         ),
         duration: Duration(milliseconds: 250),
         child: GestureDetector(
@@ -166,8 +166,8 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 6,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: isSocial
@@ -199,51 +199,52 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                         ),
                       ),
                       //? начало фронт-графики
-                      child: Row(
-                        children: [
-                          Flexible(
-                            flex: 12,
-                            fit: FlexFit.tight,
-                            child: GestureDetector(
-                              onLongPress: () {},
-                              onTap: () {},
-                              child: isChangeTextMod
-                                  ? TitleChangeWidget()
-                                  : TitlePresentWidget(),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 12,
+                              child: GestureDetector(
+                                onLongPress: () {},
+                                onTap: () {},
+                                child: isChangeTextMod
+                                    ? TitleChangeWidget()
+                                    : TitlePresentWidget(),
+                              ),
                             ),
-                          ),
-                          // Убрали отдельную цветную полоску из середины — она теперь слева
-                          MyAnimatedCard(
-                            intensity: 0.01,
-                            directionUp: false,
-                            child: AnimatedCirclesWidget(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 5.0, bottom: 5.0, left: 4),
-                                child: SizedBox(
-                                  width: 2.5,
-                                  height: double.infinity,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: priorityColor.withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(2),
-                                      // Объём для разделителя
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: priorityColor.withOpacity(0.3),
-                                          blurRadius: 2,
-                                          spreadRadius: 0,
-                                          offset: Offset(0.5, 0),
-                                        ),
-                                      ],
+                            // Убрали отдельную цветную полоску из середины — она теперь слева
+                            MyAnimatedCard(
+                              intensity: 0.01,
+                              directionUp: false,
+                              child: AnimatedCirclesWidget(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 5.0, bottom: 5.0, left: 4),
+                                  child: SizedBox(
+                                    width: 2.5,
+                                    height: double.infinity,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: priorityColor.withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(2),
+                                        // Объём для разделителя
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: priorityColor.withOpacity(0.3),
+                                            blurRadius: 2,
+                                            spreadRadius: 0,
+                                            offset: Offset(0.5, 0),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Flexible(flex: 6, child: TimerWorkWidget()),
-                        ],
+                            Flexible(flex: 6, child: TimerWorkWidget()),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -357,34 +358,62 @@ class TitlePresentWidget extends StatelessWidget {
             padding: EdgeInsets.only(
               left: 10.0,
               top: 6.0,
-              bottom: dateStr != null ? 14.0 : 6.0,
+              bottom: 6.0,
               right: todoImageFile != null ? 25 : 8,
             ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                (title.capStart() ?? '') ?? '',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  letterSpacing: -0.3,
-                  wordSpacing: -0.5,
-                  height: 1.15,
-                  // Добавляем объём тексту
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.3),
-                      offset: Offset(0, 1),
-                      blurRadius: 2.0,
-                    ),
-                    Shadow(
-                      color: Colors.white.withOpacity(0.1),
-                      offset: Offset(0, -0.5),
-                      blurRadius: 1.0,
-                    ),
-                  ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  (title.capStart() ?? '') ?? '',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15.5,
+                    letterSpacing: -0.2,
+                    height: 1.1,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
+                if (dateStr != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: DecoratedBox(
+                      decoration: todoImageFile != null
+                          ? BoxDecoration(
+                              border: Border.all(
+                                  color: ToolThemeData.highlightColor
+                                      .withOpacity(0.3),
+                                  width: 0.5),
+                              color: Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 2,
+                                  spreadRadius: 0,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            )
+                          : BoxDecoration(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Text(
+                          dateStr,
+                          style: TextStyle(
+                            color: isSocial
+                                ? ToolThemeData.mainGreenColor
+                                : Colors.black.withOpacity(0.65),
+                            fontWeight: FontWeight.w700,
+                            fontSize: isSocial ? 11 : 9.5,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -434,56 +463,6 @@ class TitlePresentWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        // Дата — аккуратная подстрочная метаинформация
-        if (dateStr != null)
-          Positioned(
-            bottom: 2,
-            left: 10,
-            child: DecoratedBox(
-              decoration: todoImageFile != null
-                  ? BoxDecoration(
-                      border: Border.all(
-                          color: ToolThemeData.highlightColor.withOpacity(0.3),
-                          width: 0.5),
-                      color: Colors.white.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(6),
-                      // Объём для бейджа даты
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 2,
-                          spreadRadius: 0,
-                          offset: Offset(0, 1),
-                        ),
-                      ],
-                    )
-                  : BoxDecoration(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Text(
-                  dateStr,
-                  style: TextStyle(
-                    color: isSocial
-                        ? ToolThemeData.mainGreenColor
-                        : Colors.black54,
-                    fontWeight: isSocial || todoImageFile != null
-                        ? FontWeight.w600
-                        : FontWeight.w500,
-                    fontSize: isSocial ? 12 : 10.5,
-                    letterSpacing: 0.2,
-                    // Объём для текста даты
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.2),
-                        offset: Offset(0, 0.5),
-                        blurRadius: 1.0,
-                      ),
-                    ],
                   ),
                 ),
               ),
