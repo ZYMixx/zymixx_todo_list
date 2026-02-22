@@ -62,18 +62,9 @@ class _TodoItemBodyState extends State<TodoItemBody> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     bool isChangeTextMod =
-        context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
-    String todoContent = bloc.state.todoItem.content;
-    int lineSeparator = bloc.state.todoItem.content.split('\n').length - 1;
-    int lines = (todoContent.length + (lineSeparator * 8)) ~/ 24;
+    context.select((TodoItemBloc bloc) => bloc.state.changeTextMod);
     DateTime? targetDateTime = context
         .select((TodoItemBloc bloc) => bloc.state.todoItem.targetDateTime);
-    if (lines < 1) {
-      lines = 1;
-    }
-    if (lines > 8) {
-      lines = 8;
-    }
 
     // Приоритетный цвет для accent strip
     final Color priorityColor =
@@ -85,170 +76,168 @@ class _TodoItemBodyState extends State<TodoItemBody> {
 
     return MyAnimatedCard(
       intensity: 0.002,
-      child: AnimatedContainer(
-        width: ToolThemeData.itemWidth,
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
-        height: isChangeTextMod
-            ? (20 * lines).toDouble() + (ToolThemeData.itemHeight + 12)
-            : null,
-        constraints: BoxConstraints(
-          minHeight: isChangeTextMod
-              ? (20 * lines).toDouble() + ToolThemeData.itemHeight - 10
-              : ToolThemeData.itemHeight - 12,
-        ),
-        duration: Duration(milliseconds: 250),
-        child: GestureDetector(
-          onSecondaryTap: () {
-            bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
-          },
-          onSecondaryLongPress: () {
-            bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
-            Get.find<ListTodoScreenBloc>()
-                .add(MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
-          },
-          child: Dismissible(
-            key: UniqueKey(),
-            background: dismissArrow,
-            onDismissed: (DismissDirection direction) {
-              bloc.add(DismissEvent(direction: direction));
+        alignment: Alignment.topCenter,
+        child: Container(
+          width: ToolThemeData.itemWidth,
+          constraints: BoxConstraints(
+            minHeight: ToolThemeData.itemHeight,
+          ),
+          child: GestureDetector(
+            onSecondaryTap: () {
+              bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
             },
-            onUpdate: (value) {
-              if (value.direction == DismissDirection.startToEnd) {
-                dismissArrow.setAnimation?.call(value.progress, true);
-              } else {
-                dismissArrow.setAnimation?.call(value.progress, false);
-              }
+            onSecondaryLongPress: () {
+              bloc.add(SetItemDateEvent(userDateTime: DateTime.now()));
+              Get.find<ListTodoScreenBloc>()
+                  .add(MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
             },
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                // Более мягкая и современная тень карточки
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    blurRadius: 14,
-                    spreadRadius: 1,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // Тонкая левая полоска приоритета (accent strip)
-                  AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
-                    width: 3.5,
-                    decoration: BoxDecoration(
-                      color: isSocial
-                          ? ToolThemeData.specialItemColor
-                          : priorityColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        bottomLeft: Radius.circular(12),
-                      ),
-                      // Объём для accent strip
-                      boxShadow: [
-                        BoxShadow(
-                          color: (isSocial
-                                  ? ToolThemeData.specialItemColor
-                                  : priorityColor)
-                              .withOpacity(0.4),
-                          blurRadius: 3,
-                          spreadRadius: 0,
-                          offset: Offset(1, 0),
-                        ),
-                      ],
+            child: Dismissible(
+              key: UniqueKey(),
+              background: dismissArrow,
+              onDismissed: (DismissDirection direction) {
+                bloc.add(DismissEvent(direction: direction));
+              },
+              onUpdate: (value) {
+                if (value.direction == DismissDirection.startToEnd) {
+                  dismissArrow.setAnimation?.call(value.progress, true);
+                } else {
+                  dismissArrow.setAnimation?.call(value.progress, false);
+                }
+              },
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  // Более мягкая и современная тень карточки
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 14,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
                     ),
-                  ),
-                  // Основное тело карточки
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Тонкая левая полоска приоритета (accent strip)
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 3.5,
                       decoration: BoxDecoration(
                         color: isSocial
-                            ? ToolThemeData.specialItemColor.withOpacity(0.14)
-                            : (widget.bgColor == Colors.transparent
-                                ? theme.colorScheme.surface.withOpacity(0.96)
-                                : widget.bgColor.withOpacity(0.98)),
-                        gradient: isSocial
-                            ? LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  ToolThemeData.specialItemColor
-                                      .withOpacity(0.24),
-                                  theme.colorScheme.surface.withOpacity(0.96),
-                                ],
-                              )
-                            : null,
-                        border: Border.all(
-                          color: widget.bgColor == Colors.transparent
-                              ? theme.dividerColor.withOpacity(0.25)
-                              : ToolThemeData.itemBorderColor
-                                  .withOpacity(0.5),
-                          width: 0.6,
-                        ),
+                            ? ToolThemeData.specialItemColor
+                            : priorityColor,
                         borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(16),
-                          bottomRight: Radius.circular(16),
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
                         ),
+                        // Объём для accent strip
+                        boxShadow: [
+                          BoxShadow(
+                            color: (isSocial
+                                ? ToolThemeData.specialItemColor
+                                : priorityColor)
+                                .withOpacity(0.4),
+                            blurRadius: 3,
+                            spreadRadius: 0,
+                            offset: const Offset(1, 0),
+                          ),
+                        ],
                       ),
-                      //? начало фронт-графики
-                      child: IntrinsicHeight(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 12,
-                              child: GestureDetector(
-                                onLongPress: () {},
-                                onTap: () {},
-                                child: isChangeTextMod
-                                    ? TitleChangeWidget()
-                                    : TitlePresentWidget(),
+                    ),
+                    // Основное тело карточки
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSocial
+                              ? ToolThemeData.specialItemColor.withOpacity(0.14)
+                              : (widget.bgColor == Colors.transparent
+                              ? theme.colorScheme.surface.withOpacity(0.96)
+                              : widget.bgColor.withOpacity(0.98)),
+                          gradient: isSocial
+                              ? LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              ToolThemeData.specialItemColor
+                                  .withOpacity(0.24),
+                              theme.colorScheme.surface.withOpacity(0.96),
+                            ],
+                          )
+                              : null,
+                          border: Border.all(
+                            color: widget.bgColor == Colors.transparent
+                                ? theme.dividerColor.withOpacity(0.25)
+                                : ToolThemeData.itemBorderColor
+                                .withOpacity(0.5),
+                            width: 0.6,
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(16),
+                            bottomRight: Radius.circular(16),
+                          ),
+                        ),
+                        //? начало фронт-графики
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 12,
+                                child: GestureDetector(
+                                  onLongPress: () {},
+                                  onTap: () {},
+                                  child: isChangeTextMod
+                                      ? const TitleChangeWidget()
+                                      : const TitlePresentWidget(),
+                                ),
                               ),
-                            ),
-                            // Убрали отдельную цветную полоску из середины — она теперь слева
-                            MyAnimatedCard(
-                              intensity: 0.01,
-                              directionUp: false,
-                              child: AnimatedCirclesWidget(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(
-                                      top: 5.0, bottom: 5.0, left: 4),
-                                  child: SizedBox(
-                                    width: 2.5,
-                                    height: double.infinity,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: priorityColor.withOpacity(0.5),
-                                        borderRadius: BorderRadius.circular(2),
-                                        // Объём для разделителя
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: priorityColor.withOpacity(0.3),
-                                            blurRadius: 2,
-                                            spreadRadius: 0,
-                                            offset: Offset(0.5, 0),
-                                          ),
-                                        ],
+                              // Убрали отдельную цветную полоску из середины — она теперь слева
+                              MyAnimatedCard(
+                                intensity: 0.01,
+                                directionUp: false,
+                                child: AnimatedCirclesWidget(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 5.0, bottom: 5.0, left: 4),
+                                    child: SizedBox(
+                                      width: 2.5,
+                                      height: double.infinity,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          color: priorityColor.withOpacity(0.5),
+                                          borderRadius: BorderRadius.circular(2),
+                                          // Объём для разделителя
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: priorityColor.withOpacity(0.3),
+                                              blurRadius: 2,
+                                              spreadRadius: 0,
+                                              offset: const Offset(0.5, 0),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Flexible(flex: 6, child: TimerWorkWidget()),
-                          ],
+                              const Flexible(flex: 6, child: TimerWorkWidget()),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -305,8 +294,8 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
             0),
         child: Container(
           alignment:
-              isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
-          padding: EdgeInsets.only(right: 30),
+          isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 30),
           child: ListView(
             scrollDirection: Axis.horizontal,
             reverse: true,
@@ -346,7 +335,7 @@ class TitlePresentWidget extends StatelessWidget {
     final bool isSocial =
         bloc.state.todoItem.category == EnumTodoCategory.social.name;
     final String? dateStr =
-        Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
+    Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
 
     return Stack(
       children: [
@@ -381,22 +370,22 @@ class TitlePresentWidget extends StatelessWidget {
                     child: DecoratedBox(
                       decoration: todoImageFile != null
                           ? BoxDecoration(
-                              border: Border.all(
-                                  color: ToolThemeData.highlightColor
-                                      .withOpacity(0.3),
-                                  width: 0.5),
-                              color: Colors.white.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 2,
-                                  spreadRadius: 0,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
-                            )
-                          : BoxDecoration(),
+                        border: Border.all(
+                            color: ToolThemeData.highlightColor
+                                .withOpacity(0.3),
+                            width: 0.5),
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 2,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      )
+                          : const BoxDecoration(),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
                         child: Text(
@@ -426,8 +415,8 @@ class TitlePresentWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border.all(
                       color:
-                          targetDateTime?.getHighlightColor(targetDateTime) ??
-                              Colors.black,
+                      targetDateTime?.getHighlightColor(targetDateTime) ??
+                          Colors.black,
                       width: 0.5),
                   borderRadius: BorderRadius.circular(ToolThemeData.itemHeight),
                   // Объём для миниатюры изображения
@@ -436,7 +425,7 @@ class TitlePresentWidget extends StatelessWidget {
                       color: Colors.black.withOpacity(0.25),
                       blurRadius: 4,
                       spreadRadius: 0,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -532,7 +521,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     File? todoImageFile =
-        context.select((TodoItemBloc bloc) => bloc.state.imageFile);
+    context.select((TodoItemBloc bloc) => bloc.state.imageFile);
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
     initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
@@ -540,228 +529,168 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     String formattedTargetDateTime =
         Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
     return Padding(
-      padding: const EdgeInsets.only(left: 8.0, bottom: 4.0, right: 2.0),
-      child: Focus(
-        onFocusChange: (focus) {
-          if (focus) {
-            _controllerTitle
-              ..selection = TextSelection(
-                  baseOffset: 0, extentOffset: _controllerTitle.text.length);
-          }
-          if (!focus) {
-            print('focus locc add Event ${_controllerTitle.text.trim()}');
-            //_saveSelection();
-            Future.delayed(Duration.zero, () {
-              bloc.add(
-                SaveItemChangeEvent(
-                  titleText: _controllerTitle.text.trim(),
-                  descriptionText: descriptionForSave,
-                ),
-              );
-            });
-          }
-        },
-        child: Column(
-          children: [
-            TextField(
-              controller: _controllerTitle,
-              autofocus: true,
-              maxLines: 1,
-              focusNode: _focusNodeTitle,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14.5,
-                letterSpacing: -0.2,
-              ),
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                suffixIcon: MyAnimatedCard(
-                  intensity: 0.012,
-                  child: Container(
-                    width: 50,
-                    height: 36,
-                    alignment: Alignment.center,
-                    child: InkWell(
-                      focusNode: FocusNode(skipTraversal: true),
-                      onTap: () => {
-                        _saveSelection(),
-                        bloc
-                          ..add(
-                            SaveItemChangeEvent(
-                              titleText: _controllerTitle.text.trim(),
-                              descriptionText: descriptionForSave,
-                              setChangeMod: true,
+        padding: const EdgeInsets.only(left: 8.0, bottom: 4.0, right: 2.0),
+        child: Focus(
+          onFocusChange: (focus) {
+            if (focus) {
+              _controllerTitle
+                ..selection = TextSelection(
+                    baseOffset: 0, extentOffset: _controllerTitle.text.length);
+            }
+            if (!focus) {
+              print('focus locc add Event ${_controllerTitle.text.trim()}');
+              //_saveSelection();
+              Future.delayed(Duration.zero, () {
+                bloc.add(
+                  SaveItemChangeEvent(
+                    titleText: _controllerTitle.text.trim(),
+                    descriptionText: descriptionForSave,
+                  ),
+                );
+              });
+            }
+          },
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _controllerTitle,
+                  autofocus: true,
+                  maxLines: 1,
+                  focusNode: _focusNodeTitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.5,
+                    letterSpacing: -0.2,
+                  ),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                    suffixIcon: MyAnimatedCard(
+                      intensity: 0.012,
+                      child: Container(
+                        width: 50,
+                        height: 36,
+                        alignment: Alignment.center,
+                        child: InkWell(
+                          focusNode: FocusNode(skipTraversal: true),
+                          onTap: () => {
+                            _saveSelection(),
+                            bloc
+                              ..add(
+                                SaveItemChangeEvent(
+                                  titleText: _controllerTitle.text.trim(),
+                                  descriptionText: descriptionForSave,
+                                  setChangeMod: true,
+                                ),
+                              )
+                              ..add(
+                                RequestChangeItemDateEvent(
+                                    buildContext: context,
+                                    restoreFocusCallBack: _restoreSelection),
+                              )
+                          },
+                          onLongPress: () => bloc
+                            ..add(
+                              SaveItemChangeEvent(
+                                titleText: _controllerTitle.text.trim(),
+                                descriptionText: descriptionForSave,
+                                setChangeMod: true,
+                              ),
+                            )
+                            ..add(
+                              SetItemDateEvent(userDateTime: DateTime.now()),
                             ),
-                          )
-                          ..add(
-                            RequestChangeItemDateEvent(
-                                buildContext: context,
-                                restoreFocusCallBack: _restoreSelection),
-                          )
-                      },
-                      onLongPress: () => bloc
-                        ..add(
-                          SaveItemChangeEvent(
-                            titleText: _controllerTitle.text.trim(),
-                            descriptionText: descriptionForSave,
-                            setChangeMod: true,
-                          ),
-                        )
-                        ..add(
-                          SetItemDateEvent(userDateTime: DateTime.now()),
-                        ),
-                      onSecondaryTap: () => bloc
-                        ..add(
-                          SaveItemChangeEvent(
-                            titleText: _controllerTitle.text.trim(),
-                            descriptionText: descriptionForSave,
-                            setChangeMod: true,
-                          ),
-                        )
-                        ..add(
-                          IncreaseItemDateEvent(),
-                        ),
-                      child: Text(
-                        formattedTargetDateTime,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                          letterSpacing: 0.1,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black12,
-                              offset: Offset(0, 0.5),
-                              blurRadius: 1.0,
+                          onSecondaryTap: () => bloc
+                            ..add(
+                              SaveItemChangeEvent(
+                                titleText: _controllerTitle.text.trim(),
+                                descriptionText: descriptionForSave,
+                                setChangeMod: true,
+                              ),
+                            )
+                            ..add(
+                              IncreaseItemDateEvent(),
                             ),
-                          ],
+                          child: Text(
+                            formattedTargetDateTime,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                              letterSpacing: 0.1,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black12,
+                                  offset: Offset(0, 0.5),
+                                  blurRadius: 1.0,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            ScrollbarTheme(
-              data: ScrollbarThemeData(
-                thumbColor: MaterialStateProperty.all<Color>(Colors.black54),
-                thumbVisibility: MaterialStateProperty.all<bool>(true),
-                thickness: MaterialStateProperty.all<double>(4),
-              ),
-              child: TextField(
-                controller: _controllerDescription,
-                focusNode: _focusNodeDescription,
-                minLines: 2,
-                selectionControls: MaterialTextSelectionControls(),
-                maxLines: initialText == '' ? 3 : 8,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                  suffixIconConstraints: todoImageFile == null
-                      ? BoxConstraints.tightFor(width: 35, height: 35)
-                      : BoxConstraints.tightFor(width: 45, height: 45),
-                  suffixIcon: (bloc.state.todoItem.title == 'New Title')
-                      ? Container()
-                      : todoImageFile != null
+                ScrollbarTheme(
+                  data: ScrollbarThemeData(
+                    thumbColor: MaterialStateProperty.all<Color>(Colors.black54),
+                    thumbVisibility: MaterialStateProperty.all<bool>(true),
+                    thickness: MaterialStateProperty.all<double>(4),
+                  ),
+                  child: TextField(
+                    controller: _controllerDescription,
+                    focusNode: _focusNodeDescription,
+                    minLines: 2,
+                    selectionControls: MaterialTextSelectionControls(),
+                    maxLines: initialText == '' ? 3 : 8,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding:
+                      const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      suffixIconConstraints: todoImageFile == null
+                          ? const BoxConstraints.tightFor(width: 35, height: 35)
+                          : const BoxConstraints.tightFor(width: 45, height: 45),
+                      suffixIcon: (bloc.state.todoItem.title == 'New Title')
+                          ? Container()
+                          : todoImageFile != null
                           ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 4.0),
-                                  child: Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: InkWell(
-                                      onTap: () {
-                                        Get.find<ServiceImagePluginWork>()
-                                            .openImage(todoImageFile);
-                                      },
-                                      onSecondaryTap: () {},
-                                      onLongPress: () {
-                                        Get.find<ServiceImagePluginWork>()
-                                            .deleteImage(
-                                          todoItem: bloc.state.todoItem,
-                                          updateCallBack: () =>
-                                              bloc.add(SetTodoItemImageEvent()),
-                                        );
-                                      },
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(10.0),
-                                        child: Opacity(
-                                          opacity: 0.85,
-                                          child: AspectRatio(
-                                            aspectRatio:
-                                                1.0, // Устанавливаем квадратное соотношение сторон
-                                            child: FittedBox(
-                                              fit: BoxFit.cover,
-                                              child: Image.file(
-                                                todoImageFile,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Container(
-                              child: Align(
-                                alignment: Alignment.bottomRight,
-                                child: InkWell(
-                                  focusNode: FocusNode(skipTraversal: true),
-                                  onTap: () {
-                                    //ii image
-                                    Get.find<ServiceImagePluginWork>()
-                                        .drawImage(
-                                            title: bloc.state.todoItem.title,
-                                            id: bloc.state.todoItem.id,
-                                            updateCallBack: () => bloc
-                                                .add(SetTodoItemImageEvent()));
-                                    Log.e('ADD NEW IMAGE');
-                                  },
-                                  onSecondaryTap: () {
-                                    Get.find<ServiceImagePluginWork>()
-                                        .selectAndSetTodoImage(
-                                      todoItem: bloc.state.todoItem,
-                                      updateCallBack: () =>
-                                          bloc.add(SetTodoItemImageEvent()),
-                                    );
-                                  },
-                                  child: Center(
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.08),
-                                        borderRadius: BorderRadius.circular(20),
-                                        // Объём для кнопки добавления фото
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.15),
-                                            blurRadius: 3,
-                                            spreadRadius: 0,
-                                            offset: Offset(0, 1),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(1.0),
-                                        child: MyAnimatedCard(
-                                          intensity: 0.012,
-                                          child: ClipOval(
-                                            child: Opacity(
-                                              opacity: 0.7,
-                                              child: Icon(
-                                                Icons.add_a_photo_outlined,
-                                                color: Colors.black87,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4.0),
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: InkWell(
+                                onTap: () {
+                                  Get.find<ServiceImagePluginWork>()
+                                      .openImage(todoImageFile);
+                                },
+                                onSecondaryTap: () {},
+                                onLongPress: () {
+                                  Get.find<ServiceImagePluginWork>()
+                                      .deleteImage(
+                                    todoItem: bloc.state.todoItem,
+                                    updateCallBack: () =>
+                                        bloc.add(SetTodoItemImageEvent()),
+                                  );
+                                },
+                                child: ClipRRect(
+                                  borderRadius:
+                                  BorderRadius.circular(10.0),
+                                  child: Opacity(
+                                    opacity: 0.85,
+                                    child: AspectRatio(
+                                      aspectRatio:
+                                      1.0, // Устанавливаем квадратное соотношение сторон
+                                      child: FittedBox(
+                                        fit: BoxFit.cover,
+                                        child: Image.file(
+                                          todoImageFile,
                                         ),
                                       ),
                                     ),
@@ -769,26 +698,90 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                 ),
                               ),
                             ),
-                ),
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13.5,
-                  letterSpacing: -0.3,
-                  wordSpacing: -0.3,
-                  height: 1.2,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black12,
-                      offset: Offset(0, 0.1),
-                      blurRadius: 1.0,
+                          ),
+                        ],
+                      )
+                          : Container(
+                        child: Align(
+                          alignment: Alignment.bottomRight,
+                          child: InkWell(
+                            focusNode: FocusNode(skipTraversal: true),
+                            onTap: () {
+                              //ii image
+                              Get.find<ServiceImagePluginWork>()
+                                  .drawImage(
+                                  title: bloc.state.todoItem.title,
+                                  id: bloc.state.todoItem.id,
+                                  updateCallBack: () => bloc
+                                      .add(SetTodoItemImageEvent()));
+                              Log.e('ADD NEW IMAGE');
+                            },
+                            onSecondaryTap: () {
+                              Get.find<ServiceImagePluginWork>()
+                                  .selectAndSetTodoImage(
+                                todoItem: bloc.state.todoItem,
+                                updateCallBack: () =>
+                                    bloc.add(SetTodoItemImageEvent()),
+                              );
+                            },
+                            child: Center(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(20),
+                                  // Объём для кнопки добавления фото
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                      Colors.black.withOpacity(0.15),
+                                      blurRadius: 3,
+                                      spreadRadius: 0,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(1.0),
+                                  child: MyAnimatedCard(
+                                    intensity: 0.012,
+                                    child: const ClipOval(
+                                      child: Opacity(
+                                        opacity: 0.7,
+                                        child: Icon(
+                                          Icons.add_a_photo_outlined,
+                                          color: Colors.black87,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13.5,
+                      letterSpacing: -0.3,
+                      wordSpacing: -0.3,
+                      height: 1.2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black12,
+                          offset: Offset(0, 0.1),
+                          blurRadius: 1.0,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        )
     );
   }
 
@@ -827,12 +820,12 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
   Widget build(BuildContext context) {
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     TodoItem todoItem =
-        context.select((TodoItemBloc bloc) => bloc.state.todoItem);
+    context.select((TodoItemBloc bloc) => bloc.state.todoItem);
     bool needTimerSong =
-        context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
+    context.select((TodoItemBloc bloc) => bloc.state.needTimerSong);
     int autoPauseSeconds = todoItem.autoPauseSeconds;
     TimeModEnum timerMod =
-        context.select((TodoItemBloc bloc) => bloc.state.timerMod);
+    context.select((TodoItemBloc bloc) => bloc.state.timerMod);
     return Stack(
       children: [
         if (autoPauseSeconds > 0)
@@ -858,12 +851,12 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
             ),
           ),
         if (!needTimerSong)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0, top: 2.0),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16.0, top: 2.0),
             child: Align(
               alignment: Alignment.topLeft,
               child: Padding(
-                padding: const EdgeInsets.all(0.5),
+                padding: EdgeInsets.all(0.5),
                 child: Opacity(
                   opacity: 0.6,
                   child: Icon(
@@ -877,36 +870,36 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
           ),
         Center(
           child: AnimatedSwitcher(
-            duration: Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 250),
             transitionBuilder: (child, animation) {
               Offset animateOffset;
               if (child is StopwatchWidget) {
-                animateOffset = Offset(-0.4, 0.0);
+                animateOffset = const Offset(-0.4, 0.0);
                 lastTimeMod = TimeModEnum.stopwatch;
               } else if (child is TimerWidget) {
-                animateOffset = Offset(0.4, 0.0);
+                animateOffset = const Offset(0.4, 0.0);
                 lastTimeMod = TimeModEnum.timer;
               } else {
                 if (timerMod == TimeModEnum.timer) {
-                  animateOffset = Offset(-0.4, 0.0);
+                  animateOffset = const Offset(-0.4, 0.0);
                 } else {
                   if (lastTimeMod == TimeModEnum.timer) {
-                    animateOffset = Offset(-0.4, 0.0);
+                    animateOffset = const Offset(-0.4, 0.0);
                     lastTimeMod = null;
                   } else {
-                    animateOffset = Offset(0.4, 0.0);
+                    animateOffset = const Offset(0.4, 0.0);
                     lastTimeMod = null;
                   }
                 }
               }
               var slideAnimation = Tween<Offset>(
                 begin: animateOffset,
-                end: Offset(0.0, 0.0),
+                end: const Offset(0.0, 0.0),
               ).animate(animation);
               return FadeTransition(
                   opacity: animation,
                   child:
-                      SlideTransition(position: slideAnimation, child: child));
+                  SlideTransition(position: slideAnimation, child: child));
             },
             child: buildCrntWidget(bloc: bloc, timerMod: timerMod),
           ),
@@ -919,9 +912,9 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
       {required TodoItemBloc bloc, required TimeModEnum timerMod}) {
     switch (timerMod) {
       case TimeModEnum.timer:
-        return TimerWidget();
+        return const TimerWidget();
       case TimeModEnum.stopwatch:
-        return StopwatchWidget();
+        return const StopwatchWidget();
       case TimeModEnum.none:
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -940,7 +933,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                           ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
                     });
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.timer_outlined,
                     color: Colors.black54,
                     size: 22,
@@ -960,7 +953,7 @@ class _TimerWorkWidgetState extends State<TimerWorkWidget> {
                       bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.timer));
                     });
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.hourglass_empty_outlined,
                     color: Colors.black54,
                     size: 22,
@@ -988,13 +981,13 @@ class _TimerWidgetState extends State<TimerWidget> {
   @override
   Widget build(BuildContext context) {
     int timer =
-        context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
+    context.select((TodoItemBloc bloc) => bloc.state.todoItem.timerSeconds);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     String timerString =
-        Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
+    Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     bool isTimerActive =
-        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+    context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
 
     return Material(
       color: Colors.transparent,
@@ -1013,7 +1006,7 @@ class _TimerWidgetState extends State<TimerWidget> {
               onLongPress: () {
                 bloc.add(ChangeTimerEvent(changeNum: -3600));
               },
-              child: Icon(
+              child: const Icon(
                 Icons.remove_rounded,
                 size: 16,
                 color: Colors.black54,
@@ -1021,7 +1014,7 @@ class _TimerWidgetState extends State<TimerWidget> {
             ),
           ),
           InkWell(
-            borderRadius: BorderRadius.all(Radius.circular(20)),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
             onTap: () {
               bloc.add(StopStartTimerEvent());
             },
@@ -1036,7 +1029,7 @@ class _TimerWidgetState extends State<TimerWidget> {
                   },
                   child: Text(
                     timerString,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
@@ -1059,16 +1052,16 @@ class _TimerWidgetState extends State<TimerWidget> {
                     opacity = 0.8;
                   }
                   return AnimatedOpacity(
-                    duration: Duration(seconds: 1),
+                    duration: const Duration(seconds: 1),
                     opacity: opacity,
                     child: AnimatedScale(
                       scale: scale,
-                      duration: Duration(seconds: 1),
+                      duration: const Duration(seconds: 1),
                       child: Icon(
                         Icons.arrow_downward_outlined,
                         size: 13,
                         color:
-                            isTimerActive ? Colors.black87 : Colors.grey[500],
+                        isTimerActive ? Colors.black87 : Colors.grey[500],
                       ),
                     ),
                   );
@@ -1086,13 +1079,13 @@ class _TimerWidgetState extends State<TimerWidget> {
             onLongPress: () {
               bloc.add(ChangeTimerEvent(changeNum: 3600));
             },
-            child: Icon(
+            child: const Icon(
               Icons.add_rounded,
               size: 16,
               color: Colors.black54,
             ),
           ),
-          SizedBox(width: 15),
+          const SizedBox(width: 15),
         ],
       ),
     );
@@ -1109,21 +1102,21 @@ class StopwatchWidget extends StatefulWidget {
 class _StopwatchWidgetState extends State<StopwatchWidget> {
   double scale = 1.0;
   double opacity = 1.0;
-  Tween<Offset> positionTween = Tween(begin: Offset(0, 0), end: Offset(0, 0.2));
+  Tween<Offset> positionTween = Tween(begin: const Offset(0, 0), end: const Offset(0, 0.2));
 
   @override
   Widget build(BuildContext context) {
     int stopwatch = context
         .select((TodoItemBloc bloc) => bloc.state.todoItem.stopwatchSeconds);
     bool isTimerActive =
-        context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
+    context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
     String stopwatchString = Get.find<ToolTimeStringConverter>()
         .formatSecondsToTimeMinute(stopwatch);
     return IconButton(
       onPressed: null,
       icon: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         onSecondaryTap: () {
           bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
         },
@@ -1134,7 +1127,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
           bloc.add(StopwatchResetTimeEvent());
         },
         child: Padding(
-          padding: EdgeInsets.only(left: 6),
+          padding: const EdgeInsets.only(left: 6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -1144,7 +1137,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                 },
                 child: Text(
                   stopwatchString,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.5,
@@ -1168,11 +1161,11 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                   opacity = 0.7;
                 }
                 return AnimatedOpacity(
-                  duration: Duration(seconds: 1),
+                  duration: const Duration(seconds: 1),
                   opacity: opacity,
                   child: AnimatedScale(
                     scale: scale,
-                    duration: Duration(seconds: 1),
+                    duration: const Duration(seconds: 1),
                     child: Icon(
                       Icons.arrow_upward_outlined,
                       size: 13,
@@ -1181,7 +1174,7 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                   ),
                 );
               }),
-              SizedBox(width: 3)
+              const SizedBox(width: 3)
             ],
           ),
         ),
@@ -1213,7 +1206,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
   void initState() {
     super.initState();
     _controller =
-        AnimationController(duration: Duration(milliseconds: 120), vsync: this);
+        AnimationController(duration: const Duration(milliseconds: 120), vsync: this);
     _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller)
       ..addListener(() {
         setState(() {});
@@ -1236,7 +1229,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
       _controller.forward(from: 0.0);
       _showCircles(parentContext);
     }
-    _timer = Timer(Duration(milliseconds: 1500), () {
+    _timer = Timer(const Duration(milliseconds: 1500), () {
       if (mounted) {
         if (!_controller.isAnimating) {
           _handleTapUp();
@@ -1262,7 +1255,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
           circleColor = Colors.amberAccent!;
           break;
         case 2:
-          circleColor = ToolThemeData.highlightColor;
+          circleColor = ToolThemeData.highlightColor!;
           break;
       }
       return OverlayEntry(
@@ -1271,7 +1264,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
             animation: _scaleAnimation,
             builder: (context, child) {
               return AnimatedPositioned(
-                duration: Duration(milliseconds: 120),
+                duration: const Duration(milliseconds: 120),
                 left: calculateX(index, _scaleAnimation.value) - 10,
                 top: calculateY(index, _scaleAnimation.value),
                 child: Transform.scale(
@@ -1282,7 +1275,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                         parentContext.read<TodoItemBloc>().add(
                             SetAutoPauseSeconds(
                                 autoPauseSeconds:
-                                    index == 0 ? 0 : 30 ~/ index));
+                                index == 0 ? 0 : 30 ~/ index));
                         Log.i('set auto pause on ${30 ~/ index}');
                         _handleTapUp();
                       },
@@ -1295,7 +1288,7 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
                             shape: BoxShape.circle,
                             color: circleColor.withOpacity(0.8),
                             border: Border.all(
-                              color: Colors.white!,
+                              color: Colors.white,
                               width: 1,
                             ),
                           ),
@@ -1373,7 +1366,7 @@ extension HighlightData on DateTime {
       return Colors.orange;
     } else if (date.isBefore(today)) {
       // День уже прошёл
-      return ToolThemeData.highlightColor;
+      return ToolThemeData.highlightColor!;
     } else {
       // Это только ещё будет
       return Colors.grey;
