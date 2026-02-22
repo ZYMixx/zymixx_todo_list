@@ -401,8 +401,8 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOut,
-                          width: isDone ? 24 : 4,
-                          height: isDone ? 24 : double.infinity, // Бесконечность заставит заполнить выделенное Center пространство
+                          width: isDone ? 24 : 5,
+                          height: isDone ? 24 : 60, // Бесконечность заставит заполнить выделенное Center пространство
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(999),
                             color: isDone
