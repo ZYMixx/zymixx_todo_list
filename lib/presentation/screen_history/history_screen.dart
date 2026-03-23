@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -642,7 +643,6 @@ class _WeekCardState extends State<WeekCard> {
         final bool isNarrow = constraints.maxWidth < 380;
         final double titleFontSize = isNarrow ? 22 : 26;
         final double metricFontSize = isNarrow ? 14 : 16;
-        final double chartWidth = math.min(220.0, constraints.maxWidth);
         const double chartHeight = 56;
         final double headerMinHeight = isNarrow ? 146 : 118;
 
@@ -677,6 +677,18 @@ class _WeekCardState extends State<WeekCard> {
                       constraints: BoxConstraints(minHeight: headerMinHeight),
                       child: Stack(
                         children: [
+                          Positioned.fill(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(22),
+                              child: BackdropFilter(
+                                filter:
+                                    ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                child: ColoredBox(
+                                  color: Colors.white.withValues(alpha: 0.02),
+                                ),
+                              ),
+                            ),
+                          ),
                           Positioned.fill(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
@@ -726,13 +738,13 @@ class _WeekCardState extends State<WeekCard> {
                             ),
                           ),
                           Positioned(
-                            right: 10,
-                            bottom: 12,
-                            width: chartWidth,
+                            left: 12,
+                            right: 12,
+                            bottom: 10,
                             height: chartHeight,
                             child: IgnorePointer(
                               child: Opacity(
-                                opacity: 0.22,
+                                opacity: 0.16,
                                 child: CustomPaint(
                                   painter: MiniChartPainter(
                                     data: dailyCounts,
@@ -981,22 +993,29 @@ class MiniChartPainter extends CustomPainter {
       }
     }
 
-    // Glow effect
+    final Path glowPath = Path.from(path);
+
     final glowPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6
       ..strokeCap = StrokeCap.round
-      ..color = color.withValues(alpha: 0.28)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7);
-    canvas.drawPath(path, glowPaint);
+      ..color = color.withValues(alpha: 0.18)
+      ..strokeWidth = 10
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    canvas.drawPath(glowPath, glowPaint);
 
-    // Main line
-    final linePaint = Paint()
+    final softPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round
-      ..color = color;
-    canvas.drawPath(path, linePaint);
+      ..color = color.withValues(alpha: 0.30)
+      ..strokeWidth = 5;
+    canvas.drawPath(path, softPaint);
+
+    final corePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..color = color.withValues(alpha: 0.95)
+      ..strokeWidth = 2.2;
+    canvas.drawPath(path, corePaint);
 
     // Arrow at the end
     final metric = path.computeMetrics().last;
@@ -1017,7 +1036,10 @@ class MiniChartPainter extends CustomPainter {
         pos.dy - arrowSize * math.sin(angle + 0.5),
       );
       arrowPath.close();
-      canvas.drawPath(arrowPath, Paint()..color = color);
+      canvas.drawPath(
+        arrowPath,
+        Paint()..color = color.withValues(alpha: 0.60),
+      );
     }
   }
 
