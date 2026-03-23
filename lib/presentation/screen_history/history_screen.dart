@@ -361,6 +361,12 @@ class _WeekCardState extends State<WeekCard> {
     return '$socialCount stories';
   }
 
+  IconData get trendIcon {
+    if (taskDiff > 0) return Icons.trending_up_rounded;
+    if (taskDiff < 0) return Icons.trending_down_rounded;
+    return Icons.trending_flat_rounded;
+  }
+
   Widget buildMetricsContent({
     required bool isNarrow,
     required double metricFontSize,
@@ -641,10 +647,10 @@ class _WeekCardState extends State<WeekCard> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isNarrow = constraints.maxWidth < 380;
-        final double titleFontSize = isNarrow ? 22 : 26;
+        final double titleFontSize = isNarrow ? 18 : 22;
         final double metricFontSize = isNarrow ? 14 : 16;
         const double chartHeight = 56;
-        final double headerMinHeight = isNarrow ? 146 : 118;
+        final double headerHeight = isNarrow ? 176 : 136;
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -673,8 +679,8 @@ class _WeekCardState extends State<WeekCard> {
                 children: [
                   InkWell(
                     onTap: () => setState(() => isExpanded = !isExpanded),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: headerMinHeight),
+                    child: SizedBox(
+                      height: headerHeight,
                       child: Stack(
                         children: [
                           Positioned.fill(
@@ -724,6 +730,37 @@ class _WeekCardState extends State<WeekCard> {
                           Positioned.fill(
                             child: DecoratedBox(
                               decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  center: const Alignment(-0.90, -0.65),
+                                  radius: 1.10,
+                                  colors: [
+                                    trendColorLight.withValues(alpha: 0.10),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.06),
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.18),
+                                  ],
+                                  stops: const [0.0, 0.55, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
@@ -764,12 +801,24 @@ class _WeekCardState extends State<WeekCard> {
                               children: [
                                 Row(
                                   children: [
-                                    SizedBox(
-                                      width: 36,
-                                      height: 22,
-                                      child: CustomPaint(
-                                        painter: _TrendWavePainter(
-                                            color: trendColor),
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color:
+                                            trendColor.withValues(alpha: 0.12),
+                                        border: Border.all(
+                                          color: trendColor.withValues(
+                                              alpha: 0.22),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        trendIcon,
+                                        size: 20,
+                                        color:
+                                            trendColor.withValues(alpha: 0.95),
                                       ),
                                     ),
                                     const SizedBox(width: 14),
@@ -803,33 +852,38 @@ class _WeekCardState extends State<WeekCard> {
                                   color: Colors.white.withValues(alpha: 0.10),
                                 ),
                                 const SizedBox(height: 10),
-                                isNarrow
-                                    ? Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          buildMetricsContent(
-                                            isNarrow: isNarrow,
-                                            metricFontSize: metricFontSize,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          _buildActivityDots(),
-                                        ],
-                                      )
-                                    : Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: buildMetricsContent(
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: chartHeight * 0.55,
+                                  ),
+                                  child: isNarrow
+                                      ? Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            buildMetricsContent(
                                               isNarrow: isNarrow,
                                               metricFontSize: metricFontSize,
                                             ),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          _buildActivityDots(),
-                                        ],
-                                      ),
+                                            const SizedBox(height: 10),
+                                            _buildActivityDots(),
+                                          ],
+                                        )
+                                      : Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: buildMetricsContent(
+                                                isNarrow: isNarrow,
+                                                metricFontSize: metricFontSize,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 14),
+                                            _buildActivityDots(),
+                                          ],
+                                        ),
+                                ),
                               ],
                             ),
                           ),
@@ -860,10 +914,31 @@ class _WeekCardState extends State<WeekCard> {
                           ),
                         ),
                       ),
-                      child: Column(
-                        children: widget.items
-                            .map((e) => TodoHistoryItemWidget(todoItem: e))
-                            .toList(),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                        child: Column(
+                          children: widget.items.map((e) {
+                            final int index = widget.items.indexOf(e);
+                            return Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: Colors.white.withValues(alpha: 0.04),
+                                    border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.06),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: TodoHistoryItemWidget(todoItem: e),
+                                ),
+                                if (index != widget.items.length - 1)
+                                  const SizedBox(height: 10),
+                              ],
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
