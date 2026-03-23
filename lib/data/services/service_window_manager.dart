@@ -14,6 +14,7 @@ class ServiceWindowManager extends WindowListener {
   bool _isHided = false;
   static const double _appWidth = 420.0;
   static const double _appHeight = 720.0;
+  static const double _appWorkModHeight = 45.0;
   List<AppPosition> appPrePositionList = [];
   int crntPosition = 0;
   double _prePositionPaddingY = 15.0;
@@ -155,7 +156,7 @@ class ServiceWindowManager extends WindowListener {
   }
 
   Future<void> workModPosition() async {
-    const workSize = Size(_appWidth, 45);
+    const workSize = Size(_appWidth, _appWorkModHeight);
     windowManager.setSize(workSize);
   }
 }

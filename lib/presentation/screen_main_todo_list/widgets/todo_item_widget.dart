@@ -15,6 +15,7 @@ import 'package:zymixx_todo_list/presentation/bloc_global/list_todo_screen_bloc.
 
 import '../../../data/tools/tool_time_string_converter.dart';
 import '../../../domain/todo_item.dart';
+import '../../app.dart';
 import '../../app_widgets/my_animated_card.dart';
 import '../todo_item_bloc.dart';
 
@@ -155,11 +156,11 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                       // Основное тело карточки
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: App.inWorkMod ? 0 : 4,
                           ),
-                          decoration: BoxDecoration(
+                          decoration: App.inWorkMod ? null : BoxDecoration(
                             color: isSocial
                                 ? ToolThemeData.specialItemColor
                                     .withOpacity(0.14)
@@ -355,10 +356,10 @@ class TitlePresentWidget extends StatelessWidget {
           },
           child: Padding(
             padding: EdgeInsets.only(
-              left: 10.0,
-              top: 6.0,
-              bottom: 6.0,
-              right: todoImageFile != null ? 25 : 8,
+              left: App.inWorkMod ? 2.0 : 8.0,
+              top: App.inWorkMod ? 0.0 : 2.5,
+              bottom: App.inWorkMod ? 0.0 : 1.0,
+              right: todoImageFile != null ? 25 : App.inWorkMod ? 4 : 8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,15 +367,16 @@ class TitlePresentWidget extends StatelessWidget {
               children: [
                 Text(
                   (title.capStart() ?? '') ?? '',
-                  style: const TextStyle(
+                  maxLines: App.inWorkMod ? 2 : null,
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15.5,
                     letterSpacing: -0.2,
-                    height: 1.1,
+                    height: App.inWorkMod ? 0.7 : 1.1,
                     color: Colors.black,
                   ),
                 ),
-                if (dateStr != null)
+                if (dateStr != null && !App.inWorkMod )
                   Padding(
                     padding: const EdgeInsets.only(top: 2.0),
                     child: DecoratedBox(
@@ -405,7 +407,7 @@ class TitlePresentWidget extends StatelessWidget {
                                 ? ToolThemeData.mainGreenColor
                                 : Colors.black.withOpacity(0.65),
                             fontWeight: FontWeight.w700,
-                            fontSize: isSocial ? 11 : 9.5,
+                            fontSize: isSocial ? 11 : 10.5,
                             letterSpacing: 0.1,
                           ),
                         ),
@@ -498,8 +500,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     _focusNodeTitle = FocusNode();
     _focusNodeDescription = FocusNode();
     _controllerDescription.addListener(() {
-      _replaceNewLinesWithEmoji();
-      descriptionForSave = _formatTextForSave(_controllerDescription.text);
+      descriptionForSave = _controllerDescription.text;
     });
   }
 
@@ -535,6 +536,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     _controllerTitle.text = bloc.state.todoItem.title ?? '';
     initialText = bloc.state.todoItem.content ?? '';
     _controllerDescription.text = bloc.state.todoItem.content ?? '';
+    descriptionForSave = _controllerDescription.text;
     DateTime? targetDateTime = bloc.state.todoItem.targetDateTime;
     String formattedTargetDateTime =
         Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
@@ -798,26 +800,6 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
             ),
           ),
         ));
-  }
-
-  void _replaceNewLinesWithEmoji() {
-    String currentText = _controllerDescription.text;
-    String regexPattern = '\\n(?!${ToolThemeData.lineIndicator})';
-    String newText = currentText.replaceAllMapped(
-        RegExp(regexPattern), (match) => '\n${ToolThemeData.lineIndicator}');
-    if (newText != currentText) {
-      _controllerDescription.value = _controllerDescription.value.copyWith(
-        text: newText,
-        selection: TextSelection.collapsed(
-            offset: _controllerDescription.selection.baseOffset +
-                (newText.length - currentText.length)),
-      );
-    }
-  }
-
-  String _formatTextForSave(test) {
-    return _controllerDescription.text
-        .replaceAll(ToolThemeData.lineIndicator, '');
   }
 }
 
