@@ -20,6 +20,12 @@ class HistoryScreen extends StatelessWidget {
 }
 
 class HistoryScreenWidget extends StatefulWidget {
+  static const int diffYellowMin = -120;
+  static const int diffYellowMax = 120;
+
+  static const int minutesRedThreshold = 40;
+  static const int minutesYellowThreshold = 80;
+
   const HistoryScreenWidget({Key? key}) : super(key: key);
 
   @override
