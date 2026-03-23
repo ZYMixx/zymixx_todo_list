@@ -69,7 +69,7 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                 ),
                 subtitle: Text(
@@ -181,8 +181,9 @@ class _TodoHistoryItemState extends State<TodoHistoryItem> {
                       : Text(
                           widget.todoItem.title!,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
+                            height: 1.1,
                             color: Colors.black,
                           ),
                         ),
