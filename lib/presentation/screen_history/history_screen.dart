@@ -212,14 +212,43 @@ class _TodoHistoryItemWidgetState extends State<TodoHistoryItemWidget> {
                     ),
                   ),
                 ),
-                if (minutes > 0)
-                  Text(
-                    '${minutes}м',
-                    style: const TextStyle(
-                      color: Color(0xFF8A93A6),
-                      fontSize: 13,
+                Wrap(
+                  spacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      '${minutes}м',
+                      style: const TextStyle(
+                        color: Color(0xFF8A93A6),
+                        fontSize: 13,
+                      ),
                     ),
-                  ),
+                    if (isSocial)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color:
+                              const Color(0xFFB14CFF).withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFB14CFF).withValues(alpha: 0.30),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          'story',
+                          style: TextStyle(
+                            color: Color(0xFFBFA3FF),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
             if (isExpanded && widget.todoItem.content.isNotEmpty) ...[
@@ -243,6 +272,8 @@ class _TodoHistoryItemWidgetState extends State<TodoHistoryItemWidget> {
 }
 
 class _WeekCardState extends State<WeekCard> {
+  bool isExpanded = false;
+
   int get taskCount => widget.items.length;
 
   int get socialCount => widget.items
@@ -329,16 +360,291 @@ class _WeekCardState extends State<WeekCard> {
     return '$socialCount stories';
   }
 
+  Widget buildMetricsContent({
+    required bool isNarrow,
+    required double metricFontSize,
+  }) {
+    if (isNarrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: trendColor.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: trendColor.withValues(alpha: 0.45),
+                    width: 1,
+                  ),
+                ),
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: Icon(
+                    Icons.check_rounded,
+                    size: 16,
+                    color: trendColor.withValues(alpha: 0.95),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$taskCount ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'задач',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.access_time_filled_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$minutesSpent ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'мин',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.lock_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$socialCount ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: socialCount == 1 ? 'story' : 'stories',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: trendColor.withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: trendColor.withValues(alpha: 0.45),
+              width: 1,
+            ),
+          ),
+          child: SizedBox(
+            width: 22,
+            height: 22,
+            child: Icon(
+              Icons.check_rounded,
+              size: 16,
+              color: trendColor.withValues(alpha: 0.95),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$taskCount ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'задач',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Container(
+                height: 14,
+                width: 1,
+                color: Colors.white.withValues(alpha: 0.10),
+              ),
+              const SizedBox(width: 14),
+              Icon(
+                Icons.access_time_filled_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$minutesSpent ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'мин',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Container(
+                height: 14,
+                width: 1,
+                color: Colors.white.withValues(alpha: 0.10),
+              ),
+              const SizedBox(width: 14),
+              Icon(
+                Icons.lock_rounded,
+                size: 18,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '$socialCount ',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB9C1D9),
+                        ),
+                      ),
+                      TextSpan(
+                        text: socialCount == 1 ? 'story' : 'stories',
+                        style: TextStyle(
+                          fontSize: metricFontSize + 2,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    const double chartWidth = 220;
-    const double rightReservedPadding = chartWidth - 40;
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isNarrow = constraints.maxWidth < 380;
         final double titleFontSize = isNarrow ? 22 : 26;
-        final double metricFontSize = isNarrow ? 15 : 18;
+        final double metricFontSize = isNarrow ? 14 : 16;
+        final double chartWidth = math.min(220.0, constraints.maxWidth);
         const double chartHeight = 56;
+        final double headerMinHeight = isNarrow ? 146 : 118;
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -362,295 +668,192 @@ class _WeekCardState extends State<WeekCard> {
                   width: 1,
                 ),
               ),
-              child: Stack(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFF3B4152).withValues(alpha: 0.62),
-                            const Color(0xFF1A1D25).withValues(alpha: 0.90),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const Alignment(0.98, 0.20),
-                          radius: 1.05,
-                          colors: [
-                            trendColor.withValues(alpha: 0.30),
-                            trendColor.withValues(alpha: 0.10),
-                            Colors.transparent,
-                          ],
-                          stops: const [0.0, 0.38, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.10),
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.25),
-                          ],
-                          stops: const [0.0, 0.45, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 10,
-                    bottom: 12,
-                    width: chartWidth,
-                    height: chartHeight,
-                    child: IgnorePointer(
-                      child: CustomPaint(
-                        painter: MiniChartPainter(
-                          data: dailyCounts,
-                          color: trendColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 8,
-                    ),
-                    childrenPadding: EdgeInsets.zero,
-                    trailing: const SizedBox(),
-                    shape: const Border(),
-                    collapsedShape: const Border(),
-                    title: Padding(
-                      padding:
-                          const EdgeInsets.only(right: rightReservedPadding),
-                      child: Row(
+                  InkWell(
+                    onTap: () => setState(() => isExpanded = !isExpanded),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: headerMinHeight),
+                      child: Stack(
                         children: [
-                          SizedBox(
-                            width: 36,
-                            height: 22,
-                            child: CustomPaint(
-                              painter: _TrendWavePainter(color: trendColor),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              dateStr,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: titleFontSize,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFFE6E8EF),
-                                letterSpacing: -0.4,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withValues(alpha: 0.45),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    const Color(0xFF3B4152)
+                                        .withValues(alpha: 0.62),
+                                    const Color(0xFF1A1D25)
+                                        .withValues(alpha: 0.90),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 12, bottom: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 1,
-                            margin: const EdgeInsets.only(
-                              bottom: 12,
-                              right: 140,
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  center: const Alignment(0.98, 0.20),
+                                  radius: 1.05,
+                                  colors: [
+                                    trendColor.withValues(alpha: 0.16),
+                                    trendColor.withValues(alpha: 0.06),
+                                    Colors.transparent,
+                                  ],
+                                  stops: const [0.0, 0.38, 1.0],
+                                ),
+                              ),
                             ),
-                            color: Colors.white.withValues(alpha: 0.10),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              right: rightReservedPadding,
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.10),
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.25),
+                                  ],
+                                  stops: const [0.0, 0.45, 1.0],
+                                ),
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Row(
-                                      children: [
-                                        DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            color: trendColor.withValues(
-                                                alpha: 0.22),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: trendColor.withValues(
-                                                  alpha: 0.45),
-                                              width: 1,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: trendColor.withValues(
-                                                    alpha: 0.25),
-                                                blurRadius: 12,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
-                                          ),
-                                          child: SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: Icon(
-                                              Icons.check_rounded,
-                                              size: 16,
-                                              color: trendColor.withValues(
-                                                  alpha: 0.95),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '$taskCount ',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w700,
-                                                  color:
-                                                      const Color(0xFFB9C1D9),
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: 'задач',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      Colors.white.withValues(
-                                                    alpha: 0.60,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Container(
-                                          height: 14,
-                                          width: 1,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.10),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Icon(
-                                          Icons.access_time_filled_rounded,
-                                          size: 18,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.55),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '$minutesSpent ',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w700,
-                                                  color:
-                                                      const Color(0xFFB9C1D9),
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: 'мин',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      Colors.white.withValues(
-                                                    alpha: 0.60,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Container(
-                                          height: 14,
-                                          width: 1,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.10),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Icon(
-                                          Icons.inventory_2_rounded,
-                                          size: 18,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.55),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '$socialCount ',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w700,
-                                                  color:
-                                                      const Color(0xFFB9C1D9),
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: socialCount == 1
-                                                    ? 'story'
-                                                    : 'stories',
-                                                style: TextStyle(
-                                                  fontSize: metricFontSize,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      Colors.white.withValues(
-                                                    alpha: 0.60,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                          ),
+                          Positioned(
+                            right: 10,
+                            bottom: 12,
+                            width: chartWidth,
+                            height: chartHeight,
+                            child: IgnorePointer(
+                              child: Opacity(
+                                opacity: 0.22,
+                                child: CustomPaint(
+                                  painter: MiniChartPainter(
+                                    data: dailyCounts,
+                                    color: trendColor,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                _buildActivityDots(),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 36,
+                                      height: 22,
+                                      child: CustomPaint(
+                                        painter: _TrendWavePainter(
+                                            color: trendColor),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Text(
+                                        dateStr,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: titleFontSize,
+                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFFE6E8EF),
+                                          letterSpacing: -0.4,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black
+                                                  .withValues(alpha: 0.45),
+                                              blurRadius: 10,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  height: 1,
+                                  margin: const EdgeInsets.only(right: 140),
+                                  color: Colors.white.withValues(alpha: 0.10),
+                                ),
+                                const SizedBox(height: 10),
+                                isNarrow
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          buildMetricsContent(
+                                            isNarrow: isNarrow,
+                                            metricFontSize: metricFontSize,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          _buildActivityDots(),
+                                        ],
+                                      )
+                                    : Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: buildMetricsContent(
+                                              isNarrow: isNarrow,
+                                              metricFontSize: metricFontSize,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          _buildActivityDots(),
+                                        ],
+                                      ),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    children: widget.items
-                        .map((e) => TodoHistoryItemWidget(todoItem: e))
-                        .toList(),
+                  ),
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 200),
+                    crossFadeState: isExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    firstChild: const SizedBox.shrink(),
+                    secondChild: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFF0F1117).withValues(alpha: 0.75),
+                            const Color(0xFF0F1117).withValues(alpha: 0.92),
+                          ],
+                        ),
+                        border: Border(
+                          top: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.10),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        children: widget.items
+                            .map((e) => TodoHistoryItemWidget(todoItem: e))
+                            .toList(),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -664,7 +867,7 @@ class _WeekCardState extends State<WeekCard> {
   Widget _buildActivityDots() {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: List.generate(9, (index) {
+      children: List.generate(7, (index) {
         bool hasActivity = index < dailyActivity.length && dailyActivity[index];
         return Padding(
           padding: const EdgeInsets.only(left: 5),
