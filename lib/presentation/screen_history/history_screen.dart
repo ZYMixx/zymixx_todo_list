@@ -49,50 +49,42 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
       });
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF0F1117), Color(0xFF151826)],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: weekKeys.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Нет данных',
-                          style:
-                              TextStyle(color: Color(0xFFB9C1D9), fontSize: 16),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(top: 8, bottom: 40),
-                        itemCount: weekKeys.length,
-                        itemBuilder: (context, index) {
-                          String weekKey = weekKeys[index];
-                          List<TodoItem> items = groupedMap[weekKey]!;
-                          List<TodoItem>? prevItems =
-                              (index + 1 < weekKeys.length)
-                                  ? groupedMap[weekKeys[index + 1]]
-                                  : null;
-
-                          return WeekCard(
-                            weekStartDate: _parseInternalWeekKey(weekKey),
-                            items: items,
-                            prevItems: prevItems,
-                          );
-                        },
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: weekKeys.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Нет данных',
+                        style:
+                            TextStyle(color: Color(0xFFB9C1D9), fontSize: 16),
                       ),
-              ),
-            ],
-          ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(top: 0, bottom: 40),
+                      itemCount: weekKeys.length,
+                      itemBuilder: (context, index) {
+                        String weekKey = weekKeys[index];
+                        List<TodoItem> items = groupedMap[weekKey]!;
+                        List<TodoItem>? prevItems =
+                            (index + 1 < weekKeys.length)
+                                ? groupedMap[weekKeys[index + 1]]
+                                : null;
+
+                        return WeekCard(
+                          weekStartDate: _parseInternalWeekKey(weekKey),
+                          items: items,
+                          prevItems: prevItems,
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );
