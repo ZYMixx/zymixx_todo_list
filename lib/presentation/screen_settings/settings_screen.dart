@@ -1,4 +1,4 @@
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
@@ -30,9 +30,9 @@ class SettingsScreenWidget extends StatelessWidget {
   const SettingsScreenWidget({super.key});
   // --- ЦВЕТА ФОНА И ГРАДИЕНТОВ ---
   /// Начальный цвет градиента карточки
-  static const Color bgGradientStart = Color(0xFF3B4152);
+  static const Color bgGradientStart = Color(0xFF282C3A);
   /// Конечный цвет градиента карточки
-  static const Color bgGradientEnd = Color(0xFF1A1D25);
+  static const Color bgGradientEnd = Color(0xFF16181F);
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +40,10 @@ class SettingsScreenWidget extends StatelessWidget {
       data: ThemeData(
         brightness: Brightness.dark,
         primaryColor: ToolThemeData.mainGreenColor,
+        useMaterial3: true,
       ),
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -54,115 +55,115 @@ class SettingsScreenWidget extends StatelessWidget {
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.black12,
-            elevation: 0,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 12.0, top: 4, bottom: 4),
-              child: MyAnimatedCard(
-                intensity: 0.05,
-                child: GestureDetector(
-                  onTap: () => ToolNavigator.pop(),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white.withValues(alpha: 0.06),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+          body: BlocBuilder<SettingsBloc, SettingsState>(
+            builder: (context, state) {
+              return CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    backgroundColor: Colors.black12,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 0,
+                    pinned: true,
+                    centerTitle: false,
+                    leadingWidth: 64,
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+                      child: MyAnimatedCard(
+                        intensity: 0.05,
+                        child: GestureDetector(
+                          onTap: () => ToolNavigator.pop(),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.08),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.arrow_back_ios_new_rounded,
+                    title: const Text(
+                      'Настройки',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
+                        letterSpacing: -0.2,
                         color: Colors.white,
-                        size: 18,
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            title: const Text(
-              'Настройки',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-                letterSpacing: 0.5,
-                shadows: ToolThemeData.defTextShadow,
-              ),
-            ),
-            centerTitle: true,
-          ),
-          body: BlocBuilder<SettingsBloc, SettingsState>(
-            builder: (context, state) {
-              return ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                children: [
-                  _buildSectionHeader('ОСНОВНЫЕ'),
-                  _buildSettingsCard(children: [
-                    _buildSettingsTile(
-                      icon: Icons.palette_rounded,
-                      title: 'Тема оформления',
-                      subtitle: 'Тёмный неон',
-                      onTap: () {},
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _buildSectionHeader('Основные', Icons.tune_rounded),
+                        _buildSettingsCard(children: [
+                          _buildSettingsTile(
+                            icon: Icons.palette_outlined,
+                            title: 'Тема оформления',
+                            subtitle: 'Тёмная (System)',
+                            onTap: () {},
+                          ),
+                          _buildSettingsTile(
+                            icon: Icons.notifications_none_rounded,
+                            title: 'Уведомления',
+                            subtitle: 'Push-уведомления и напоминания',
+                            trailing: Switch(
+                              value: true,
+                              onChanged: (val) {},
+                              activeThumbColor: ToolThemeData.highlightColor,
+                            ),
+                            onTap: () {},
+                          ),
+                          _buildSettingsTile(
+                            icon: Icons.language_rounded,
+                            title: 'Язык',
+                            subtitle: 'Русский',
+                            onTap: () {},
+                          ),
+                        ]),
+                        const Gap(24),
+                        _buildSectionHeader('ДАННЫЕ', Icons.data_usage_rounded),
+                        _buildSettingsCard(children: [
+                          _buildSettingsTile(
+                            icon: Icons.cloud_outlined,
+                            title: 'Синхронизация',
+                            subtitle: 'Сегодня в 12:40',
+                            onTap: () {},
+                          ),
+                          _buildSettingsTile(
+                            icon: Icons.folder_open_rounded,
+                            title: 'Резервное копирование',
+                            subtitle: 'Экспорт локальных данных',
+                            onTap: () {},
+                          ),
+                        ]),
+                        const Gap(24),
+                        _buildSectionHeader('О ПРИЛОЖЕНИИ', Icons.info_outline_rounded),
+                        _buildSettingsCard(children: [
+                          _buildSettingsTile(
+                            icon: Icons.code_rounded,
+                            title: 'Версия приложения',
+                            subtitle: '1.2.4 (Build 42)',
+                            onTap: () {},
+                          ),
+                          _buildSettingsTile(
+                            icon: Icons.help_outline_rounded,
+                            title: 'Служба поддержки',
+                            subtitle: 'Написать разработчику',
+                            onTap: () {},
+                          ),
+                        ]),
+                        const Gap(80),
+                      ]),
                     ),
-                    _buildSettingsTile(
-                      icon: Icons.notifications_active_rounded,
-                      title: 'Уведомления',
-                      subtitle: 'Все включены',
-                      onTap: () {},
-                    ),
-                    _buildSettingsTile(
-                      icon: Icons.language_rounded,
-                      title: 'Язык приложения',
-                      subtitle: 'Русский',
-                      onTap: () {},
-                      showDivider: false,
-                    ),
-                  ]),
-                  const Gap(25),
-                  _buildSectionHeader('ДАННЫЕ'),
-                  _buildSettingsCard(children: [
-                    _buildSettingsTile(
-                      icon: Icons.cloud_sync_rounded,
-                      title: 'Синхронизация',
-                      subtitle: 'Последняя: сегодня 12:40',
-                      onTap: () {},
-                    ),
-                    _buildSettingsTile(
-                      icon: Icons.storage_rounded,
-                      title: 'Хранилище данных',
-                      subtitle: 'Экспорт / Импорт',
-                      onTap: () {},
-                      showDivider: false,
-                    ),
-                  ]),
-                  const Gap(25),
-                  _buildSectionHeader('ПРИЛОЖЕНИЕ'),
-                  _buildSettingsCard(children: [
-                    _buildSettingsTile(
-                      icon: Icons.info_outline_rounded,
-                      title: 'О приложении',
-                      subtitle: 'Версия 1.2.4 (Build 42)',
-                      onTap: () {},
-                    ),
-                    _buildSettingsTile(
-                      icon: Icons.contact_support_rounded,
-                      title: 'Поддержка',
-                      subtitle: 'Связаться с разработчиком',
-                      onTap: () {},
-                      showDivider: false,
-                    ),
-                  ]),
-                  const Gap(60),
+                  ),
                 ],
               );
             },
@@ -172,34 +173,24 @@ class SettingsScreenWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(left: 12, bottom: 12),
+      padding: const EdgeInsets.only(left: 12, bottom: 12, top: 8),
       child: Row(
         children: [
-          Container(
-            width: 4,
-            height: 14,
-            decoration: BoxDecoration(
-              color: ToolThemeData.highlightColor,
-              borderRadius: BorderRadius.circular(2),
-              boxShadow: [
-                BoxShadow(
-                  color: ToolThemeData.highlightColor.withValues(alpha: 0.5),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
+          Icon(
+            icon,
+            size: 20,
+            color: ToolThemeData.highlightColor,
           ),
-          const Gap(8),
+          const Gap(12),
           Text(
-            title,
+            title.toUpperCase(),
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
+              color: ToolThemeData.highlightColor,
               fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-              shadows: ToolThemeData.defTextShadow,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
             ),
           ),
         ],
@@ -210,40 +201,13 @@ class SettingsScreenWidget extends StatelessWidget {
   Widget _buildSettingsCard({required List<Widget> children}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 15,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.04), // Surface container in M3
+        borderRadius: BorderRadius.circular(24), // Material 3 uses large borders
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.05),
-                  Colors.white.withValues(alpha: 0.0),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              children: children,
-            ),
-          ),
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          children: children,
         ),
       ),
     );
@@ -254,96 +218,60 @@ class SettingsScreenWidget extends StatelessWidget {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
-    bool showDivider = true,
+    Widget? trailing,
   }) {
-    return MyAnimatedCard(
-      intensity: 0.015,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          highlightColor: ToolThemeData.highlightColor.withValues(alpha: 0.1),
-          splashColor: ToolThemeData.highlightColor.withValues(alpha: 0.2),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              border: showDivider
-                  ? Border(
-                      bottom: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        width: 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: trailing != null && trailing is Switch ? null : onTap,
+        highlightColor: ToolThemeData.highlightColor.withValues(alpha: 0.05),
+        splashColor: ToolThemeData.highlightColor.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 24),
+              ),
+              const Gap(16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
                       ),
-                    )
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        ToolThemeData.itemBorderColor.withValues(alpha: 0.3),
-                        ToolThemeData.highlightColor.withValues(alpha: 0.1),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: ToolThemeData.highlightColor.withValues(alpha: 0.3),
-                      width: 1,
+                    const Gap(4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ToolThemeData.highlightColor.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 24),
+                  ],
                 ),
-                const Gap(16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const Gap(4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+              if (trailing != null)
+                trailing
+              else
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  size: 16,
                 ),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.03),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Colors.white.withValues(alpha: 0.4),
-                    size: 14,
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
