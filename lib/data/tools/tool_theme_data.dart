@@ -14,6 +14,7 @@ abstract class ToolThemeData {
   static const specialItemColor = Colors.orangeAccent;
   static const mainGreenColor = Color(0xFF00C853);
   static const highlightGreenColor = Color(0xFF00E676);
+  static const todoItemColor = Color(0xFFD6D6D6);
 
   static const BoxDecoration defShadowBox = BoxDecoration(
     boxShadow: [

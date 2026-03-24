@@ -4,8 +4,10 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 
+import '../../data/tools/tool_navigator.dart';
 import '../../data/tools/tool_theme_data.dart';
 import '../bloc_global/all_item_control_bloc.dart';
+import '../screen_settings/settings_screen.dart';
 import 'widgets/week_card.dart';
 
 class HistoryScreen extends StatelessWidget {
@@ -157,21 +159,28 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
                   color: Color(0xFFE6E8EF),
                 ),
               ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.white.withValues(alpha: 0.06),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    width: 1,
+              GestureDetector(
+                onTap: () {
+                  ToolNavigator.push(
+                    screen: const SettingsScreen(),
+                  );
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withValues(alpha: 0.06),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: const Icon(
-                  Icons.tune_rounded,
-                  color: Color(0xFFAEB4C2),
-                  size: 20,
+                  child: const Icon(
+                    Icons.tune_rounded,
+                    color: Color(0xFFAEB4C2),
+                    size: 20,
+                  ),
                 ),
               ),
             ],

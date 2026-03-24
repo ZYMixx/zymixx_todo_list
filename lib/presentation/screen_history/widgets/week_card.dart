@@ -10,6 +10,51 @@ import '../history_screen.dart';
 import 'mini_chart_painter.dart';
 import 'todo_history_item_widget.dart';
 
+// ==========================================
+// КОНСТАНТЫ И ЦВЕТА
+// ==========================================
+
+/// Длительность анимации свечения (шиммера)
+const int _shimmerDurationMs = 3200;
+
+/// Длительность анимации раскрытия карточки
+const int _crossFadeDurationMs = 200;
+
+/// Радиус скругления углов карточки
+const double _cardBorderRadius = 22.0;
+
+// --- ЦВЕТА ТРЕНДОВ ---
+/// Цвет позитивного тренда (зеленый)
+const Color _trendGreen = Color(0xFF43FF83);
+/// Цвет негативного тренда (красный)
+const Color _trendRed = Color(0xFFF87171);
+/// Цвет нейтрального тренда (желтый)
+const Color _trendYellow = Color(0xFFFFD04A);
+
+// --- СВЕТЛЫЕ ЦВЕТА ТРЕНДОВ (ДЛЯ ПОДСВЕТОК) ---
+/// Светлый зеленый
+const Color _trendLightGreen = Color(0xFFB7FF6A);
+/// Светлый красный
+const Color _trendLightRed = Color(0xFFFCA5A5);
+/// Светлый желтый
+const Color _trendLightYellow = Color(0xFFFFE28A);
+
+// --- ЦВЕТА МЕТРИК ---
+/// Цвет метрики "Задачи"
+const Color _metricTasksColor = Color(0xFF34D399);
+/// Цвет метрики "Минуты"
+const Color _metricMinutesColor = Color(0xFF60A5FA);
+/// Цвет метрики "Social (stories)"
+const Color _metricSocialColor = Color(0xFFB14CFF);
+
+// --- ЦВЕТА ФОНА И ГРАДИЕНТОВ ---
+/// Начальный цвет градиента карточки
+const Color _bgGradientStart = Color(0xFF3B4152);
+/// Конечный цвет градиента карточки
+const Color _bgGradientEnd = Color(0xFF1A1D25);
+/// Цвет фона развернутой части карточки
+const Color _expandedBgColor = Color(0xFF0F1117);
+
 class WeekCard extends StatefulWidget {
   final DateTime weekStartDate;
   final List<TodoItem> items;
@@ -36,7 +81,7 @@ class _WeekCardState extends State<WeekCard>
     super.initState();
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: _shimmerDurationMs),
     )..repeat();
   }
 
@@ -64,20 +109,20 @@ class _WeekCardState extends State<WeekCard>
 
   Color get trendColor {
     if (minuteDiff > HistoryScreenWidget.diffYellowMax) {
-      return const Color(0xFF43FF83); // Green
+      return _trendGreen; // Green
     } else if (minuteDiff < HistoryScreenWidget.diffYellowMin) {
-      return const Color(0xFFF87171); // Red
+      return _trendRed; // Red
     }
-    return const Color(0xFFFFD04A); // Yellow
+    return _trendYellow; // Yellow
   }
 
   Color get trendColorLight {
     if (minuteDiff > HistoryScreenWidget.diffYellowMax) {
-      return const Color(0xFFB7FF6A);
+      return _trendLightGreen;
     } else if (minuteDiff < HistoryScreenWidget.diffYellowMin) {
-      return const Color(0xFFFCA5A5);
+      return _trendLightRed;
     }
-    return const Color(0xFFFFE28A);
+    return _trendLightYellow;
   }
 
   List<double> get dailyCounts {
@@ -189,15 +234,15 @@ class _WeekCardState extends State<WeekCard>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildMetricChip(Icons.check_circle_outline, '$taskCount', 'задач',
-              const Color(0xFF34D399)),
+              _metricTasksColor),
           const SizedBox(width: 5),
           _buildMetricChip(Icons.access_time, '$minutesSpent', 'мин',
-              const Color(0xFF60A5FA)),
+              _metricMinutesColor),
 
           const SizedBox(width: 5),
           //иконка победы (кубок)
           _buildMetricChip(Icons.emoji_events, '$socialCount',
-              socialCount == 1 ? 'story' : 'stories', const Color(0xFFB14CFF)),
+              socialCount == 1 ? 'story' : 'stories', _metricSocialColor),
         ],
       ),
     );
@@ -215,7 +260,7 @@ class _WeekCardState extends State<WeekCard>
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(_cardBorderRadius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.55),
@@ -225,10 +270,10 @@ class _WeekCardState extends State<WeekCard>
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(_cardBorderRadius),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(_cardBorderRadius),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.14),
                   width: 1,
@@ -238,6 +283,7 @@ class _WeekCardState extends State<WeekCard>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   InkWell(
+                    splashColor: Colors.white10,
                     onTap: () => setState(() => isExpanded = !isExpanded),
                     child: Stack(
                       children: [
@@ -256,7 +302,7 @@ class _WeekCardState extends State<WeekCard>
                         ),
                         Positioned.fill(
                           child: ClipRRect(
-                            borderRadius: BorderRadius.circular(22),
+                            borderRadius: BorderRadius.circular(_cardBorderRadius),
                             child: BackdropFilter(
                               filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                               child: ColoredBox(
@@ -271,12 +317,12 @@ class _WeekCardState extends State<WeekCard>
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  const Color(0xFF3B4152)
-                                      .withValues(alpha: 0.62),
-                                  const Color(0xFF1A1D25)
-                                      .withValues(alpha: 0.90),
-                                ],
+                                  colors: [
+                                    _bgGradientStart
+                                        .withValues(alpha: 0.62),
+                                    _bgGradientEnd
+                                        .withValues(alpha: 0.90),
+                                  ],
                               ),
                             ),
                           ),
@@ -468,7 +514,7 @@ class _WeekCardState extends State<WeekCard>
                     ),
                   ),
                   AnimatedCrossFade(
-                    duration: const Duration(milliseconds: 200),
+                    duration: const Duration(milliseconds: _crossFadeDurationMs),
                     crossFadeState: isExpanded
                         ? CrossFadeState.showSecond
                         : CrossFadeState.showFirst,
@@ -479,8 +525,8 @@ class _WeekCardState extends State<WeekCard>
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            const Color(0xFF0F1117).withValues(alpha: 0.75),
-                            const Color(0xFF0F1117).withValues(alpha: 0.92),
+                            _expandedBgColor.withValues(alpha: 0.75),
+                            _expandedBgColor.withValues(alpha: 0.92),
                           ],
                         ),
                         border: Border(
@@ -537,11 +583,11 @@ class _WeekCardState extends State<WeekCard>
         if (m == 0) {
           dotColor = Colors.white.withValues(alpha: 0.10);
         } else if (m <= HistoryScreenWidget.minutesRedThreshold) {
-          dotColor = const Color(0xFFF87171); // Red
+          dotColor = _trendRed; // Red
         } else if (m <= HistoryScreenWidget.minutesYellowThreshold) {
-          dotColor = const Color(0xFFFFD04A); // Yellow
+          dotColor = _trendYellow; // Yellow
         } else {
-          dotColor = const Color(0xFF43FF83); // Green
+          dotColor = _trendGreen; // Green
         }
 
         return AnimatedBuilder(
@@ -646,7 +692,7 @@ class RingGlowPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final rrect = RRect.fromRectAndRadius(
       rect.deflate(1),
-      const Radius.circular(22),
+      const Radius.circular(_cardBorderRadius),
     );
 
     final paint = Paint()

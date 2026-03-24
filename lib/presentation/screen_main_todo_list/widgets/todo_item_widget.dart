@@ -26,7 +26,7 @@ class TodoItemWidget extends StatelessWidget {
   Color bgColor;
 
   TodoItemWidget(
-      {Key? key, required this.todoItem, this.bgColor = Colors.blueAccent})
+      {Key? key, required this.todoItem, this.bgColor = ToolThemeData.todoItemColor})
       : super(key: key);
 
   @override
