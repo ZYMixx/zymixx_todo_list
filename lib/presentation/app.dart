@@ -105,6 +105,7 @@ class App {
     Get.put<ServiceBackgroundKeyListener>(ServiceBackgroundKeyListener());
     Get.put<ServiceImagePluginWork>(ServiceImagePluginWork());
     Get.put<ServiceSharedPreferences>(ServiceSharedPreferences());
+    await Get.find<ServiceSharedPreferences>().init();
     Get.put<ServiceStatisticData>(ServiceStatisticData());
     Get.put<ServiceStreamController>(ServiceStreamController());
     Get.put<ServiceSystemTray>(ServiceSystemTray());

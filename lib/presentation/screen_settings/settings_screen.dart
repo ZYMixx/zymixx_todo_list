@@ -107,7 +107,7 @@ class SettingsScreenWidget extends StatelessWidget {
                           _buildSettingsTile(
                             icon: Icons.palette_outlined,
                             title: 'Тема оформления',
-                            subtitle: 'Тёмная (System)',
+                            subtitle: state.themeName,
                             onTap: () {},
                           ),
                           _buildSettingsTile(
@@ -115,8 +115,10 @@ class SettingsScreenWidget extends StatelessWidget {
                             title: 'Уведомления',
                             subtitle: 'Push-уведомления и напоминания',
                             trailing: Switch(
-                              value: true,
-                              onChanged: (val) {},
+                              value: state.isNotificationsEnabled,
+                              onChanged: (val) {
+                                context.read<SettingsBloc>().add(ToggleNotificationsEvent(val));
+                              },
                               activeThumbColor: ToolThemeData.highlightColor,
                             ),
                             onTap: () {},
@@ -124,7 +126,7 @@ class SettingsScreenWidget extends StatelessWidget {
                           _buildSettingsTile(
                             icon: Icons.language_rounded,
                             title: 'Язык',
-                            subtitle: 'Русский',
+                            subtitle: state.language,
                             onTap: () {},
                           ),
                         ]),
@@ -134,7 +136,7 @@ class SettingsScreenWidget extends StatelessWidget {
                           _buildSettingsTile(
                             icon: Icons.cloud_outlined,
                             title: 'Синхронизация',
-                            subtitle: 'Сегодня в 12:40',
+                            subtitle: state.lastSyncDate,
                             onTap: () {},
                           ),
                           _buildSettingsTile(
@@ -150,7 +152,7 @@ class SettingsScreenWidget extends StatelessWidget {
                           _buildSettingsTile(
                             icon: Icons.code_rounded,
                             title: 'Версия приложения',
-                            subtitle: '1.2.4 (Build 42)',
+                            subtitle: state.appVersion,
                             onTap: () {},
                           ),
                           _buildSettingsTile(
