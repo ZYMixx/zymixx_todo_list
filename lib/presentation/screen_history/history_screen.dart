@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
 import 'package:zymixx_todo_list/domain/todo_item.dart';
+
+import '../../data/tools/tool_theme_data.dart';
 import '../bloc_global/all_item_control_bloc.dart';
 import 'widgets/week_card.dart';
 
@@ -33,6 +34,14 @@ class HistoryScreenWidget extends StatefulWidget {
 }
 
 class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
+  final ScrollController weekListScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    weekListScrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     List<TodoItem> todoHistoryItemList = context
@@ -65,23 +74,58 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
                             TextStyle(color: Color(0xFFB9C1D9), fontSize: 16),
                       ),
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(top: 0, bottom: 40),
-                      itemCount: weekKeys.length,
-                      itemBuilder: (context, index) {
-                        String weekKey = weekKeys[index];
-                        List<TodoItem> items = groupedMap[weekKey]!;
-                        List<TodoItem>? prevItems =
-                            (index + 1 < weekKeys.length)
-                                ? groupedMap[weekKeys[index + 1]]
-                                : null;
+                  : ClipRect(
+                      child: ShaderMask(
+                        blendMode: BlendMode.dstIn,
+                        shaderCallback: (Rect rect) {
+                          return LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.92),
+                              Colors.white,
+                              Colors.white,
+                            ],
+                            stops: const [0.0, 0.02, 1.0],
+                          ).createShader(rect);
+                        },
+                        child: ScrollbarTheme(
+                          data: ScrollbarThemeData(
+                            thickness: WidgetStateProperty.all<double>(3),
+                            radius: const Radius.circular(999),
+                            thumbColor: WidgetStateProperty.all<Color>(
+                              const Color(0xFFAEB4C2).withValues(alpha: 0.45),
+                            ),
+                            trackVisibility:
+                                WidgetStateProperty.all<bool>(false),
+                            thumbVisibility:
+                                WidgetStateProperty.all<bool>(true),
+                          ),
+                          child: Scrollbar(
+                            controller: weekListScrollController,
+                            child: ListView.builder(
+                              controller: weekListScrollController,
+                              padding:
+                                  const EdgeInsets.only(top: 0, bottom: 40),
+                              itemCount: weekKeys.length,
+                              itemBuilder: (context, index) {
+                                String weekKey = weekKeys[index];
+                                List<TodoItem> items = groupedMap[weekKey]!;
+                                List<TodoItem>? prevItems =
+                                    (index + 1 < weekKeys.length)
+                                        ? groupedMap[weekKeys[index + 1]]
+                                        : null;
 
-                        return WeekCard(
-                          weekStartDate: _parseInternalWeekKey(weekKey),
-                          items: items,
-                          prevItems: prevItems,
-                        );
-                      },
+                                return WeekCard(
+                                  weekStartDate: _parseInternalWeekKey(weekKey),
+                                  items: items,
+                                  prevItems: prevItems,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
             ),
           ],
@@ -92,36 +136,47 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.only(top: 24, left: 20, right: 20, bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'История',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFE6E8EF),
-            ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.white.withValues(alpha: 0.06),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1,
+      padding: EdgeInsetsGeometry.only(top: 12),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+          colors: [Colors.black.withOpacity(0.4), Colors.transparent],
+          begin: Alignment.bottomCenter,
+          end: AlignmentGeometry.topCenter,
+        )),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'История',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFE6E8EF),
+                ),
               ),
-            ),
-            child: const Icon(
-              Icons.tune_rounded,
-              color: Color(0xFFAEB4C2),
-              size: 20,
-            ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: 0.06),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFFAEB4C2),
+                  size: 20,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
