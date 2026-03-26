@@ -114,6 +114,27 @@ class MyBottomNavigatorWidget extends StatefulWidget {
   }
 }
 
+class EdgeHorizontalDragGestureRecognizer
+    extends HorizontalDragGestureRecognizer {
+  final double edgeWidth;
+  final double screenWidth;
+
+  EdgeHorizontalDragGestureRecognizer({
+    required this.edgeWidth,
+    required this.screenWidth,
+  });
+
+  @override
+  bool isPointerAllowed(PointerEvent event) {
+    if (event is PointerDownEvent) {
+      final double dx = event.position.dx;
+      final bool isEdge = dx <= edgeWidth || dx >= (screenWidth - edgeWidth);
+      if (!isEdge) return false;
+    }
+    return super.isPointerAllowed(event);
+  }
+}
+
 class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
   List<BottomNavigationBarItem> listNavigatorItem = [
     BottomNavigationBarItem(
@@ -242,6 +263,8 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double edgeWidth = 44;
     return MyDefBgDecoration(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -310,70 +333,126 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
         body: SafeArea(
           top: true,
           bottom: false,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onHorizontalDragEnd: (details) {
-              final velocity = details.primaryVelocity ?? 0;
-              if (velocity.abs() < 200) return;
-              if (velocity < 0 && selectedItemMenu < 3) {
-                _setTabFromSwipe(selectedItemMenu + 1);
-              } else if (velocity > 0 && selectedItemMenu > 0) {
-                _setTabFromSwipe(selectedItemMenu - 1);
-              }
-              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                Get.find<WallBgFlameWidget>().gameBounce.applyRandomMove();
-              });
-            },
-            child: AnimatedSwitcher(
-              duration: _isFadeOnly
-                  ? const Duration(milliseconds: 75)
-                  : const Duration(milliseconds: 260),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                if (_isFadeOnly) {
-                  return FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOut,
-                    ),
-                    child: child,
-                  );
-                } else {
-                  final bool isCurrent = child.key is ValueKey<int> &&
-                      (child.key as ValueKey<int>).value == _currentPageIndex;
+          child: selectedItemMenu == 0
+              ? AnimatedSwitcher(
+                  duration: _isFadeOnly
+                      ? const Duration(milliseconds: 75)
+                      : const Duration(milliseconds: 260),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    if (_isFadeOnly) {
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOut,
+                        ),
+                        child: child,
+                      );
+                    } else {
+                      final bool isCurrent = child.key is ValueKey<int> &&
+                          (child.key as ValueKey<int>).value ==
+                              _currentPageIndex;
 
-                  final Offset beginOffset = isCurrent
-                      ? (_slideFromRight
-                          ? const Offset(1.0, 0)
-                          : const Offset(-1.0, 0))
-                      : (_slideFromRight
-                          ? const Offset(-1.0, 0)
-                          : const Offset(1.0, 0));
+                      final Offset beginOffset = isCurrent
+                          ? (_slideFromRight
+                              ? const Offset(1.0, 0)
+                              : const Offset(-1.0, 0))
+                          : (_slideFromRight
+                              ? const Offset(-1.0, 0)
+                              : const Offset(1.0, 0));
 
-                  final offsetAnimation = Tween<Offset>(
-                    begin: beginOffset,
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOutCubic,
-                  ));
-                  return SlideTransition(
-                    position: offsetAnimation,
-                    child: FadeTransition(
-                      opacity: CurvedAnimation(
+                      final offsetAnimation = Tween<Offset>(
+                        begin: beginOffset,
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
                         parent: animation,
-                        curve: Curves.easeOut,
-                      ),
-                      child: child,
+                        curve: Curves.easeOutCubic,
+                      ));
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: FadeTransition(
+                          opacity: CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOut,
+                          ),
+                          child: child,
+                        ),
+                      );
+                    }
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(_currentPageIndex),
+                    child: activeScreen,
+                  ),
+                )
+              : GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragEnd: (details) {
+                    final double velocity = details.primaryVelocity ?? 0;
+                    if (velocity.abs() < 200) return;
+                    if (velocity < 0 && selectedItemMenu < 3) {
+                      _setTabFromSwipe(selectedItemMenu + 1);
+                    } else if (velocity > 0 && selectedItemMenu > 0) {
+                      _setTabFromSwipe(selectedItemMenu - 1);
+                    }
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      Get.find<WallBgFlameWidget>()
+                          .gameBounce
+                          .applyRandomMove();
+                    });
+                  },
+                  child: AnimatedSwitcher(
+                    duration: _isFadeOnly
+                        ? const Duration(milliseconds: 75)
+                        : const Duration(milliseconds: 260),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      if (_isFadeOnly) {
+                        return FadeTransition(
+                          opacity: CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeOut,
+                          ),
+                          child: child,
+                        );
+                      } else {
+                        final bool isCurrent = child.key is ValueKey<int> &&
+                            (child.key as ValueKey<int>).value ==
+                                _currentPageIndex;
+
+                        final Offset beginOffset = isCurrent
+                            ? (_slideFromRight
+                                ? const Offset(1.0, 0)
+                                : const Offset(-1.0, 0))
+                            : (_slideFromRight
+                                ? const Offset(-1.0, 0)
+                                : const Offset(1.0, 0));
+
+                        final offsetAnimation = Tween<Offset>(
+                          begin: beginOffset,
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        ));
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                            child: child,
+                          ),
+                        );
+                      }
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey<int>(_currentPageIndex),
+                      child: activeScreen,
                     ),
-                  );
-                }
-              },
-              child: KeyedSubtree(
-                key: ValueKey<int>(_currentPageIndex),
-                child: activeScreen,
-              ),
-            ),
-          ),
+                  ),
+                ),
         ),
       ),
     );

@@ -103,6 +103,7 @@ class ItemBoxWidget extends StatelessWidget {
               posItemList.isNotEmpty
                   ? Expanded(
                       child: ReorderableListView.builder(
+                        buildDefaultDragHandles: false,
                         onReorder: (oldItem, newItem) {
                           if (newItem < oldItem) {
                             Get.find<ListTodoScreenBloc>().add(ChangeOrderEvent(
@@ -129,6 +130,7 @@ class ItemBoxWidget extends StatelessWidget {
                               padding: const EdgeInsets.all(6.0),
                               child: TodoItemWidget(
                                 todoItem: orderedItem,
+                                reorderIndex: itemId,
                               ),
                             ),
                           );
@@ -213,7 +215,8 @@ class ItemBoxWidget extends StatelessWidget {
               ColoredBox(
                 color: Colors.black12,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 8.0, left: 8.0, top: 4, bottom: 12.0 ),
+                  padding: const EdgeInsets.only(
+                      right: 8.0, left: 8.0, top: 4, bottom: 12.0),
                   child: AddItemButton(
                       onTapAction: () =>
                           Get.find<AllItemControlBloc>().add(AddNewItemEvent()),

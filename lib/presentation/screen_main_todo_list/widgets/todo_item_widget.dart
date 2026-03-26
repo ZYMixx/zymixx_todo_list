@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -23,17 +24,49 @@ import '../todo_item_bloc.dart';
 
 class TodoItemWidget extends StatelessWidget {
   final TodoItem todoItem;
+  final int? reorderIndex;
   Color bgColor;
 
   TodoItemWidget(
-      {Key? key, required this.todoItem, this.bgColor = ToolThemeData.todoItemColor})
+      {Key? key,
+      required this.todoItem,
+      this.reorderIndex,
+      this.bgColor = ToolThemeData.todoItemColor})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
+    final Widget content = BlocProvider(
       create: (_) => TodoItemBloc(todoItem: todoItem),
       child: TodoItemBody(bgColor: bgColor),
+    );
+
+    if (reorderIndex == null) {
+      return content;
+    }
+
+    return Stack(
+      children: [
+        content,
+        Positioned(
+          top: 0,
+          bottom: 0,
+          right: 0,
+          child: ReorderableDragStartListener(
+            index: reorderIndex!,
+            child: SizedBox(
+              width: 36,
+              child: Center(
+                child: Icon(
+                  Icons.drag_indicator_rounded,
+                  color: Colors.white.withValues(alpha: 0.35),
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -96,8 +129,11 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                   MoveItemToFirstEvent(movedItemId: bloc.state.todoItemId));
             },
             child: Dismissible(
-              key: UniqueKey(),
+              key: ValueKey('todo_dismiss_${bloc.state.todoItemId}'),
+              direction: DismissDirection.horizontal,
+              dragStartBehavior: DragStartBehavior.down,
               background: dismissArrow,
+              secondaryBackground: dismissArrow,
               onDismissed: (DismissDirection direction) {
                 bloc.add(DismissEvent(direction: direction));
               },
@@ -160,38 +196,40 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                             horizontal: 6,
                             vertical: App.inWorkMod ? 0 : 4,
                           ),
-                          decoration: App.inWorkMod ? null : BoxDecoration(
-                            color: isSocial
-                                ? ToolThemeData.specialItemColor
-                                    .withOpacity(0.14)
-                                : (widget.bgColor == Colors.transparent
-                                    ? theme.colorScheme.surface
-                                        .withOpacity(0.96)
-                                    : widget.bgColor.withOpacity(0.98)),
-                            gradient: isSocial
-                                ? LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      ToolThemeData.specialItemColor
-                                          .withOpacity(0.24),
-                                      theme.colorScheme.surface
-                                          .withOpacity(0.96),
-                                    ],
-                                  )
-                                : null,
-                            border: Border.all(
-                              color: widget.bgColor == Colors.transparent
-                                  ? theme.dividerColor.withOpacity(0.25)
-                                  : ToolThemeData.itemBorderColor
-                                      .withOpacity(0.5),
-                              width: 0.6,
-                            ),
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
-                            ),
-                          ),
+                          decoration: App.inWorkMod
+                              ? null
+                              : BoxDecoration(
+                                  color: isSocial
+                                      ? ToolThemeData.specialItemColor
+                                          .withOpacity(0.14)
+                                      : (widget.bgColor == Colors.transparent
+                                          ? theme.colorScheme.surface
+                                              .withOpacity(0.96)
+                                          : widget.bgColor.withOpacity(0.98)),
+                                  gradient: isSocial
+                                      ? LinearGradient(
+                                          begin: Alignment.centerLeft,
+                                          end: Alignment.centerRight,
+                                          colors: [
+                                            ToolThemeData.specialItemColor
+                                                .withOpacity(0.24),
+                                            theme.colorScheme.surface
+                                                .withOpacity(0.96),
+                                          ],
+                                        )
+                                      : null,
+                                  border: Border.all(
+                                    color: widget.bgColor == Colors.transparent
+                                        ? theme.dividerColor.withOpacity(0.25)
+                                        : ToolThemeData.itemBorderColor
+                                            .withOpacity(0.5),
+                                    width: 0.6,
+                                  ),
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(16),
+                                    bottomRight: Radius.circular(16),
+                                  ),
+                                ),
                           //? начало фронт-графики
                           child: IntrinsicHeight(
                             child: Row(
@@ -307,25 +345,26 @@ class _DismissAnimationWidgetState extends State<DismissAnimationWidget>
           alignment:
               isRightArrow ? Alignment.centerLeft : Alignment.centerRight,
           padding: const EdgeInsets.only(right: 30),
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            reverse: true,
-            clipBehavior: Clip.none,
-            children: List.generate(24, (index) {
-              return SizedBox(
-                width: 35,
-                child: Icon(
-                  isRightArrow
-                      ? Icons.keyboard_double_arrow_right
-                      : Icons.keyboard_double_arrow_left,
-                  color: isRightArrow
-                      ? ToolThemeData.mainGreenColor
-                      : ToolThemeData.highlightColor,
-                  // Цвет стрелок
-                  size: 50,
-                ),
-              );
-            }),
+          child: IgnorePointer(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              reverse: true,
+              clipBehavior: Clip.none,
+              children: List.generate(24, (index) {
+                return SizedBox(
+                  width: 35,
+                  child: Icon(
+                    isRightArrow
+                        ? Icons.keyboard_double_arrow_right
+                        : Icons.keyboard_double_arrow_left,
+                    color: isRightArrow
+                        ? ToolThemeData.mainGreenColor
+                        : ToolThemeData.highlightColor,
+                    size: 50,
+                  ),
+                );
+              }),
+            ),
           ),
         ),
       ),
@@ -359,7 +398,11 @@ class TitlePresentWidget extends StatelessWidget {
               left: App.inWorkMod ? 2.0 : 8.0,
               top: App.inWorkMod ? 0.0 : 2.5,
               bottom: App.inWorkMod ? 0.0 : 1.0,
-              right: todoImageFile != null ? 25 : App.inWorkMod ? 4 : 8,
+              right: todoImageFile != null
+                  ? 25
+                  : App.inWorkMod
+                      ? 4
+                      : 8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +419,7 @@ class TitlePresentWidget extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
-                if (dateStr != null && !App.inWorkMod )
+                if (dateStr != null && !App.inWorkMod)
                   Padding(
                     padding: const EdgeInsets.only(top: 2.0),
                     child: DecoratedBox(

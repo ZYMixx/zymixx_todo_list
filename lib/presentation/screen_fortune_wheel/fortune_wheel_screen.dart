@@ -140,7 +140,9 @@ class FortuneWheelEmptyState extends StatelessWidget {
                             Get.find<MyBottomNavigatorWidget>()
                                 .state
                                 .setSelectedTab(0);
-                            onAddTaskTap();
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              onAddTaskTap();
+                            });
                           },
                           icon: const Icon(Icons.add_rounded, size: 22),
                           label: const Padding(
