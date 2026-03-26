@@ -29,7 +29,7 @@ class DataTableWidget extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: WaveShimmerOverlay(
-            id: 'stat_table',
+            seed: DataTableWidget,
             child: Padding(
               padding: const EdgeInsets.all(6.0),
               child: SizedBox(

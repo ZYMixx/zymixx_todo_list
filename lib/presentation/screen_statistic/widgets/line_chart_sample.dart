@@ -78,7 +78,7 @@ class _LineChartSampleState extends State<LineChartSample>
           ),
           clipBehavior: Clip.antiAlias,
           child: WaveShimmerOverlay(
-            id: 'stat_line_chart',
+            seed: LineChartSample,
             child: MyAnimatedCard(
               intensity: 0.004,
               child: Padding(

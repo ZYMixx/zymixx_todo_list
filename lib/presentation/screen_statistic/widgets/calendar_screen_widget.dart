@@ -41,11 +41,11 @@ class CalendarScreenWidget extends StatelessWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: WaveShimmerOverlay(
-              id: 'stat_calendar',
+              seed: CalendarScreenWidget,
               child: Padding(
                 padding: const EdgeInsets.only(
-                  right: 10.0,
                   left: 10.0,
+                  right: 10.0,
                   top: 10.0,
                 ),
                 child: SfDateRangePicker(
@@ -101,8 +101,7 @@ class CalendarScreenWidget extends StatelessWidget {
                       }
                     }
 
-                    if (calendarController.view ==
-                        DateRangePickerView.month) {
+                    if (calendarController.view == DateRangePickerView.month) {
                       return Padding(
                         padding: const EdgeInsets.all(1.0),
                         child: DecoratedBox(
@@ -150,8 +149,8 @@ class CalendarScreenWidget extends StatelessWidget {
                     }
 
                     if (calendarController.view == DateRangePickerView.year) {
-                      bool isToMonth = date.month == today.month &&
-                          date.year == today.year;
+                      bool isToMonth =
+                          date.month == today.month && date.year == today.year;
                       return Container(
                         width: cellDetails.bounds.width,
                         height: cellDetails.bounds.height,
@@ -177,8 +176,7 @@ class CalendarScreenWidget extends StatelessWidget {
                       );
                     }
 
-                    if (calendarController.view ==
-                        DateRangePickerView.decade) {
+                    if (calendarController.view == DateRangePickerView.decade) {
                       bool isToYear = date.year == today.year;
                       return Container(
                         width: cellDetails.bounds.width,

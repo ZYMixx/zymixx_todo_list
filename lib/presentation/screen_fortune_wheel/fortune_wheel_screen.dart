@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/services/service_audio_player.dart';
 import 'package:zymixx_todo_list/data/tools/tool_logger.dart';
+import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import 'package:zymixx_todo_list/domain/enum_todo_category.dart';
 import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/wave_shimmer_overlay.dart';
@@ -12,6 +13,7 @@ import 'dart:math' as math;
 
 import '../bloc_global/all_item_control_bloc.dart';
 import '../bloc_global/list_todo_screen_bloc.dart';
+import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
 
 class FortuneWheelScreen extends StatelessWidget {
   const FortuneWheelScreen({super.key});
@@ -23,8 +25,151 @@ class FortuneWheelScreen extends StatelessWidget {
         .todoActiveItemList
         .where((e) => e.category == EnumTodoCategory.active.name)
         .toList();
+
+    if (todoItemsList.isEmpty) {
+      return FortuneWheelEmptyState(
+        onAddTaskTap: () =>
+            Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
+      );
+    }
     return FortuneWheel(
       itemsList: todoItemsList,
+    );
+  }
+}
+
+class FortuneWheelEmptyState extends StatelessWidget {
+  final VoidCallback onAddTaskTap;
+
+  const FortuneWheelEmptyState({
+    super.key,
+    required this.onAddTaskTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: WaveShimmerOverlay(
+        seed: FortuneWheelEmptyState,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.10),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.casino_rounded,
+                            color: Colors.white,
+                            size: 34,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black54,
+                                blurRadius: 10,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        'Нет задач для барабана',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 22,
+                          letterSpacing: -0.2,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              blurRadius: 14,
+                              offset: Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Добавьте хотя бы одну активную задачу — и можно будет крутить барабан.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          height: 1.3,
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Get.find<MyBottomNavigatorWidget>()
+                                .state
+                                .setSelectedTab(0);
+                            onAddTaskTap();
+                          },
+                          icon: const Icon(Icons.add_rounded, size: 22),
+                          label: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 12.0),
+                            child: Text(
+                              'Добавить задачу',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ToolThemeData.mainGreenColor,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -123,11 +268,11 @@ class _FortuneWheelState extends State<FortuneWheel>
     if (status == AnimationStatus.completed) {
       _shakeController.stop();
       _shakeController.reset();
-      
+
       // Останавливаем звук кручения
       Get.find<ServiceAudioPlayer>().stopAll();
 
-      // Запускаем музыку победы только после полной остановки колеса, 
+      // Запускаем музыку победы только после полной остановки колеса,
       // чтобы stopAll ее не прервал
       Get.find<ServiceAudioPlayer>().playFortuneWinMusic(volume: 0.2);
 
@@ -146,7 +291,7 @@ class _FortuneWheelState extends State<FortuneWheel>
   Widget build(BuildContext context) {
     return Center(
       child: WaveShimmerOverlay(
-        id: 'fortune_wheel_bg',
+        seed: FortuneWheel,
         child: Listener(
           onPointerDown: _startSpin,
           onPointerMove: _updateSpin,
@@ -185,8 +330,7 @@ class _FortuneWheelState extends State<FortuneWheel>
                   itemExtent: _itemExtent,
                   physics: const FixedExtentScrollPhysics(),
                   perspective: 0.0035,
-                  onSelectedItemChanged: (id) {
-                  },
+                  onSelectedItemChanged: (id) {},
                   childDelegate: ListWheelChildLoopingListDelegate(
                     children: List<Widget>.generate(
                       widget.itemsList.length * 3,

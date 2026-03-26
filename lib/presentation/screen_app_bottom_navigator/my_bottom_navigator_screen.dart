@@ -27,7 +27,8 @@ class MyBottomNavigatorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (GetPlatform.isDesktop) {
-      return MyScreenBoxDecorationWidget(child: Get.find<MyBottomNavigatorWidget>());
+      return MyScreenBoxDecorationWidget(
+          child: Get.find<MyBottomNavigatorWidget>());
     }
     return Get.find<MyBottomNavigatorWidget>();
   }
@@ -205,9 +206,16 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
 
   Widget get activeScreen => listScreens[_currentPageIndex];
 
+  void setSelectedTab(int index) {
+    if (index < 0 || index > 3) return;
+    _setTabFromTap(index);
+  }
+
   void _setTabFromTap(int index) {
     setState(() {
-      if (index == selectedItemMenu && index <= 2 && listScreens.length >= index + 5) {
+      if (index == selectedItemMenu &&
+          index <= 2 &&
+          listScreens.length >= index + 5) {
         _altModeByTab[index] = !_altModeByTab[index];
         _isFadeOnly = true;
       } else {
@@ -267,7 +275,9 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
                     onTap: (index) {
                       _setTabFromTap(index);
                       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                        Get.find<WallBgFlameWidget>().gameBounce.applyRandomMove();
+                        Get.find<WallBgFlameWidget>()
+                            .gameBounce
+                            .applyRandomMove();
                       });
                     },
                     backgroundColor: Colors.transparent,
@@ -328,9 +338,8 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
                     child: child,
                   );
                 } else {
-                  final bool isCurrent =
-                      child.key is ValueKey<int> &&
-                          (child.key as ValueKey<int>).value == _currentPageIndex;
+                  final bool isCurrent = child.key is ValueKey<int> &&
+                      (child.key as ValueKey<int>).value == _currentPageIndex;
 
                   final Offset beginOffset = isCurrent
                       ? (_slideFromRight

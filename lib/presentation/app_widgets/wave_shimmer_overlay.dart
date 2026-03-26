@@ -11,12 +11,12 @@ enum WaveShimmerPatternType {
 }
 
 class WaveShimmerOverlay extends StatefulWidget {
-  final String id;
+  final Object? seed;
   final Widget child;
 
   const WaveShimmerOverlay({
     super.key,
-    required this.id,
+    this.seed,
     required this.child,
   });
 
@@ -35,8 +35,6 @@ class WaveShimmerOverlayState extends State<WaveShimmerOverlay>
   static const int maxActiveObjects = 4;
   static const double lifeExtension = 0.40;
 
-  static final Map<String, Color> cachedColorById = {};
-
   AnimationController? animationController;
   List<WaveObject> activeObjects = [];
   int waveSeed = 0;
@@ -46,8 +44,10 @@ class WaveShimmerOverlayState extends State<WaveShimmerOverlay>
   void initState() {
     super.initState();
 
+    final Object seedSource =
+        widget.seed ?? widget.key ?? widget.child.runtimeType;
     waveSeed =
-        DateTime.now().microsecondsSinceEpoch ^ (widget.id.hashCode * 31);
+        DateTime.now().microsecondsSinceEpoch ^ (seedSource.hashCode * 31);
 
     // Инициализируем несколько объектов сразу на разных этапах жизни
     final Random random = Random(waveSeed);
@@ -162,20 +162,6 @@ class WaveShimmerOverlayState extends State<WaveShimmerOverlay>
         ],
       ),
     );
-  }
-
-  Color randomColorFromTheme(String seed) {
-    final List<Color> colors = [
-      ToolThemeData.itemBorderColor,
-      ToolThemeData.highlightColor,
-      ToolThemeData.specialItemColor,
-      ToolThemeData.mainGreenColor,
-      ToolThemeData.highlightGreenColor,
-    ];
-
-    final int stableSeed = seed.hashCode;
-    final Random random = Random(stableSeed);
-    return colors[random.nextInt(colors.length)];
   }
 }
 

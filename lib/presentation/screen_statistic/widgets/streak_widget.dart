@@ -28,10 +28,14 @@ class StreakWidget extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: WaveShimmerOverlay(
-            id: 'stat_streak',
+            seed: StreakWidget,
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+              padding: const EdgeInsets.only(
+                left: 14,
+                right: 14,
+                top: 14,
+                bottom: 14,
+              ),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
