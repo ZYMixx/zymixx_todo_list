@@ -30,7 +30,28 @@ class MyBottomNavigatorScreen extends StatelessWidget {
       return MyScreenBoxDecorationWidget(
           child: Get.find<MyBottomNavigatorWidget>());
     }
-    return Get.find<MyBottomNavigatorWidget>();
+    return CursorPointerListenerWidget(child: Get.find<MyBottomNavigatorWidget>());
+  }
+}
+
+class CursorPointerListenerWidget extends StatelessWidget {
+  final Widget child;
+
+  const CursorPointerListenerWidget({super.key, required this.child});
+
+  void _updateCursorPosition(Offset position) {
+    Get.find<CursorPositionService>().updateCursorPosition(position);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerHover: (event) => _updateCursorPosition(event.position),
+      onPointerDown: (event) => _updateCursorPosition(event.position),
+      onPointerMove: (event) => _updateCursorPosition(event.position),
+      child: child,
+    );
   }
 }
 
@@ -39,8 +60,8 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
 
   MyScreenBoxDecorationWidget({super.key, required this.child});
 
-  void _updateCursorPosition(PointerHoverEvent event) {
-    Get.find<CursorPositionService>().updateCursorPosition(event);
+  void _updateCursorPosition(Offset position) {
+    Get.find<CursorPositionService>().updateCursorPosition(position);
   }
 
   @override
@@ -78,7 +99,10 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
             ],
           ),
           child: Listener(
-            onPointerHover: _updateCursorPosition,
+            behavior: HitTestBehavior.opaque,
+            onPointerHover: (event) => _updateCursorPosition(event.position),
+            onPointerDown: (event) => _updateCursorPosition(event.position),
+            onPointerMove: (event) => _updateCursorPosition(event.position),
             child: Stack(
               children: [
                 DecoratedBox(

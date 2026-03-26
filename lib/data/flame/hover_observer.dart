@@ -1,17 +1,17 @@
+import 'dart:ui';
 import 'dart:async';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class CursorPositionService {
-  // Контроллер для управления потоками данных положения курсора
-  final StreamController<PointerHoverEvent> _cursorPositionController = StreamController<PointerHoverEvent>.broadcast();
+  // Универсальная позиция указателя (поддерживает и mouse/hover, и touch move).
+  final StreamController<Offset> _cursorPositionController =
+      StreamController<Offset>.broadcast();
 
-  // Метод для получения потока данных положения курсора
-  Stream<PointerHoverEvent> get cursorPositionStream => _cursorPositionController.stream.asBroadcastStream();
+  Stream<Offset> get cursorPositionStream =>
+      _cursorPositionController.stream.asBroadcastStream();
 
-  // Метод для обновления положения курсора
-  void updateCursorPosition(PointerHoverEvent event) {
-    _cursorPositionController.add(event);
+  void updateCursorPosition(Offset position) {
+    _cursorPositionController.add(position);
   }
 
   // Метод для закрытия контроллера при завершении использования

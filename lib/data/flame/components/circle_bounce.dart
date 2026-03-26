@@ -2,13 +2,10 @@ import 'dart:ui';
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
 import 'package:flame/extensions.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/flame/hover_observer.dart';
 
@@ -48,8 +45,8 @@ class CircleBounce extends BodyComponent with ContactCallbacks, CollisionCallbac
     add(spriteComponent);
 
     // debugMode = true;
-    Get.find<CursorPositionService>().cursorPositionStream.listen((eventPos) {
-      applyOppositeForce(eventPos);
+    Get.find<CursorPositionService>().cursorPositionStream.listen((globalPos) {
+      applyOppositeForce(globalPos);
     });
     return super.onLoad();
   }
@@ -64,8 +61,8 @@ class CircleBounce extends BodyComponent with ContactCallbacks, CollisionCallbac
     super.update(dt);
   }
 
-  void applyOppositeForce(PointerHoverEvent eventPos) {
-    var testLocal = eventPos.position.toVector2();
+  void applyOppositeForce(Offset globalPos) {
+    final testLocal = globalPos.toVector2();
     Vector2 cursorPos = camera.globalToLocal(testLocal);
     if (containsPoint(cursorPos)) {
       Vector2 direction = position - cursorPos;
