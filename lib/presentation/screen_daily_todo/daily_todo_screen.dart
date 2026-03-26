@@ -10,6 +10,7 @@ import 'package:zymixx_todo_list/domain/todo_item.dart';
 import 'package:zymixx_todo_list/presentation/app_widgets/add_item_button.dart';
 import '../app_widgets/my_animated_card.dart';
 import '../bloc_global/all_item_control_bloc.dart';
+import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
 import 'daily_todo_bloc.dart';
 
 class DailyTodoScreen extends StatelessWidget {
@@ -30,27 +31,40 @@ class DailyTodoScreen extends StatelessWidget {
 class DailyTodoWidget extends StatelessWidget {
   const DailyTodoWidget({super.key});
 
+  void onScreenSwipe(DragEndDetails details) {
+    final double velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 200) return;
+
+    MyBottomNavigatorWidget navigator = Get.find<MyBottomNavigatorWidget>();
+    final int currentIndex = navigator.state.selectedItemMenu;
+    if (velocity < 0 && currentIndex < 3) {
+      navigator.state.setSelectedTab(currentIndex + 1);
+    } else if (velocity > 0 && currentIndex > 0) {
+      navigator.state.setSelectedTab(currentIndex - 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var now = DateTime.now();
     DailyTodoBloc bloc = context.select((DailyTodoBloc bloc) => bloc);
     bool yesterdayDailyMod =
-    context.select((DailyTodoBloc bloc) => bloc.state.yesterdayDailyMod);
+        context.select((DailyTodoBloc bloc) => bloc.state.yesterdayDailyMod);
     List<TodoItem> dailyTodoList;
     if (yesterdayDailyMod) {
       dailyTodoList = context
           .select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList)
           .where((element) =>
-      element.targetDateTime != null &&
-          element.targetDateTime!
-              .isSameDay(now.subtract(const Duration(days: 1))))
+              element.targetDateTime != null &&
+              element.targetDateTime!
+                  .isSameDay(now.subtract(const Duration(days: 1))))
           .toList();
     } else {
       dailyTodoList = context
           .select((AllItemControlBloc bloc) => bloc.state.todoDailyItemList)
           .where((element) =>
-      element.targetDateTime != null &&
-          element.targetDateTime!.isSameDay(now))
+              element.targetDateTime != null &&
+              element.targetDateTime!.isSameDay(now))
           .toList();
     }
     dailyTodoList.sort((a, b) {
@@ -62,82 +76,87 @@ class DailyTodoWidget extends StatelessWidget {
         return 0;
       }
     });
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 6.0, bottom: 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.45),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.12),
-                    width: 0.8,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: onScreenSwipe,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0, bottom: 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.45),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.12),
+                      width: 0.8,
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14.0, vertical: 6.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        yesterdayDailyMod
-                            ? Icons.timelapse_outlined
-                            : Icons.calendar_month_outlined,
-                        color: Colors.white,
-                        size: yesterdayDailyMod ? 22 : 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        yesterdayDailyMod
-                            ? 'Вчерашние дейлики'
-                            : 'Ежедневные задачи',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          letterSpacing: 0.1,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14.0, vertical: 6.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          yesterdayDailyMod
+                              ? Icons.timelapse_outlined
+                              : Icons.calendar_month_outlined,
                           color: Colors.white,
-                          shadows: ToolThemeData.defTextShadow,
+                          size: yesterdayDailyMod ? 22 : 20,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          yesterdayDailyMod
+                              ? 'Вчерашние дейлики'
+                              : 'Ежедневные задачи',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            letterSpacing: 0.1,
+                            color: Colors.white,
+                            shadows: ToolThemeData.defTextShadow,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            itemCount: dailyTodoList.length,
-            itemBuilder: (context, itemId) {
-              return DailyTodoItem(
-                dailyTodoItem: dailyTodoList[itemId],
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              itemCount: dailyTodoList.length,
+              itemBuilder: (context, itemId) {
+                return DailyTodoItem(
+                  dailyTodoItem: dailyTodoList[itemId],
+                );
+              },
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 8.0, left: 8.0, top: 4, bottom: 12.0 ),
-          child: AddItemButton(
-            onTapAction: () {
-              context
-                  .read<DailyTodoBloc>()
-                  .add(RequestAddNewDailyEvent(context: context));
-            },
-            onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
-            secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
-            bgColor: Colors.deepPurpleAccent,
-            label: 'New daily',
-            icon: Icons.calendar_month_outlined,
+          Padding(
+            padding: const EdgeInsets.only(
+                right: 8.0, left: 8.0, top: 4, bottom: 12.0),
+            child: AddItemButton(
+              onTapAction: () {
+                context
+                    .read<DailyTodoBloc>()
+                    .add(RequestAddNewDailyEvent(context: context));
+              },
+              onLongTapAction: () => bloc.add(ChangeYesterdayModEvent()),
+              secondaryAction: () => bloc.add(ChangeYesterdayModEvent()),
+              bgColor: Colors.deepPurpleAccent,
+              label: 'New daily',
+              icon: Icons.calendar_month_outlined,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -172,10 +191,10 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
   Widget build(BuildContext context) {
     final bool isDone = widget.dailyTodoItem.isDone;
     final Map<String, dynamic> json =
-    jsonDecode(widget.dailyTodoItem.content) as Map<String, dynamic>;
+        jsonDecode(widget.dailyTodoItem.content) as Map<String, dynamic>;
     final bool hasPrize = (json['prize'] ?? json['prise'] ?? 0) != 0;
     final String? prizeValue =
-    hasPrize ? (json['prize'] ?? json['prise']).toString() : null;
+        hasPrize ? (json['prize'] ?? json['prise']).toString() : null;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
@@ -188,21 +207,21 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
             borderRadius: BorderRadius.circular(isDone ? 18 : 14),
             gradient: isDone
                 ? LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ToolThemeData.highlightGreenColor.withOpacity(0.95),
-                ToolThemeData.highlightGreenColor.withOpacity(0.80),
-              ],
-            )
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ToolThemeData.highlightGreenColor.withOpacity(0.95),
+                      ToolThemeData.highlightGreenColor.withOpacity(0.80),
+                    ],
+                  )
                 : LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                Colors.white.withOpacity(0.96),
-              ],
-            ),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white,
+                      Colors.white.withOpacity(0.96),
+                    ],
+                  ),
             boxShadow: [
               BoxShadow(
                 color: isDone
@@ -247,7 +266,9 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(width: 34), // Пустое место под индикатор (24 ширина + 10 отступ)
+                          const SizedBox(
+                              width:
+                                  34), // Пустое место под индикатор (24 ширина + 10 отступ)
                           // Контент
                           Expanded(
                             child: Column(
@@ -260,7 +281,8 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                   children: [
                                     Expanded(
                                       child: AnimatedDefaultTextStyle(
-                                        duration: const Duration(milliseconds: 300),
+                                        duration:
+                                            const Duration(milliseconds: 300),
                                         curve: Curves.easeOut,
                                         style: TextStyle(
                                           fontWeight: isDone
@@ -273,13 +295,13 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                               : Colors.black87,
                                           shadows: isDone
                                               ? [
-                                            Shadow(
-                                              color: Colors.black
-                                                  .withOpacity(0.40),
-                                              offset: const Offset(0, 1),
-                                              blurRadius: 2,
-                                            ),
-                                          ]
+                                                  Shadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.40),
+                                                    offset: const Offset(0, 1),
+                                                    blurRadius: 2,
+                                                  ),
+                                                ]
                                               : null,
                                         ),
                                         child: Text(
@@ -291,23 +313,25 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                     ),
                                     // Награда выезжает на первую строку при isDone
                                     AnimatedSwitcher(
-                                      duration: const Duration(milliseconds: 300),
+                                      duration:
+                                          const Duration(milliseconds: 300),
                                       transitionBuilder: (child, animation) =>
                                           SizeTransition(
-                                            sizeFactor: animation,
-                                            axis: Axis.horizontal,
-                                            axisAlignment: -1.0,
-                                            child: FadeTransition(
-                                                opacity: animation, child: child),
-                                          ),
+                                        sizeFactor: animation,
+                                        axis: Axis.horizontal,
+                                        axisAlignment: -1.0,
+                                        child: FadeTransition(
+                                            opacity: animation, child: child),
+                                      ),
                                       child: (isDone && hasPrize)
                                           ? Padding(
-                                        padding: const EdgeInsets.only(left: 8.0),
-                                        child: _AnimatedPrizeBadge(
-                                          prize: prizeValue ?? '',
-                                          isDone: true,
-                                        ),
-                                      )
+                                              padding: const EdgeInsets.only(
+                                                  left: 8.0),
+                                              child: _AnimatedPrizeBadge(
+                                                prize: prizeValue ?? '',
+                                                isDone: true,
+                                              ),
+                                            )
                                           : const SizedBox.shrink(),
                                     ),
                                   ],
@@ -318,53 +342,58 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                                   duration: const Duration(milliseconds: 300),
                                   transitionBuilder: (child, animation) =>
                                       SizeTransition(
-                                        sizeFactor: animation,
-                                        axis: Axis.vertical,
-                                        axisAlignment: -1.0,
-                                        child: FadeTransition(
-                                            opacity: animation, child: child),
-                                      ),
+                                    sizeFactor: animation,
+                                    axis: Axis.vertical,
+                                    axisAlignment: -1.0,
+                                    child: FadeTransition(
+                                        opacity: animation, child: child),
+                                  ),
                                   child: (!isDone &&
-                                      (hasPrize ||
-                                          _buildBottomLabel(json).isNotEmpty))
-                                      ? Padding(
-                                    padding: const EdgeInsets.only(top: 2.0),
-                                    child: Row(
-                                      children: [
-                                        if (hasPrize)
-                                          _AnimatedPrizeBadge(
-                                            prize: prizeValue ?? '',
-                                            isDone: false,
-                                          ),
-                                        if (_buildBottomLabel(json)
-                                            .isNotEmpty) ...[
-                                          if (hasPrize)
-                                            const SizedBox(width: 8),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6.0,
-                                                vertical: 2.0),
-                                            decoration: BoxDecoration(
-                                              color: Colors.black
-                                                  .withOpacity(0.06),
-                                              borderRadius:
-                                              BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
+                                          (hasPrize ||
                                               _buildBottomLabel(json)
-                                                  .toUpperCase(),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 10,
-                                                letterSpacing: 0.5,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
+                                                  .isNotEmpty))
+                                      ? Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 2.0),
+                                          child: Row(
+                                            children: [
+                                              if (hasPrize)
+                                                _AnimatedPrizeBadge(
+                                                  prize: prizeValue ?? '',
+                                                  isDone: false,
+                                                ),
+                                              if (_buildBottomLabel(json)
+                                                  .isNotEmpty) ...[
+                                                if (hasPrize)
+                                                  const SizedBox(width: 8),
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 6.0,
+                                                      vertical: 2.0),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.black
+                                                        .withOpacity(0.06),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4),
+                                                  ),
+                                                  child: Text(
+                                                    _buildBottomLabel(json)
+                                                        .toUpperCase(),
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      fontSize: 10,
+                                                      letterSpacing: 0.5,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
-                                        ],
-                                      ],
-                                    ),
-                                  )
+                                        )
                                       : const SizedBox.shrink(),
                                 ),
                               ],
@@ -374,18 +403,21 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                           // Правая часть (Таймер)
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (child, animation) => SizeTransition(
+                            transitionBuilder: (child, animation) =>
+                                SizeTransition(
                               sizeFactor: animation,
                               axis: Axis.horizontal,
                               axisAlignment: 1.0,
-                              child: FadeTransition(opacity: animation, child: child),
+                              child: FadeTransition(
+                                  opacity: animation, child: child),
                             ),
                             child: isDone
                                 ? const SizedBox.shrink()
                                 : Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: _TimerSection(item: widget.dailyTodoItem),
-                            ),
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: _TimerSection(
+                                        item: widget.dailyTodoItem),
+                                  ),
                           ),
                         ],
                       ),
@@ -402,26 +434,28 @@ class _DailyTodoItemState extends State<DailyTodoItem> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOut,
                           width: isDone ? 24 : 5,
-                          height: isDone ? 24 : 40, // Бесконечность заставит заполнить выделенное Center пространство
+                          height: isDone
+                              ? 24
+                              : 40, // Бесконечность заставит заполнить выделенное Center пространство
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(999),
                             color: isDone
                                 ? Colors.white
                                 : ToolThemeData.itemBorderColor
-                                .withOpacity(0.95),
+                                    .withOpacity(0.95),
                             boxShadow: isDone
                                 ? [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.10),
-                                blurRadius: 3,
-                              )
-                            ]
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.10),
+                                      blurRadius: 3,
+                                    )
+                                  ]
                                 : [],
                           ),
                           child: isDone
                               ? const Center(
-                              child: Icon(Icons.check,
-                                  color: Colors.green, size: 16))
+                                  child: Icon(Icons.check,
+                                      color: Colors.green, size: 16))
                               : null,
                         ),
                       ),
@@ -488,7 +522,7 @@ class _AnimatedPrizeBadge extends StatelessWidget {
             Icons.emoji_events,
             size: 14,
             color:
-            isDone ? ToolThemeData.specialItemColor : Colors.orangeAccent,
+                isDone ? ToolThemeData.specialItemColor : Colors.orangeAccent,
           ),
         ],
       ),
@@ -558,7 +592,7 @@ class _TimerDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final DailyTodoItem? dailyTodoItem =
-    context.findAncestorWidgetOfExactType<DailyTodoItem>();
+        context.findAncestorWidgetOfExactType<DailyTodoItem>();
     if (dailyTodoItem == null) return const SizedBox.shrink();
     final item = dailyTodoItem.dailyTodoItem;
 
@@ -588,8 +622,8 @@ class _TimerDot extends StatelessWidget {
             color: item.autoPauseSeconds == 0
                 ? Colors.grey[400]
                 : item.autoPauseSeconds == 60
-                ? Colors.yellowAccent
-                : ToolThemeData.highlightColor,
+                    ? Colors.yellowAccent
+                    : ToolThemeData.highlightColor,
           ),
         ),
       ),
