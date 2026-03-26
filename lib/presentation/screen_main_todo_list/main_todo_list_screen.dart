@@ -9,6 +9,7 @@ import '../../domain/todo_item.dart';
 import '../app_widgets/my_animated_card.dart';
 import '../bloc_global/all_item_control_bloc.dart';
 import '../bloc_global/list_todo_screen_bloc.dart';
+import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
 import 'widgets/todo_item_widget.dart';
 
 class MainTodoListScreen extends StatelessWidget {
@@ -37,6 +38,19 @@ class ItemBoxWidget extends StatelessWidget {
     super.key,
   });
 
+  void onScreenSwipe(DragEndDetails details) {
+    final double velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < 200) return;
+
+    MyBottomNavigatorWidget navigator = Get.find<MyBottomNavigatorWidget>();
+    final int currentIndex = navigator.state.selectedItemMenu;
+    if (velocity < 0 && currentIndex < 3) {
+      navigator.state.setSelectedTab(currentIndex + 1);
+    } else if (velocity > 0 && currentIndex > 0) {
+      navigator.state.setSelectedTab(currentIndex - 1);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isShowTodayOnlyMod = context
@@ -47,184 +61,205 @@ class ItemBoxWidget extends StatelessWidget {
         .toList();
     List<int> posItemList = context
         .select((ListTodoScreenBloc bloc) =>
-            bloc.state.getPositionItemList(todoItemList))
+        bloc.state.getPositionItemList(todoItemList))
         .reversed
         .toList();
+
     return Theme(
       data: ThemeData(canvasColor: Colors.transparent),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: ToolThemeData.itemWidth,
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0, bottom: 2.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.35),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 0.7,
+        // 1. Оборачиваем всё тело в один глобальный детектор
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent, // Обязательно для пустых зон
+          onHorizontalDragEnd: onScreenSwipe,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: ToolThemeData.itemWidth,
+            ),
+            child: Column(
+              children: [
+                // 2. Убрали GestureDetector отсюда
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0, bottom: 2.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.35),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 0.7,
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14.0, vertical: 6.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.list_alt_rounded,
-                                color: Colors.white, size: 22),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Список задач',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                letterSpacing: 0.1,
-                                color: Colors.white,
-                                shadows: ToolThemeData.defTextShadow,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              posItemList.isNotEmpty
-                  ? Expanded(
-                      child: ReorderableListView.builder(
-                        buildDefaultDragHandles: false,
-                        onReorder: (oldItem, newItem) {
-                          if (newItem < oldItem) {
-                            Get.find<ListTodoScreenBloc>().add(ChangeOrderEvent(
-                                replacedItemId: posItemList[newItem],
-                                movedItemId: posItemList[oldItem]));
-                          } else {
-                            Get.find<ListTodoScreenBloc>().add(ChangeOrderEvent(
-                                replacedItemId: posItemList[newItem - 1],
-                                movedItemId: posItemList[oldItem]));
-                          }
-                        },
-                        itemCount: posItemList.length,
-                        padding: EdgeInsets.only(bottom: 15),
-                        itemBuilder: (context, itemId) {
-                          var orderedItem;
-                          if (todoItemList.isNotEmpty) {
-                            orderedItem = todoItemList.firstWhere(
-                                (item) => item.id == posItemList[itemId]);
-                          }
-                          return BlocProvider(
-                            create: (_) => Get.find<AllItemControlBloc>(),
-                            key: ValueKey(orderedItem),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6.0),
-                              child: TodoItemWidget(
-                                todoItem: orderedItem,
-                                reorderIndex: itemId,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Expanded(
-                      child: Center(
-                        child: Text(
-                          isShowTodayOnlyMod
-                              ? 'Nothing To Do Today'
-                              : 'No Tasks At All',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black,
-                                offset: Offset(2, 2.1),
-                                blurRadius: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14.0, vertical: 6.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.list_alt_rounded,
+                                  color: Colors.white, size: 22),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Список задач',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  letterSpacing: 0.1,
+                                  color: Colors.white,
+                                  shadows: ToolThemeData.defTextShadow,
+                                ),
                               ),
                             ],
-                          ),
-                        ),
-                      ),
-                    ),
-              DecoratedBox(
-                decoration: BoxDecoration(color: Colors.black12),
-                child: Container(
-                  height: 26,
-                  decoration: BoxDecoration(
-                    border: Border(
-                        top: BorderSide(width: 2, color: Colors.black26)),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      MyAnimatedCard(
-                        intensity: 0.005,
-                        directionUp: false,
-                        child: InkWell(
-                          onTap: () => context.read<ListTodoScreenBloc>().add(
-                              ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                          splashColor: Colors.transparent,
-                          child: Text(
-                            '${Get.find<ToolDateFormatter>().formatToMonthDayWeek(DateTime.now())}',
-                            style: TextStyle(
-                                color: isShowTodayOnlyMod
-                                    ? ToolThemeData.mainGreenColor
-                                    : Colors.grey[200],
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(1, 1.5),
-                                    blurRadius: 2,
-                                  ),
-                                ]),
-                          ),
-                        ),
-                      ),
-                      MyAnimatedCard(
-                        intensity: 0.005,
-                        directionUp: false,
-                        child: InkWell(
-                          onTap: () => context.read<ListTodoScreenBloc>().add(
-                              ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
-                          splashColor: Colors.transparent,
-                          child: Icon(
-                            Icons.today,
-                            color: isShowTodayOnlyMod
-                                ? ToolThemeData.mainGreenColor
-                                : Colors.grey[400],
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              ColoredBox(
-                color: Colors.black12,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      right: 8.0, left: 8.0, top: 4, bottom: 12.0),
-                  child: AddItemButton(
-                      onTapAction: () =>
-                          Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
-                      onLongTapAction: () => Get.find<AllItemControlBloc>()
-                          .add(DellAllItemEvent())),
+                posItemList.isNotEmpty
+                    ? Expanded(
+                  child: ReorderableListView.builder(
+                    buildDefaultDragHandles: false,
+                    onReorder: (oldItem, newItem) {
+                      if (newItem < oldItem) {
+                        Get.find<ListTodoScreenBloc>().add(
+                            ChangeOrderEvent(
+                                replacedItemId: posItemList[newItem],
+                                movedItemId: posItemList[oldItem]));
+                      } else {
+                        Get.find<ListTodoScreenBloc>().add(
+                            ChangeOrderEvent(
+                                replacedItemId: posItemList[newItem - 1],
+                                movedItemId: posItemList[oldItem]));
+                      }
+                    },
+                    itemCount: posItemList.length,
+                    padding: EdgeInsets.only(bottom: 15),
+                    itemBuilder: (context, itemId) {
+                      var orderedItem;
+                      if (todoItemList.isNotEmpty) {
+                        orderedItem = todoItemList.firstWhere(
+                                (item) => item.id == posItemList[itemId]);
+                      }
+                      return BlocProvider(
+                        create: (_) => Get.find<AllItemControlBloc>(),
+                        key: ValueKey(orderedItem),
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: TodoItemWidget(
+                            todoItem: orderedItem,
+                            reorderIndex: itemId,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+                    : Expanded(
+                  // 3. Убрали GestureDetector отсюда
+                  child: Center(
+                    child: Text(
+                      isShowTodayOnlyMod
+                          ? 'Nothing To Do Today'
+                          : 'No Tasks At All',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(2, 2.1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                // 4. Убрали GestureDetector отсюда
+                Column(
+                  children: [
+                    DecoratedBox(
+                      decoration: BoxDecoration(color: Colors.black12),
+                      child: Container(
+                        height: 26,
+                        decoration: BoxDecoration(
+                          border: Border(
+                              top: BorderSide(
+                                  width: 2, color: Colors.black26)),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            MyAnimatedCard(
+                              intensity: 0.005,
+                              directionUp: false,
+                              child: InkWell(
+                                onTap: () => context
+                                    .read<ListTodoScreenBloc>()
+                                    .add(ChangeTodayOnlyModEvent(
+                                    !isShowTodayOnlyMod)),
+                                splashColor: Colors.transparent,
+                                child: Text(
+                                  '${Get.find<ToolDateFormatter>().formatToMonthDayWeek(DateTime.now())}',
+                                  style: TextStyle(
+                                      color: isShowTodayOnlyMod
+                                          ? ToolThemeData.mainGreenColor
+                                          : Colors.grey[200],
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black87,
+                                          offset: Offset(1, 1.5),
+                                          blurRadius: 2,
+                                        ),
+                                      ]),
+                                ),
+                              ),
+                            ),
+                            MyAnimatedCard(
+                              intensity: 0.005,
+                              directionUp: false,
+                              child: InkWell(
+                                onTap: () => context
+                                    .read<ListTodoScreenBloc>()
+                                    .add(ChangeTodayOnlyModEvent(
+                                    !isShowTodayOnlyMod)),
+                                splashColor: Colors.transparent,
+                                child: Icon(
+                                  Icons.today,
+                                  color: isShowTodayOnlyMod
+                                      ? ToolThemeData.mainGreenColor
+                                      : Colors.grey[400],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    ColoredBox(
+                      color: Colors.black12,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            right: 8.0, left: 8.0, top: 4, bottom: 12.0),
+                        child: AddItemButton(
+                            onTapAction: () => Get.find<AllItemControlBloc>()
+                                .add(AddNewItemEvent()),
+                            onLongTapAction: () =>
+                                Get.find<AllItemControlBloc>()
+                                    .add(DellAllItemEvent())),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
