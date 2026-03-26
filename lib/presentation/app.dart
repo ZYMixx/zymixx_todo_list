@@ -43,16 +43,22 @@ class App {
   static const platform = MethodChannel('ru.zymixx/zymixxWindowsChannel');
 
   static void start() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
     navigatorKey = GlobalKey<NavigatorState>();
     directoryPath = await (await getApplicationSupportDirectory()).path;
     runZonedGuarded(() async {
       initializeDateFormatting('ru');
       WidgetsFlutterBinding.ensureInitialized();
       await _initGet();
-      await _preventDoubleOpenApp();
-      await _configWindows();
-      await Get.find<ServiceBackgroundKeyListener>().initPlatformState();
-      await Get.find<ServiceSystemTray>().initSystemTray();
+
+      if (GetPlatform.isDesktop) {
+        await _preventDoubleOpenApp();
+        await _configWindows();
+        await Get.find<ServiceBackgroundKeyListener>().initPlatformState();
+        await Get.find<ServiceSystemTray>().initSystemTray();
+      }
+
       runApp(
         MaterialApp(
             navigatorObservers: [Get.find<AppNavigatorObserver>()],
@@ -137,7 +143,7 @@ class App {
   }
 
   static _preventDoubleOpenApp() async {
-    if (isRelease) {
+    if (isRelease && GetPlatform.isWindows) {
       bool isAlreadyExist = await platform.invokeMethod('preventDoubleOpenApp');
       if (isAlreadyExist) {
         exit(0);
@@ -146,6 +152,8 @@ class App {
   }
 
   static changeAppWorkMod() async {
+     if (!GetPlatform.isDesktop) return;
+
      if (App.inWorkMod) {
        await Get.find<ServiceWindowManager>().position();
        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

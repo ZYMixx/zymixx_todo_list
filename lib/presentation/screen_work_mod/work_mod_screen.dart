@@ -22,7 +22,9 @@ class WorkModScreen extends StatelessWidget {
 }
 
 Future<void> setIgnore(bool ignore) async {
-  return await windowManager.setIgnoreMouseEvents(ignore);
+  if (GetPlatform.isDesktop) {
+    return await windowManager.setIgnoreMouseEvents(ignore);
+  }
 }
 
 class WorkModWidget extends StatefulWidget {
@@ -127,11 +129,13 @@ class _WorkModWidgetState extends State<WorkModWidget> {
   Timer? _timer;
 
   _onPress(TapDownDetails details) async {
-    await setIgnore(true);
-    await platform.invokeMethod('simulateMouseClick');
-    _timer?.cancel();
-    _timer = Timer(Duration(milliseconds: 500), () async {
-      await setIgnore(false);
-    });
+    if (GetPlatform.isDesktop) {
+      await setIgnore(true);
+      await platform.invokeMethod('simulateMouseClick');
+      _timer?.cancel();
+      _timer = Timer(Duration(milliseconds: 500), () async {
+        await setIgnore(false);
+      });
+    }
   }
 }

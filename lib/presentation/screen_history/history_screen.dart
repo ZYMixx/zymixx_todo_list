@@ -61,77 +61,74 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: weekKeys.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Нет данных',
-                        style:
-                            TextStyle(color: Color(0xFFB9C1D9), fontSize: 16),
-                      ),
-                    )
-                  : ClipRect(
-                      child: ShaderMask(
-                        blendMode: BlendMode.dstIn,
-                        shaderCallback: (Rect rect) {
-                          return LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.92),
-                              Colors.white,
-                              Colors.white,
-                            ],
-                            stops: const [0.0, 0.02, 1.0],
-                          ).createShader(rect);
-                        },
-                        child: ScrollbarTheme(
-                          data: ScrollbarThemeData(
-                            thickness: WidgetStateProperty.all<double>(3),
-                            radius: const Radius.circular(999),
-                            thumbColor: WidgetStateProperty.all<Color>(
-                              const Color(0xFFAEB4C2).withValues(alpha: 0.45),
-                            ),
-                            trackVisibility:
-                                WidgetStateProperty.all<bool>(false),
-                            thumbVisibility:
-                                WidgetStateProperty.all<bool>(true),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: weekKeys.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Нет данных',
+                      style:
+                          TextStyle(color: Color(0xFFB9C1D9), fontSize: 16),
+                    ),
+                  )
+                : ClipRect(
+                    child: ShaderMask(
+                      blendMode: BlendMode.dstIn,
+                      shaderCallback: (Rect rect) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.92),
+                            Colors.white,
+                            Colors.white,
+                          ],
+                          stops: const [0.0, 0.02, 1.0],
+                        ).createShader(rect);
+                      },
+                      child: ScrollbarTheme(
+                        data: ScrollbarThemeData(
+                          thickness: WidgetStateProperty.all<double>(3),
+                          radius: const Radius.circular(999),
+                          thumbColor: WidgetStateProperty.all<Color>(
+                            const Color(0xFFAEB4C2).withValues(alpha: 0.45),
                           ),
-                          child: Scrollbar(
+                          trackVisibility:
+                              WidgetStateProperty.all<bool>(false),
+                          thumbVisibility:
+                              WidgetStateProperty.all<bool>(true),
+                        ),
+                        child: Scrollbar(
+                          controller: weekListScrollController,
+                          child: ListView.builder(
                             controller: weekListScrollController,
-                            child: ListView.builder(
-                              controller: weekListScrollController,
-                              padding:
-                                  const EdgeInsets.only(top: 0, bottom: 40),
-                              itemCount: weekKeys.length,
-                              itemBuilder: (context, index) {
-                                String weekKey = weekKeys[index];
-                                List<TodoItem> items = groupedMap[weekKey]!;
-                                List<TodoItem>? prevItems =
-                                    (index + 1 < weekKeys.length)
-                                        ? groupedMap[weekKeys[index + 1]]
-                                        : null;
+                            padding:
+                                const EdgeInsets.only(top: 0, bottom: 40),
+                            itemCount: weekKeys.length,
+                            itemBuilder: (context, index) {
+                              String weekKey = weekKeys[index];
+                              List<TodoItem> items = groupedMap[weekKey]!;
+                              List<TodoItem>? prevItems =
+                                  (index + 1 < weekKeys.length)
+                                      ? groupedMap[weekKeys[index + 1]]
+                                      : null;
 
-                                return WeekCard(
-                                  weekStartDate: _parseInternalWeekKey(weekKey),
-                                  items: items,
-                                  prevItems: prevItems,
-                                );
-                              },
-                            ),
+                              return WeekCard(
+                                weekStartDate: _parseInternalWeekKey(weekKey),
+                                items: items,
+                                prevItems: prevItems,
+                              );
+                            },
                           ),
                         ),
                       ),
                     ),
-            ),
-          ],
-        ),
+                  ),
+          ),
+        ],
       ),
     );
   }

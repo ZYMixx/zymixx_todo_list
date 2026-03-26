@@ -431,7 +431,9 @@ class _NotesScreenState extends State<NotesScreen> {
                     width: double.infinity,
                     height: 45,
                     color: Colors.black,
-                    child: MoveWindow(onDoubleTap: () => {}),
+                    child: GetPlatform.isDesktop 
+                        ? MoveWindow(onDoubleTap: () => {}) 
+                        : const SizedBox.shrink(),
                   ),
                 ),
               ],
@@ -666,7 +668,9 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     width: double.infinity,
                     height: 45,
                     color: Colors.black,
-                    child: MoveWindow(onDoubleTap: () => {}),
+                    child: GetPlatform.isDesktop 
+                        ? MoveWindow(onDoubleTap: () => {}) 
+                        : const SizedBox.shrink(),
                   ),
                 ),
               ],
@@ -705,8 +709,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ToolNavigator.pop();
                   },
                   child: GestureDetector(
-                    onSecondaryTap:
-                        Get.find<ServiceWindowManager>().onHideWindowPressed,
+                    onSecondaryTap: () {
+                      if (GetPlatform.isDesktop) {
+                        Get.find<ServiceWindowManager>().onHideWindowPressed();
+                      }
+                    },
                     child: Center(
                       child: Icon(Icons.save),
                     ),

@@ -118,7 +118,9 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
         icon: MyAnimatedCard(
           intensity: 0.007,
           child: GestureDetector(
-            onSecondaryTap: () async => App.changeAppWorkMod(),
+            onSecondaryTap: () async {
+              if (GetPlatform.isDesktop) App.changeAppWorkMod();
+            },
             child: Center(child: Icon(Icons.work_history_outlined)),
           ),
         ),
@@ -127,35 +129,50 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
         icon: MyAnimatedCard(
             intensity: 0.007,
             child: GestureDetector(
-                onSecondaryTap: () async =>
-                    Get.find<ServiceWindowManager>().changeAppPosition(true),
+                onSecondaryTap: () async {
+                  if (GetPlatform.isDesktop) {
+                    Get.find<ServiceWindowManager>().changeAppPosition(true);
+                  }
+                },
                 child: Center(child: Icon(Icons.calendar_month)))),
         label: 'calendar_month'),
     BottomNavigationBarItem(
         icon: MyAnimatedCard(
             intensity: 0.007,
             child: GestureDetector(
-                onSecondaryTap: () async =>
-                    Get.find<ServiceWindowManager>().changeAppPosition(false),
+                onSecondaryTap: () async {
+                  if (GetPlatform.isDesktop) {
+                    Get.find<ServiceWindowManager>().changeAppPosition(false);
+                  }
+                },
                 child: Center(child: Icon(Icons.data_thresholding_outlined)))),
         label: 'data_thresholding_outlined'),
     BottomNavigationBarItem(
         icon: GestureDetector(
           onSecondaryTap: () {
-            Get.find<ServiceWindowManager>().onHideWindowPressed();
+            if (GetPlatform.isDesktop) {
+              Get.find<ServiceWindowManager>().onHideWindowPressed();
+            }
           },
           child: MyAnimatedCard(
             intensity: 0.007,
             child: Center(
               child: SizedBox(
                 height: 40,
-                child: MoveWindow(
-                  onDoubleTap: windowManager.close,
-                  child: Container(
-                    width: 80,
-                    child: Icon(Icons.history),
-                  ),
-                ),
+                child: GetPlatform.isDesktop 
+                  ? MoveWindow(
+                      onDoubleTap: () {
+                        if (GetPlatform.isDesktop) windowManager.close();
+                      },
+                      child: Container(
+                        width: 80,
+                        child: Icon(Icons.history),
+                      ),
+                    )
+                  : Container(
+                      width: 80,
+                      child: Icon(Icons.history),
+                    ),
               ),
             ),
           ),
