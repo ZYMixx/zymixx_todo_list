@@ -123,7 +123,7 @@ class DailyTodoWidget extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+          padding: const EdgeInsets.only(right: 8.0, left: 8.0, top: 4, bottom: 12.0 ),
           child: AddItemButton(
             onTapAction: () {
               context

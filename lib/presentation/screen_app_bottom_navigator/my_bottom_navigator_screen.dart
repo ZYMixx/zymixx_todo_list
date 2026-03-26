@@ -26,7 +26,10 @@ class MyBottomNavigatorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MyScreenBoxDecorationWidget(child: Get.find<MyBottomNavigatorWidget>());
+    if (GetPlatform.isDesktop) {
+      return MyScreenBoxDecorationWidget(child: Get.find<MyBottomNavigatorWidget>());
+    }
+    return Get.find<MyBottomNavigatorWidget>();
   }
 }
 
@@ -35,11 +38,9 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
 
   MyScreenBoxDecorationWidget({super.key, required this.child});
 
-
   void _updateCursorPosition(PointerHoverEvent event) {
     Get.find<CursorPositionService>().updateCursorPosition(event);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -101,9 +102,9 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
 }
 
 class MyBottomNavigatorWidget extends StatefulWidget {
-   MyBottomNavigatorWidget({super.key});
+  MyBottomNavigatorWidget({super.key});
 
-   late _MyBottomNavigatorWidgetState state;
+  late _MyBottomNavigatorWidgetState state;
 
   @override
   State<MyBottomNavigatorWidget> createState() {
@@ -159,25 +160,25 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
             child: Center(
               child: SizedBox(
                 height: 40,
-                child: GetPlatform.isDesktop 
-                  ? MoveWindow(
-                      onDoubleTap: () {
-                        if (GetPlatform.isDesktop) windowManager.close();
-                      },
-                      child: Container(
+                child: GetPlatform.isDesktop
+                    ? MoveWindow(
+                        onDoubleTap: () {
+                          if (GetPlatform.isDesktop) windowManager.close();
+                        },
+                        child: Container(
+                          width: 80,
+                          child: Icon(Icons.history),
+                        ),
+                      )
+                    : Container(
                         width: 80,
                         child: Icon(Icons.history),
                       ),
-                    )
-                  : Container(
-                      width: 80,
-                      child: Icon(Icons.history),
-                    ),
               ),
             ),
           ),
         ),
-        label: 'history'), //последний элемент отвечает за движение/закрытие окна
+        label: 'history'),
   ];
 
   List<Widget> listScreens = [
@@ -207,7 +208,6 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
   void _setTabFromTap(int index) {
     setState(() {
       if (index == selectedItemMenu && index <= 2 && listScreens.length >= index + 5) {
-        // переключение основного/альтернативного экрана для выбранной кнопки
         _altModeByTab[index] = !_altModeByTab[index];
         _isFadeOnly = true;
       } else {
@@ -232,156 +232,141 @@ class _MyBottomNavigatorWidgetState extends State<MyBottomNavigatorWidget> {
     return isAlt ? ToolThemeData.highlightGreenColor : Colors.white;
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          width: 300,
-          height: 500,
-          child: ColoredBox(color: Colors.red),
-        ),
-        MyDefBgDecoration(
+    return MyDefBgDecoration(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        bottomNavigationBar: SafeArea(
+          bottom: true,
+          top: false,
           child: Padding(
-            padding: const EdgeInsets.only(top: 5.0),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              bottomNavigationBar: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.55),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 18,
-                            offset: Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: BottomNavigationBar(
-                        currentIndex: selectedItemMenu,
-                        onTap: (index) {
-                          _setTabFromTap(index);
-                          WidgetsBinding.instance
-                              .addPostFrameCallback((timeStamp) {
-                            Get.find<WallBgFlameWidget>()
-                                .gameBounce
-                                .applyRandomMove();
-                          });
-                        },
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        selectedItemColor: _currentSelectedItemColor,
-                        unselectedItemColor: Colors.white70,
-                        showSelectedLabels: false,
-                        showUnselectedLabels: false,
-                        selectedIconTheme: const IconThemeData(
-                          size: 31,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black54,
-                              offset: Offset(1.0, 1.60),
-                              blurRadius: 0.6,
-                            ),
-                          ],
-                        ),
-                        selectedFontSize: 0,
-                        unselectedFontSize: 0,
-                        iconSize: 28,
-                        type: BottomNavigationBarType.fixed,
-                        items: listNavigatorItem,
-                      ),
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.08),
+                      width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        blurRadius: 18,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              body: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onHorizontalDragEnd: (details) {
-                  final velocity = details.primaryVelocity ?? 0;
-                  if (velocity.abs() < 200) return;
-                  if (velocity < 0 && selectedItemMenu < 3) {
-                    _setTabFromSwipe(selectedItemMenu + 1);
-                  } else if (velocity > 0 && selectedItemMenu > 0) {
-                    _setTabFromSwipe(selectedItemMenu - 1);
-                  }
-                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    Get.find<WallBgFlameWidget>()
-                        .gameBounce
-                        .applyRandomMove();
-                  });
-                },
-                child: AnimatedSwitcher(
-                  duration: _isFadeOnly
-                      ? const Duration(milliseconds: 75)
-                      : const Duration(milliseconds: 260),
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                    if (_isFadeOnly) {
-                      // Быстрая выцветающая анимация без движения
-                      return FadeTransition(
-                        opacity: CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOut,
+                  child: BottomNavigationBar(
+                    currentIndex: selectedItemMenu,
+                    onTap: (index) {
+                      _setTabFromTap(index);
+                      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                        Get.find<WallBgFlameWidget>().gameBounce.applyRandomMove();
+                      });
+                    },
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    selectedItemColor: _currentSelectedItemColor,
+                    unselectedItemColor: Colors.white70,
+                    showSelectedLabels: false,
+                    showUnselectedLabels: false,
+                    selectedIconTheme: const IconThemeData(
+                      size: 31,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black54,
+                          offset: Offset(1.0, 1.60),
+                          blurRadius: 0.6,
                         ),
-                        child: child,
-                      );
-                    } else {
-                      // Полноценный слайд между "слотами" как на телефоне.
-                      // Новый экран едет навстречу, старый уезжает в противоположную сторону.
-                      final bool isCurrent =
-                          child.key is ValueKey<int> &&
-                              (child.key as ValueKey<int>).value ==
-                                  _currentPageIndex;
-
-                      final Offset beginOffset = isCurrent
-                          ? (_slideFromRight
-                              ? const Offset(1.0, 0)
-                              : const Offset(-1.0, 0))
-                          : (_slideFromRight
-                              ? const Offset(-1.0, 0)
-                              : const Offset(1.0, 0));
-
-                      final offsetAnimation = Tween<Offset>(
-                        begin: beginOffset,
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ));
-                      return SlideTransition(
-                        position: offsetAnimation,
-                        child: FadeTransition(
-                          opacity: CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOut,
-                          ),
-                          child: child,
-                        ),
-                      );
-                    }
-                  },
-                  child: KeyedSubtree(
-                    key: ValueKey<int>(_currentPageIndex),
-                    child: activeScreen,
+                      ],
+                    ),
+                    selectedFontSize: 0,
+                    unselectedFontSize: 0,
+                    iconSize: 28,
+                    type: BottomNavigationBarType.fixed,
+                    items: listNavigatorItem,
                   ),
                 ),
               ),
             ),
           ),
         ),
-      ],
+        body: SafeArea(
+          top: true,
+          bottom: false,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onHorizontalDragEnd: (details) {
+              final velocity = details.primaryVelocity ?? 0;
+              if (velocity.abs() < 200) return;
+              if (velocity < 0 && selectedItemMenu < 3) {
+                _setTabFromSwipe(selectedItemMenu + 1);
+              } else if (velocity > 0 && selectedItemMenu > 0) {
+                _setTabFromSwipe(selectedItemMenu - 1);
+              }
+              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                Get.find<WallBgFlameWidget>().gameBounce.applyRandomMove();
+              });
+            },
+            child: AnimatedSwitcher(
+              duration: _isFadeOnly
+                  ? const Duration(milliseconds: 75)
+                  : const Duration(milliseconds: 260),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                if (_isFadeOnly) {
+                  return FadeTransition(
+                    opacity: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOut,
+                    ),
+                    child: child,
+                  );
+                } else {
+                  final bool isCurrent =
+                      child.key is ValueKey<int> &&
+                          (child.key as ValueKey<int>).value == _currentPageIndex;
+
+                  final Offset beginOffset = isCurrent
+                      ? (_slideFromRight
+                          ? const Offset(1.0, 0)
+                          : const Offset(-1.0, 0))
+                      : (_slideFromRight
+                          ? const Offset(-1.0, 0)
+                          : const Offset(1.0, 0));
+
+                  final offsetAnimation = Tween<Offset>(
+                    begin: beginOffset,
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ));
+                  return SlideTransition(
+                    position: offsetAnimation,
+                    child: FadeTransition(
+                      opacity: CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOut,
+                      ),
+                      child: child,
+                    ),
+                  );
+                }
+              },
+              child: KeyedSubtree(
+                key: ValueKey<int>(_currentPageIndex),
+                child: activeScreen,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

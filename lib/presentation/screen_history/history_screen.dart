@@ -135,54 +135,71 @@ class _HistoryScreenWidgetState extends State<HistoryScreenWidget> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsetsGeometry.only(top: 12),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          colors: [Colors.black.withOpacity(0.4), Colors.transparent],
-          begin: Alignment.bottomCenter,
-          end: AlignmentGeometry.topCenter,
-        )),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'История',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFE6E8EF),
-                ),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Заголовок по центру
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.35),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 0.7,
               ),
-              GestureDetector(
-                onTap: () {
-                  ToolNavigator.push(
-                    screen: const SettingsScreen(),
-                  );
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white.withValues(alpha: 0.06),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08),
-                      width: 1,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14.0, vertical: 6.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.history_edu,
+                      color: Colors.white, size: 22),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'История',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      letterSpacing: 0.1,
+                      color: Colors.white,
+                      shadows: ToolThemeData.defTextShadow,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.tune_rounded,
-                    color: Color(0xFFAEB4C2),
-                    size: 20,
+                ],
+              ),
+            ),
+          ),
+          // Кнопка настроек справа
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () {
+                ToolNavigator.push(
+                  screen: const SettingsScreen(),
+                );
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    width: 1,
                   ),
                 ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  color: Color(0xFFAEB4C2),
+                  size: 20,
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -39,14 +39,15 @@ class ItemBoxWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isShowTodayOnlyMod =
-        context.select((ListTodoScreenBloc bloc) => bloc.state.isShowTodayOnlyMod);
+    bool isShowTodayOnlyMod = context
+        .select((ListTodoScreenBloc bloc) => bloc.state.isShowTodayOnlyMod);
     List<TodoItem> todoItemList = context
         .select((AllItemControlBloc bloc) => bloc.state.todoActiveItemList)
         .reversed
         .toList();
     List<int> posItemList = context
-        .select((ListTodoScreenBloc bloc) => bloc.state.getPositionItemList(todoItemList))
+        .select((ListTodoScreenBloc bloc) =>
+            bloc.state.getPositionItemList(todoItemList))
         .reversed
         .toList();
     return Theme(
@@ -75,21 +76,18 @@ class ItemBoxWidget extends StatelessWidget {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10.0, vertical: 4.0),
+                            horizontal: 14.0, vertical: 6.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.list_alt_rounded,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
+                            Icon(Icons.list_alt_rounded,
+                                color: Colors.white, size: 22),
+                            const SizedBox(width: 8),
                             Text(
                               'Список задач',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                                fontSize: 16,
                                 letterSpacing: 0.1,
                                 color: Colors.white,
                                 shadows: ToolThemeData.defTextShadow,
@@ -121,8 +119,8 @@ class ItemBoxWidget extends StatelessWidget {
                         itemBuilder: (context, itemId) {
                           var orderedItem;
                           if (todoItemList.isNotEmpty) {
-                            orderedItem =
-                                todoItemList.firstWhere((item) => item.id == posItemList[itemId]);
+                            orderedItem = todoItemList.firstWhere(
+                                (item) => item.id == posItemList[itemId]);
                           }
                           return BlocProvider(
                             create: (_) => Get.find<AllItemControlBloc>(),
@@ -140,7 +138,9 @@ class ItemBoxWidget extends StatelessWidget {
                   : Expanded(
                       child: Center(
                         child: Text(
-                          isShowTodayOnlyMod ? 'Nothing To Do Today' : 'No Tasks At All',
+                          isShowTodayOnlyMod
+                              ? 'Nothing To Do Today'
+                              : 'No Tasks At All',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -160,7 +160,8 @@ class ItemBoxWidget extends StatelessWidget {
                 child: Container(
                   height: 26,
                   decoration: BoxDecoration(
-                    border: Border(top: BorderSide(width: 2, color: Colors.black26)),
+                    border: Border(
+                        top: BorderSide(width: 2, color: Colors.black26)),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 16),
@@ -171,9 +172,8 @@ class ItemBoxWidget extends StatelessWidget {
                         intensity: 0.005,
                         directionUp: false,
                         child: InkWell(
-                          onTap: () => context
-                              .read<ListTodoScreenBloc>()
-                              .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                          onTap: () => context.read<ListTodoScreenBloc>().add(
+                              ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
                           splashColor: Colors.transparent,
                           child: Text(
                             '${Get.find<ToolDateFormatter>().formatToMonthDayWeek(DateTime.now())}',
@@ -195,9 +195,8 @@ class ItemBoxWidget extends StatelessWidget {
                         intensity: 0.005,
                         directionUp: false,
                         child: InkWell(
-                          onTap: () => context
-                              .read<ListTodoScreenBloc>()
-                              .add(ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
+                          onTap: () => context.read<ListTodoScreenBloc>().add(
+                              ChangeTodayOnlyModEvent(!isShowTodayOnlyMod)),
                           splashColor: Colors.transparent,
                           child: Icon(
                             Icons.today,
@@ -214,11 +213,12 @@ class ItemBoxWidget extends StatelessWidget {
               ColoredBox(
                 color: Colors.black12,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 4, right: 8, left: 8),
+                  padding: const EdgeInsets.only(right: 8.0, left: 8.0, top: 4, bottom: 12.0 ),
                   child: AddItemButton(
-                      onTapAction: () => Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
-                      onLongTapAction: () =>
-                          Get.find<AllItemControlBloc>().add(DellAllItemEvent())),
+                      onTapAction: () =>
+                          Get.find<AllItemControlBloc>().add(AddNewItemEvent()),
+                      onLongTapAction: () => Get.find<AllItemControlBloc>()
+                          .add(DellAllItemEvent())),
                 ),
               ),
             ],
