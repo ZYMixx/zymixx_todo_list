@@ -44,113 +44,115 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
         (BlackBoxBloc bloc) => bloc.state.folders.keys.toList(growable: false));
     var foldersImage = context.select((BlackBoxBloc bloc) =>
         bloc.state.folders.values.toList(growable: false));
-    return Theme(
+    final content = Theme(
       data: ThemeData(canvasColor: Colors.transparent),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
-            Gap(8),
-            Text(
-              'Чёрный Ящик',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 24,
-                color: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Gap(8),
+              Text(
+                'Чёрный Ящик',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 24,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            Flexible(
-              child: ReorderableGridView.extent(
-                padding: EdgeInsets.all(8),
-                maxCrossAxisExtent: folderExtent,
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 10.0,
-                childAspectRatio: 1.0,
-                children: <Widget>[
-                  for (int index = 0; index < foldersKeys.length; index++)
-                    GestureDetector(
-                      key: ValueKey(foldersKeys[index]),
-                      onSecondaryTapDown: (details) {
-                        _showContextMenu(context, details.globalPosition, index,
-                            foldersImage[index]);
-                      },
-                      child: InkWell(
-                        onTap: () {
-                          Log.i('PRESS ${foldersKeys[index]}');
-                          try {
-                            ToolNavigator.push(
-                                screen: NotesScreen(
-                                    folderName: foldersKeys[index]));
-                          } catch (e) {
-                            Log.e('zy $e');
-                          }
+              Flexible(
+                child: ReorderableGridView.extent(
+                  padding: EdgeInsets.all(8),
+                  maxCrossAxisExtent: folderExtent,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                  childAspectRatio: 1.0,
+                  children: <Widget>[
+                    for (int index = 0; index < foldersKeys.length; index++)
+                      GestureDetector(
+                        key: ValueKey(foldersKeys[index]),
+                        onSecondaryTapDown: (details) {
+                          _showContextMenu(context, details.globalPosition, index,
+                              foldersImage[index]);
                         },
-                        child: Stack(
-                          children: [
-                            Card(
-                              elevation: 0,
-                              color: Colors.transparent,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: AssetImage('assets/folder_icon.png'),
-                                    fit: BoxFit.fill,
+                        child: InkWell(
+                          onTap: () {
+                            Log.i('PRESS ${foldersKeys[index]}');
+                            try {
+                              ToolNavigator.push(
+                                  screen: NotesScreen(
+                                      folderName: foldersKeys[index]));
+                            } catch (e) {
+                              Log.e('zy $e');
+                            }
+                          },
+                          child: Stack(
+                            children: [
+                              Card(
+                                elevation: 0,
+                                color: Colors.transparent,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: AssetImage('assets/folder_icon.png'),
+                                      fit: BoxFit.fill,
+                                    ),
+                                  ),
+                                  child: GridTile(
+                                    child: Center(),
                                   ),
                                 ),
-                                child: GridTile(
-                                  child: Center(),
-                                ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  bottom: 10.0, right: 15, left: 15),
-                              child: ClipPath(
-                                clipper: HexagonClipper(),
-                                child: Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: SizedBox(
-                                    height: folderExtent / 2 + 10,
-                                    child: DecoratedBox(
-                                      decoration: foldersImage[index] != ''
-                                          ? BoxDecoration(
-                                              border: Border.all(width: 2),
-                                              image: DecorationImage(
-                                                  image: FileImage(File(
-                                                      foldersImage[index])),
-                                                  fit: BoxFit.cover),
-                                            )
-                                          : BoxDecoration(),
-                                      child: Center(),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    bottom: 10.0, right: 15, left: 15),
+                                child: ClipPath(
+                                  clipper: HexagonClipper(),
+                                  child: Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: SizedBox(
+                                      height: folderExtent / 2 + 10,
+                                      child: DecoratedBox(
+                                        decoration: foldersImage[index] != ''
+                                            ? BoxDecoration(
+                                                border: Border.all(width: 2),
+                                                image: DecorationImage(
+                                                    image: FileImage(File(
+                                                        foldersImage[index])),
+                                                    fit: BoxFit.cover),
+                                              )
+                                            : BoxDecoration(),
+                                        child: Center(),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  right: 10.0, left: 10, top: 20),
-                              child: Center(
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      child: ColoredBox(
-                                        color: Colors.black87,
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 4.0, top: 2),
-                                          child: Text(
-                                            foldersKeys[index],
-                                            maxLines: 2,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              letterSpacing: -0.2,
-                                              wordSpacing: -0.5,
-                                              height: 0.9,
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    right: 10.0, left: 10, top: 20),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: ColoredBox(
+                                          color: Colors.black87,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 4.0, top: 2),
+                                            child: Text(
+                                              foldersKeys[index],
+                                              maxLines: 2,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                letterSpacing: -0.2,
+                                                wordSpacing: -0.5,
+                                                height: 0.9,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -159,35 +161,40 @@ class _BlackBoxFolderWidgetState extends State<BlackBoxFolderWidget> {
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                ],
-                onReorder: (oldIndex, newIndex) {
-                  Log.i('newIndex ${newIndex} - oldIndex ${oldIndex}');
+                  ],
+                  onReorder: (oldIndex, newIndex) {
+                    Log.i('newIndex ${newIndex} - oldIndex ${oldIndex}');
 
-                  if (newIndex < oldIndex) {
-                    Get.find<BlackBoxBloc>()
-                        .add(ReorderFolderEvent(oldIndex, newIndex));
-                  } else {
-                    Get.find<BlackBoxBloc>()
-                        .add(ReorderFolderEvent(oldIndex, newIndex));
-                  }
-                },
+                    if (newIndex < oldIndex) {
+                      Get.find<BlackBoxBloc>()
+                          .add(ReorderFolderEvent(oldIndex, newIndex));
+                    } else {
+                      Get.find<BlackBoxBloc>()
+                          .add(ReorderFolderEvent(oldIndex, newIndex));
+                    }
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _addFolder,
           child: Icon(Icons.add),
           tooltip: 'Add Folder',
-          heroTag: 'Main',
+          heroTag: 'BlackBoxFolderAdd',
         ),
       ),
     );
+
+    if (GetPlatform.isDesktop) {
+      return MyScreenBoxDecorationWidget(child: content);
+    }
+    return content;
   }
 
   void _addFolder() {
@@ -331,19 +338,19 @@ class _NotesScreenState extends State<NotesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
+    final content = Theme(
       data: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.blue,
       ),
       child: BlocProvider(
         create: (_) => Get.find<BlackBoxBloc>(),
-        child: MyScreenBoxDecorationWidget(
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text('${widget.folderName}'),
-            ),
-            body: Stack(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('${widget.folderName}'),
+          ),
+          body: SafeArea(
+            child: Stack(
               children: [
                 BlocBuilder<BlackBoxBloc, BlackBoxState>(
                     builder: (context, state) {
@@ -388,6 +395,7 @@ class _NotesScreenState extends State<NotesScreen> {
                           child: Hero(
                             tag: 'note_${notes[itemId].key}',
                             child: Material(
+                              key: ValueKey(notes[itemId].key),
                               textStyle: TextStyle(color: Colors.white),
                               color: Colors.transparent,
                               child: Padding(
@@ -425,52 +433,55 @@ class _NotesScreenState extends State<NotesScreen> {
                     ),
                   );
                 }),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: double.infinity,
-                    height: 45,
-                    color: Colors.black,
-                    child: GetPlatform.isDesktop 
-                        ? MoveWindow(onDoubleTap: () => {}) 
-                        : const SizedBox.shrink(),
+                if (GetPlatform.isDesktop)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: double.infinity,
+                      height: 45,
+                      color: Colors.black,
+                      child: MoveWindow(onDoubleTap: () => {}),
+                    ),
                   ),
-                ),
               ],
             ),
-            floatingActionButton: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  height: 42,
-                  width: 42,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      isReverse = !isReverse;
-                      setState(() {});
-                    },
-                    child: Icon(Icons.recycling),
-                    tooltip: 'Reverse',
-                    heroTag: 'secondory',
-                  ),
-                ),
-                SizedBox(width: 8),
-                FloatingActionButton(
+          ),
+          floatingActionButton: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                height: 42,
+                width: 42,
+                child: FloatingActionButton(
                   onPressed: () {
-                    Get.find<BlackBoxBloc>().add(AddNoteEvent(
-                        folderName: widget.folderName, noteText: ''));
+                    isReverse = !isReverse;
+                    setState(() {});
                   },
-                  child: Icon(Icons.add),
-                  tooltip: 'Add Note',
-                  heroTag: 'Main',
+                  child: Icon(Icons.recycling),
+                  tooltip: 'Reverse',
+                  heroTag: 'secondory',
                 ),
-              ],
-            ),
+              ),
+              SizedBox(width: 8),
+              FloatingActionButton(
+                onPressed: () {
+                  Get.find<BlackBoxBloc>().add(AddNoteEvent(
+                      folderName: widget.folderName, noteText: ''));
+                },
+                child: Icon(Icons.add),
+                tooltip: 'Add Note',
+                heroTag: 'NotesScreenAdd',
+              ),
+            ],
           ),
         ),
       ),
     );
+    if (GetPlatform.isDesktop) {
+      return MyScreenBoxDecorationWidget(child: content);
+    }
+    return content;
   }
 
   void _deleteNoteDialog(BuildContext context, String key, String? folderName) {
@@ -543,51 +554,51 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MyScreenBoxDecorationWidget(
-      child: Theme(
-        data: ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: Colors.blue,
-        ),
-        child: PopScope(
-          canPop: false,
-          onPopInvoked: (didPop) async {
-            if (!didPop) {
-              if (textNote == _controller.text) {
-                ToolNavigator.pop();
-              } else {
-                bool? saveData = await _confirmSaveOnExit(
-                    bContext: context,
-                    folderName: folderName,
-                    notedText: _controller.text);
-                if (saveData == null) {
-                } else if (saveData) {
-                  if (_controller.text.length > 5) {
-                    Get.find<BlackBoxBloc>().add(
-                      ChangeNoteEvent(
-                        folderName: folderName,
-                        noteText: _controller.text,
-                        noteKey: widget.noteKey,
-                      ),
-                    );
-                  } else {
-                    Get.find<BlackBoxBloc>().add(
-                      DeleteNoteEvent(
-                        folderName: folderName,
-                        key: widget.noteKey,
-                      ),
-                    );
-                  }
+    final content = Theme(
+      data: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+      ),
+      child: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) async {
+          if (!didPop) {
+            if (textNote == _controller.text) {
+              ToolNavigator.pop();
+            } else {
+              bool? saveData = await _confirmSaveOnExit(
+                  bContext: context,
+                  folderName: folderName,
+                  notedText: _controller.text);
+              if (saveData == null) {
+              } else if (saveData) {
+                if (_controller.text.length > 5) {
+                  Get.find<BlackBoxBloc>().add(
+                    ChangeNoteEvent(
+                      folderName: folderName,
+                      noteText: _controller.text,
+                      noteKey: widget.noteKey,
+                    ),
+                  );
+                } else {
+                  Get.find<BlackBoxBloc>().add(
+                    DeleteNoteEvent(
+                      folderName: folderName,
+                      key: widget.noteKey,
+                    ),
+                  );
                 }
-                ToolNavigator.pop();
               }
+              ToolNavigator.pop();
             }
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text('Edit Note'),
-            ),
-            body: Stack(
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('Edit Note'),
+          ),
+          body: SafeArea(
+            child: Stack(
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 55.0),
@@ -662,34 +673,34 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: double.infinity,
-                    height: 45,
-                    color: Colors.black,
-                    child: GetPlatform.isDesktop 
-                        ? MoveWindow(onDoubleTap: () => {}) 
-                        : const SizedBox.shrink(),
+                if (GetPlatform.isDesktop)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      width: double.infinity,
+                      height: 45,
+                      color: Colors.black,
+                      child: MoveWindow(onDoubleTap: () => {}),
+                    ),
                   ),
-                ),
               ],
             ),
-            floatingActionButton: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FloatingActionButton(
-                  onPressed: () {
-                    setState(() {
-                      _isEditMode = !_isEditMode;
-                    });
-                  },
-                  heroTag: 'secondory',
-                  mini: true,
-                  child: Icon(_isEditMode ? Icons.visibility : Icons.edit),
-                  tooltip: 'Toggle Mode',
-                ),
-                SizedBox(width: 10),
+          ),
+          floatingActionButton: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    _isEditMode = !_isEditMode;
+                  });
+                },
+                heroTag: 'secondory',
+                mini: true,
+                child: Icon(_isEditMode ? Icons.visibility : Icons.edit),
+                tooltip: 'Toggle Mode',
+              ),
+              SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: () {
                     if (_controller.text.length > 5) {
@@ -719,14 +730,17 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ),
                   ),
                   tooltip: 'Save Note',
-                  heroTag: 'Main',
+                  heroTag: 'EditNoteSave',
                 ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
     );
+    if (GetPlatform.isDesktop) {
+      return MyScreenBoxDecorationWidget(child: content);
+    }
+    return content;
   }
 
   Future<bool?> _confirmSaveOnExit({

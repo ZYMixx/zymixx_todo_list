@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 import 'package:zymixx_todo_list/data/tools/tool_navigator.dart';
 import 'package:zymixx_todo_list/data/tools/tool_theme_data.dart';
 import '../screen_app_bottom_navigator/my_bottom_navigator_screen.dart';
@@ -15,14 +16,16 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
+    final content = BlocProvider(
       create: (_) => SettingsBloc()..add(LoadSettingsEvent()),
-      child: MyDefBgDecoration(
-        child: MyScreenBoxDecorationWidget(
-          child: const SettingsScreenWidget(),
-        ),
-      ),
+      child: const SettingsScreenWidget(),
     );
+    if (GetPlatform.isDesktop) {
+      return MyDefBgDecoration(
+        child: MyScreenBoxDecorationWidget(child: content),
+      );
+    }
+    return MyDefBgDecoration(child: content);
   }
 }
 
@@ -55,7 +58,8 @@ class SettingsScreenWidget extends StatelessWidget {
         ),
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: BlocBuilder<SettingsBloc, SettingsState>(
+          body: SafeArea(
+            child: BlocBuilder<SettingsBloc, SettingsState>(
             builder: (context, state) {
               return CustomScrollView(
                 slivers: [
@@ -171,6 +175,7 @@ class SettingsScreenWidget extends StatelessWidget {
             },
           ),
         ),
+      ),
       ),
     );
   }
