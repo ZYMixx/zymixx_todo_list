@@ -44,9 +44,11 @@ class CursorPointerListenerWidget extends StatelessWidget {
   }
 
   void _updatePointerDown(Offset position) {
-    // ignore: avoid_print
-    print('CursorPointerListenerWidget onPointerDown: $position');
     Get.find<CursorPositionService>().updatePointerDown(position);
+  }
+
+  void _notifyPointerUp() {
+    Get.find<CursorPositionService>().notifyPointerUp();
   }
 
   @override
@@ -59,6 +61,8 @@ class CursorPointerListenerWidget extends StatelessWidget {
         _updateCursorPosition(event.position);
       },
       onPointerMove: (event) => _updateCursorPosition(event.position),
+      onPointerUp: (_) => _notifyPointerUp(),
+      onPointerCancel: (_) => _notifyPointerUp(),
       child: child,
     );
   }
@@ -74,9 +78,11 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
   }
 
   void _updatePointerDown(Offset position) {
-    // ignore: avoid_print
-    print('MyScreenBoxDecorationWidget onPointerDown: $position');
     Get.find<CursorPositionService>().updatePointerDown(position);
+  }
+
+  void _notifyPointerUp() {
+    Get.find<CursorPositionService>().notifyPointerUp();
   }
 
   @override
@@ -121,6 +127,8 @@ class MyScreenBoxDecorationWidget extends StatelessWidget {
               _updateCursorPosition(event.position);
             },
             onPointerMove: (event) => _updateCursorPosition(event.position),
+            onPointerUp: (_) => _notifyPointerUp(),
+            onPointerCancel: (_) => _notifyPointerUp(),
             child: Stack(
               children: [
                 DecoratedBox(

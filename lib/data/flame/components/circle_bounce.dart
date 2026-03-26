@@ -23,14 +23,20 @@ class CircleBounce extends BodyComponent
 
   final double maxAngularVelocity = 3.0;
 
-  static const int burstTapCount = 5;
+  static const int burstTapCount = 3;
   static const int burstFrameCount = 5;
-  static const double burstStepTime = 0.015;
+  static const double burstStepTime = 0.026;
+
+  static const double burstHoldSeconds = 2.0;
   int _tapCount = 0;
   bool _isBursting = false;
   late final SpriteAnimation _burstAnimation;
 
   double get hitRadius => radius * 0.75;
+
+  double _holdSeconds = 0;
+  Offset? _lastPointerGlobalPos;
+  bool _isPointerDown = false;
 
 
   CircleBounce({
@@ -72,20 +78,26 @@ class CircleBounce extends BodyComponent
 
     // debugMode = true;
     Get.find<CursorPositionService>().cursorPositionStream.listen((globalPos) {
+      _lastPointerGlobalPos = globalPos;
       applyOppositeForce(globalPos);
     });
 
     Get.find<CursorPositionService>().pointerDownStream.listen((globalPos) {
+      _isPointerDown = true;
+      _lastPointerGlobalPos = globalPos;
       _handlePointerDown(globalPos);
+    });
+
+    Get.find<CursorPositionService>().pointerUpStream.listen((_) {
+      _isPointerDown = false;
+      // Если это был touch, то “палец на шарике” закончился.
+      _holdSeconds = 0;
     });
     return super.onLoad();
   }
 
   void _handlePointerDown(Offset globalPos) {
     if (_isBursting) return;
-
-    // ignore: avoid_print
-    print('CircleBounce _handlePointerDown');
 
     // Проверяем попадание по “видимому” радиусу, а координаты берём в
     // общем (global) пространстве Flutter/Flame, как и для курсора.
@@ -102,8 +114,7 @@ class CircleBounce extends BodyComponent
 
   void _startBurst() {
     _isBursting = true;
-    // ignore: avoid_print
-    print('CircleBounce: BURST');
+    _holdSeconds = 0;
 
     final currentAngle = body.angle;
 
@@ -147,6 +158,29 @@ class CircleBounce extends BodyComponent
       body.angularVelocity = 0;
       super.update(dt);
       return;
+    }
+
+    // Лопаем шарик, если курсор/палец удерживаются на нём 3 секунды.
+    // Для touch учитываем только пока палец зажат (pointerDown).
+    final pos = _lastPointerGlobalPos;
+    if (pos != null) {
+      final cursorPos = camera.globalToLocal(pos.toVector2());
+      final isOver = (cursorPos - position).length2 <= hitRadius * hitRadius;
+
+      // Desktop: считаем удержание по hover (даже без нажатия).
+      // Touch: считаем удержание, пока палец нажат.
+      final shouldCountHold = isOver && (GetPlatform.isDesktop || _isPointerDown);
+
+      if (shouldCountHold) {
+        _holdSeconds += dt;
+        if (_holdSeconds >= burstHoldSeconds) {
+          _startBurst();
+        }
+      } else {
+        _holdSeconds = 0;
+      }
+    } else {
+      _holdSeconds = 0;
     }
 
     if (body.angularVelocity > maxAngularVelocity) {
