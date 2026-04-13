@@ -34,16 +34,19 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     on<RequestAddNewDailyEvent>(_onRequestAddNewDailyEvent);
   }
 
-  Future<void> _onCompleteDailyEvent(CompleteDailyEvent event, Emitter<DailyTodoState> emit) async {
+  Future<void> _onCompleteDailyEvent(
+      CompleteDailyEvent event, Emitter<DailyTodoState> emit) async {
     if (event.remainSeconds != 0) {
       await _onStopStartTimerEvent(event, emit);
     } else {
-      await _daoDatabase.editTodoItemById(id: event.itemId, isDone: event.isComplete);
+      await _daoDatabase.editTodoItemById(
+          id: event.itemId, isDone: event.isComplete);
       Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
     }
   }
 
-  Future<void> _onDeleteDailyEvent(DeleteDailyEvent event, Emitter<DailyTodoState> emit) async {
+  Future<void> _onDeleteDailyEvent(
+      DeleteDailyEvent event, Emitter<DailyTodoState> emit) async {
     await deleteDailyItem(
       context: event._context,
       content: event.content,
@@ -52,13 +55,16 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     );
   }
 
-  void _onChangeYesterdayModEvent(ChangeYesterdayModEvent event, Emitter<DailyTodoState> emit) {
+  void _onChangeYesterdayModEvent(
+      ChangeYesterdayModEvent event, Emitter<DailyTodoState> emit) {
     emit(state.copyWith(yesterdayDailyMod: !state.yesterdayDailyMod));
   }
 
-  Future<void> _onRequestAddNewDailyEvent(RequestAddNewDailyEvent event, Emitter<DailyTodoState> emit) async {
+  Future<void> _onRequestAddNewDailyEvent(
+      RequestAddNewDailyEvent event, Emitter<DailyTodoState> emit) async {
     try {
-      Map<String, dynamic> userInputDataMap = await Get.find<ToolShowOverlay>().showUserInputOverlay(
+      Map<String, dynamic> userInputDataMap =
+          await Get.find<ToolShowOverlay>().showUserInputOverlay(
         context: event._context,
         child: CreateDailyWidget(),
       );
@@ -94,8 +100,10 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
           },
           labelOnCancel: 'Навсегда',
           onCancel: () async {
-            String changedContent = Get.find<ToolMergeJson>().mergeJsonAndMap(content, {delDataBaseKey: true});
-            await _daoDatabase.updateContentByTitle(title: title, newContent: changedContent);
+            String changedContent = Get.find<ToolMergeJson>()
+                .mergeJsonAndMap(content, {delDataBaseKey: true});
+            await _daoDatabase.updateContentByTitle(
+                title: title, newContent: changedContent);
             await _daoDatabase.deleteTodoItemById(itemId: itemId);
             Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
           },
@@ -104,15 +112,18 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     );
   }
 
-
-  
-  Future<void> _onStopStartTimerEvent(CompleteDailyEvent completeEvent, Emitter<DailyTodoState> emit) async {
-    String timerIdentifier = "${completeEvent.itemId}${AppData.dailyTimerIdentifier}";
-    if (state.activeTimerIdentifier != null && timerIdentifier != state.activeTimerIdentifier) {
-      Get.find<ServiceStreamController>().stopStream(state.activeTimerIdentifier!);
+  Future<void> _onStopStartTimerEvent(
+      CompleteDailyEvent completeEvent, Emitter<DailyTodoState> emit) async {
+    String timerIdentifier =
+        "${completeEvent.itemId}${AppData.dailyTimerIdentifier}";
+    if (state.activeTimerIdentifier != null &&
+        timerIdentifier != state.activeTimerIdentifier) {
+      Get.find<ServiceStreamController>()
+          .stopStream(state.activeTimerIdentifier!);
       state.activeDailyItemGetter = null;
       state.activeTimerIdentifier = null;
-      Get.find<ToolShowToast>().showError('Был остановлен другой активный Daily.');
+      Get.find<ToolShowToast>()
+          .showError('Был остановлен другой активный Daily.');
       emit(state.copyWithTimerIdentifierNull());
       return;
     }
@@ -123,27 +134,27 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     }
 
     if (state.activeDailyItemGetter == null) {
-      state.activeDailyItemGetter = DbTodoItemGetter(itemId: completeEvent.itemId);
+      state.activeDailyItemGetter =
+          DbTodoItemGetter(itemId: completeEvent.itemId);
       state.activeTimerIdentifier = timerIdentifier;
       emit(state.copyWith(activeTimerIdentifier: timerIdentifier));
     }
 
-    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
+    Future<bool> Function() callBack = () async {
       int remainSeconds = await state.activeDailyItemGetter?.timerSeconds ?? 0;
       if (remainSeconds == 0) {
         Get.find<ServiceStreamController>().stopStream(timerIdentifier);
         return false;
       } else {
-        if (await state.activeDailyItemGetter?.autoPauseSeconds == 0){
-          final int nextSeconds = (remainSeconds - elapsedSeconds).clamp(0, remainSeconds).toInt();
+        if (await state.activeDailyItemGetter?.autoPauseSeconds == 0) {
           await _daoDatabase.editTodoItemById(
-              id: completeEvent.itemId, timerSeconds: nextSeconds);
+              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
           return true;
         }
-        if (Get.find<ServiceStreamController>().isOtherTodoItemRun(AppData.dailyTimerIdentifier)) {
-          final int nextSeconds = (remainSeconds - elapsedSeconds).clamp(0, remainSeconds).toInt();
+        if (Get.find<ServiceStreamController>()
+            .isOtherTodoItemRun(AppData.dailyTimerIdentifier)) {
           await _daoDatabase.editTodoItemById(
-              id: completeEvent.itemId, timerSeconds: nextSeconds);
+              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
         }
         return true;
       }
@@ -154,22 +165,27 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
       identifier: timerIdentifier,
       callBack: callBack,
       finishCallBack: () => _onDailyTimerEnd(itemId: completeEvent.itemId),
-      autoPauseSeconds: await state.activeDailyItemGetter?.autoPauseSeconds ?? 0,
+      autoPauseSeconds:
+          await state.activeDailyItemGetter?.autoPauseSeconds ?? 0,
       periodDuration: periodDuration,
     );
     StreamSubscription streamSubscription = timerStream.listen((event) async {
       if (event) {
-        if (Get.find<MyBottomNavigatorWidget>().state.activeScreen is DailyTodoScreen) {
+        if (Get.find<MyBottomNavigatorWidget>().state.activeScreen
+            is DailyTodoScreen) {
           Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
         }
       }
     });
-    Get.find<ServiceStreamController>().addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
+    Get.find<ServiceStreamController>().addStreamListener(
+        subscription: streamSubscription, identifier: timerIdentifier);
   }
 
-  void checkOnActiveTimer({required int itemId, required Function(int) updateCallBack}) {
+  void checkOnActiveTimer(
+      {required int itemId, required Function(int) updateCallBack}) {
     String timerIdentifier = "${itemId}_timer";
-    Stream? timerStream = Get.find<ServiceStreamController>().resumeStreamListener(identifier: timerIdentifier);
+    Stream? timerStream = Get.find<ServiceStreamController>()
+        .resumeStreamListener(identifier: timerIdentifier);
     if (timerStream != null) {
       if (state.activeDailyItemGetter == null) {
         state.activeDailyItemGetter = DbTodoItemGetter(itemId: itemId);
@@ -180,16 +196,19 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
           Get.find<AllItemControlBloc>().add(LoadDailyItemEvent());
         }
       });
-      Get.find<ServiceStreamController>().addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
+      Get.find<ServiceStreamController>().addStreamListener(
+          subscription: streamSubscription, identifier: timerIdentifier);
       Log.i('resubscribe Timer');
     }
   }
 
   void _onDailyTimerEnd({required int itemId}) {
-    Get.find<ServiceStreamController>().stopStream(state.activeTimerIdentifier!);
+    Get.find<ServiceStreamController>()
+        .stopStream(state.activeTimerIdentifier!);
     state.activeDailyItemGetter = null;
     state.activeTimerIdentifier = null;
-    this.add(CompleteDailyEvent(isComplete: true, itemId: itemId, remainSeconds: 0));
+    this.add(
+        CompleteDailyEvent(isComplete: true, itemId: itemId, remainSeconds: 0));
   }
 
   @override
@@ -197,6 +216,7 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
     await super.close();
   }
 }
+
 class DailyTodoState {
   DbTodoItemGetter? activeDailyItemGetter;
   String? activeTimerIdentifier;
@@ -214,8 +234,10 @@ class DailyTodoState {
     bool? yesterdayDailyMod,
   }) {
     return DailyTodoState(
-      activeDailyItemGetter: activeDailyItemGetter ?? this.activeDailyItemGetter,
-      activeTimerIdentifier: activeTimerIdentifier ?? this.activeTimerIdentifier,
+      activeDailyItemGetter:
+          activeDailyItemGetter ?? this.activeDailyItemGetter,
+      activeTimerIdentifier:
+          activeTimerIdentifier ?? this.activeTimerIdentifier,
       yesterdayDailyMod: yesterdayDailyMod ?? this.yesterdayDailyMod,
     );
   }

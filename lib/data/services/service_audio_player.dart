@@ -1,4 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 class ServiceAudioPlayer {
   List<int> ignoreTodoItemIdList = [];
@@ -43,6 +45,11 @@ class ServiceAudioPlayer {
   }
 
   playTimerAlert() {
+    if (GetPlatform.isMobile) {
+      HapticFeedback.mediumImpact();
+      SystemSound.play(SystemSoundType.alert);
+      return;
+    }
     _playAssetsAudio('songs/timer_music_alert.mp3', volume: 0.10);
   }
 }

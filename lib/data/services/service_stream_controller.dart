@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -11,7 +12,7 @@ class ServiceStreamController {
 
   Stream<bool> addStreamItem<T extends Bloc>({
     required String identifier,
-    required Future<bool> Function(int elapsedSeconds) callBack,
+    required Future<bool> Function() callBack,
     required Function() finishCallBack,
     required Duration periodDuration,
     required int autoPauseSeconds,
@@ -44,7 +45,9 @@ class ServiceStreamController {
   }
 
   Stream<bool>? resumeStreamListener(
-      {required String identifier, Function()? finishCallBack, int? autoPauseSeconds}) {
+      {required String identifier,
+      Function()? finishCallBack,
+      int? autoPauseSeconds}) {
     for (var item in streamItemsList) {
       if (item.identifier == identifier) {
         if (finishCallBack != null) {
@@ -74,7 +77,9 @@ class ServiceStreamController {
     return false;
   }
 
-  addStreamListener({required StreamSubscription subscription, required String identifier}) async {
+  addStreamListener(
+      {required StreamSubscription subscription,
+      required String identifier}) async {
     if (subList[identifier] != null) {
       await subList[identifier]?.cancel();
     }
@@ -96,9 +101,8 @@ class StreamItem<T extends Bloc> {
   Duration periodDuration;
   bool isRun = true;
   int autoPauseSeconds;
-  Future<bool> Function(int elapsedSeconds) callBack;
+  Future<bool> Function() callBack;
   Function finishCallBack;
-  DateTime _lastTickAt = DateTime.now();
 
   StreamItem({
     required this.identifier,
@@ -115,29 +119,55 @@ class StreamItem<T extends Bloc> {
   }
 
   Stream<bool> callLoop() async* {
+    final DateTime startedAt = DateTime.now();
+    int processedSeconds = 0;
     while (isRun) {
-      yield await Future.delayed(periodDuration).then((_) async {
+      await Future.delayed(periodDuration);
+      if (!isRun) {
+        break;
+      }
+
+      final int elapsedSeconds = DateTime.now().difference(startedAt).inSeconds;
+      final int pendingTicks = max(0, elapsedSeconds - processedSeconds);
+
+      if (pendingTicks == 0) {
+        continue;
+      }
+
+      if (_isPausedByNoAction()) {
+        yield false;
+        continue;
+      }
+
+      bool emittedTick = false;
+      for (int i = 0; i < pendingTicks; i++) {
         if (!isRun) {
-          return false;
+          break;
         }
-        final bool shouldRunByActivity = !GetPlatform.isDesktop ||
-            autoPauseSeconds == 0 ||
-            Get.find<ServiceBackgroundKeyListener>().noActionSecondTimer < autoPauseSeconds;
-        if (!shouldRunByActivity) {
-          _lastTickAt = DateTime.now();
-          return false;
+        processedSeconds += 1;
+        emittedTick = true;
+        if (!(await callBack.call())) {
+          finishCallBack.call();
+          yield true;
+          return;
         }
-        final DateTime now = DateTime.now();
-        int elapsedSeconds = now.difference(_lastTickAt).inSeconds;
-        if (elapsedSeconds <= 0) {
-          elapsedSeconds = 1;
-        }
-        _lastTickAt = now;
-        if (!(await callBack.call(elapsedSeconds))) {
-            finishCallBack.call();
-        }
-        return true;
-      });
+      }
+
+      if (emittedTick) {
+        yield true;
+      }
     }
+  }
+
+  bool _isPausedByNoAction() {
+    // На мобильных клавиатурный idle-трекер неприменим: не ставим таймер на паузу.
+    if (!GetPlatform.isDesktop) {
+      return false;
+    }
+    if (autoPauseSeconds == 0) {
+      return false;
+    }
+    return Get.find<ServiceBackgroundKeyListener>().noActionSecondTimer >=
+        autoPauseSeconds;
   }
 }

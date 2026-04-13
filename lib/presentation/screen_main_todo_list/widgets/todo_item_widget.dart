@@ -247,52 +247,34 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                                 MyAnimatedCard(
                                   intensity: 0.01,
                                   directionUp: false,
-                                  child: (GetPlatform.isDesktop
-                                      ? AnimatedCirclesWidget(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 5.0, bottom: 5.0, left: 4),
-                                            child: SizedBox(
-                                              width: 2.5,
-                                              height: double.infinity,
-                                              child: DecoratedBox(
-                                                decoration: BoxDecoration(
-                                                  color: priorityColor
-                                                      .withOpacity(0.5),
-                                                  borderRadius:
-                                                      BorderRadius.circular(2),
-                                                  // Объём для разделителя
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: priorityColor
-                                                          .withOpacity(0.3),
-                                                      blurRadius: 2,
-                                                      spreadRadius: 0,
-                                                      offset:
-                                                          const Offset(0.5, 0),
-                                                    ),
-                                                  ],
-                                                ),
+                                  child: AnimatedCirclesWidget(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          top: 5.0, bottom: 5.0, left: 4),
+                                      child: SizedBox(
+                                        width: 2.5,
+                                        height: double.infinity,
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color:
+                                                priorityColor.withOpacity(0.5),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
+                                            // Объём для разделителя
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: priorityColor
+                                                    .withOpacity(0.3),
+                                                blurRadius: 2,
+                                                spreadRadius: 0,
+                                                offset: const Offset(0.5, 0),
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                        )
-                                      : Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 5.0, bottom: 5.0, left: 4),
-                                          child: SizedBox(
-                                            width: 2.5,
-                                            height: double.infinity,
-                                            child: DecoratedBox(
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    priorityColor.withOpacity(0.5),
-                                                borderRadius:
-                                                    BorderRadius.circular(2),
-                                              ),
-                                            ),
-                                          ),
-                                        )),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 const Flexible(
                                     flex: 6, child: TimerWorkWidget()),
@@ -407,7 +389,7 @@ class TitlePresentWidget extends StatelessWidget {
     return Stack(
       alignment: AlignmentGeometry.center,
       children: [
-        Positioned.fill(
+        Expanded(
           child: Container(
             height: double.infinity,
             alignment: AlignmentGeometry.center,
@@ -1083,7 +1065,6 @@ class _TimerWidgetState extends State<TimerWidget> {
         Get.find<ToolTimeStringConverter>().formatSecondsToTimeMinute(timer);
     bool isTimerActive =
         context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
-    final bool isMobile = GetPlatform.isMobile;
 
     return Material(
       color: Colors.transparent,
@@ -1181,11 +1162,6 @@ class _TimerWidgetState extends State<TimerWidget> {
               color: Colors.black54,
             ),
           ),
-          if (isMobile)
-            MobileTimerModeMenuButton(
-              bloc: bloc,
-              currentMod: TimeModEnum.timer,
-            ),
           const SizedBox(width: 15),
         ],
       ),
@@ -1213,7 +1189,6 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
     bool isTimerActive =
         context.select((TodoItemBloc bloc) => bloc.state.isTimerActive);
     TodoItemBloc bloc = context.select((TodoItemBloc bloc) => bloc);
-    final bool isMobile = GetPlatform.isMobile;
     String stopwatchString = Get.find<ToolTimeStringConverter>()
         .formatSecondsToTimeMinute(stopwatch);
     return IconButton(
@@ -1277,67 +1252,11 @@ class _StopwatchWidgetState extends State<StopwatchWidget> {
                   ),
                 );
               }),
-              const SizedBox(width: 3),
-              if (isMobile)
-                MobileTimerModeMenuButton(
-                  bloc: bloc,
-                  currentMod: TimeModEnum.stopwatch,
-                ),
+              const SizedBox(width: 3)
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class MobileTimerModeMenuButton extends StatelessWidget {
-  final TodoItemBloc bloc;
-  final TimeModEnum currentMod;
-
-  const MobileTimerModeMenuButton({
-    super.key,
-    required this.bloc,
-    required this.currentMod,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (!GetPlatform.isMobile) {
-      return const SizedBox.shrink();
-    }
-    return PopupMenuButton<String>(
-      tooltip: 'Режим таймера',
-      icon: const Icon(
-        Icons.more_horiz_rounded,
-        size: 16,
-        color: Colors.black54,
-      ),
-      onSelected: (value) {
-        if (value == 'timer') {
-          bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.timer));
-        } else if (value == 'stopwatch') {
-          bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.stopwatch));
-        } else if (value == 'close') {
-          bloc.add(ChangeTimeModEvent(timerMod: TimeModEnum.none));
-        }
-      },
-      itemBuilder: (context) => [
-        if (currentMod != TimeModEnum.stopwatch)
-          const PopupMenuItem<String>(
-            value: 'stopwatch',
-            child: Text('Переключить на секундомер'),
-          ),
-        if (currentMod != TimeModEnum.timer)
-          const PopupMenuItem<String>(
-            value: 'timer',
-            child: Text('Переключить на таймер'),
-          ),
-        const PopupMenuItem<String>(
-          value: 'close',
-          child: Text('Закрыть режим'),
-        ),
-      ],
     );
   }
 }
@@ -1380,6 +1299,9 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
   }
 
   void _handleTapDown(TapDownDetails details, BuildContext parentContext) {
+    if (!GetPlatform.isDesktop) {
+      return;
+    }
     _tapPosition = details.globalPosition;
     _timer?.cancel();
     if (_overlayEntries.isNotEmpty) {
@@ -1503,10 +1425,14 @@ class _AnimatedCirclesWidgetState extends State<AnimatedCirclesWidget>
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = GetPlatform.isDesktop;
     return GestureDetector(
-      onTapDown: (details) => _handleTapDown(details, context),
-      onTapCancel: _handleTapUp,
-      child: widget.child,
+      onTapDown: isDesktop ? (details) => _handleTapDown(details, context) : null,
+      onTapCancel: isDesktop ? _handleTapUp : null,
+      child: IgnorePointer(
+        ignoring: !isDesktop,
+        child: widget.child,
+      ),
     );
   }
 }

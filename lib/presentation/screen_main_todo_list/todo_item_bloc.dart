@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,15 +69,20 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   }
 
   resumeBloc() async {
-    Stream? timerStream = Get.find<ServiceStreamController>().resumeStreamListener(
+    final int streamAutoPauseSeconds = GetPlatform.isDesktop
+        ? await state.dbTodoItemGetter.autoPauseSeconds
+        : 0;
+    Stream? timerStream =
+        Get.find<ServiceStreamController>().resumeStreamListener(
       identifier: timerIdentifier,
       finishCallBack: _onTimerEnd,
-      autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
+      autoPauseSeconds: streamAutoPauseSeconds,
     );
-    Stream? stopwatchStream = Get.find<ServiceStreamController>().resumeStreamListener(
+    Stream? stopwatchStream =
+        Get.find<ServiceStreamController>().resumeStreamListener(
       identifier: stopwatchIdentifier,
       finishCallBack: _onTimerEnd,
-      autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
+      autoPauseSeconds: streamAutoPauseSeconds,
     );
     if (timerStream != null) {
       this.add(ChangeTimeModEvent(timerMod: TimeModEnum.timer));
@@ -87,8 +91,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
           this.add(TimerSecondTickEvent());
         }
       });
-      Get.find<ServiceStreamController>()
-          .addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
+      Get.find<ServiceStreamController>().addStreamListener(
+          subscription: streamSubscription, identifier: timerIdentifier);
       this.add(SetTimerActiveEvent(isActive: true));
     }
     if (stopwatchStream != null) {
@@ -107,59 +111,75 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   }
 
   _onTimerEnd() {
-    if (state.needTimerSong && GetPlatform.isDesktop) {
+    if (state.needTimerSong) {
       Get.find<ServiceAudioPlayer>().playTimerAlert();
-    } else if (GetPlatform.isMobile) {
-      Get.find<ToolShowToast>().show('Таймер завершен');
     }
     this.add(SetTimerActiveEvent(isActive: false));
   }
 
-  void _onChangeModEvent(ChangeModEvent event, Emitter<TodoItemBlocState> emit) {
+  void _onChangeModEvent(
+      ChangeModEvent event, Emitter<TodoItemBlocState> emit) {
     emit(state.copyWith(changeTextMod: event.isChangeMod));
   }
 
-  void _onStopwatchResetTimeEvent(StopwatchResetTimeEvent event, Emitter<TodoItemBlocState> emit) {
+  void _onStopwatchResetTimeEvent(
+      StopwatchResetTimeEvent event, Emitter<TodoItemBlocState> emit) {
     _daoDatabase.editTodoItemById(id: state.todoItemId, stopwatchSeconds: 0);
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: 0)));
+    emit(
+        state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: 0)));
   }
 
-  void _onSetItemDateEvent(SetItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
-    await _daoDatabase.editTodoItemById(id: state.todoItemId, targetDateTime: event.userDateTime!);
+  void _onSetItemDateEvent(
+      SetItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
+    await _daoDatabase.editTodoItemById(
+        id: state.todoItemId, targetDateTime: event.userDateTime!);
     await Future.delayed(Duration.zero);
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
+    emit(state.copyWith(
+        todoItem: state.todoItem.copyWith(targetDateTime: event.userDateTime)));
   }
 
   void _onIncreaseItemDateEvent(
       IncreaseItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
     DateTime tDate = (await state.dbTodoItemGetter.targetDateTime)!;
-    DateTime increasedTargetDate = DateTime(tDate.year, tDate.month, tDate.day + 1);
-    await _daoDatabase.editTodoItemById(id: state.todoItemId, targetDateTime: increasedTargetDate);
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: increasedTargetDate)));
+    DateTime increasedTargetDate =
+        DateTime(tDate.year, tDate.month, tDate.day + 1);
+    await _daoDatabase.editTodoItemById(
+        id: state.todoItemId, targetDateTime: increasedTargetDate);
+    emit(state.copyWith(
+        todoItem:
+            state.todoItem.copyWith(targetDateTime: increasedTargetDate)));
   }
 
-  void _onSetAutoPauseSeconds(SetAutoPauseSeconds event, Emitter<TodoItemBlocState> emit) async {
+  void _onSetAutoPauseSeconds(
+      SetAutoPauseSeconds event, Emitter<TodoItemBlocState> emit) async {
     await _daoDatabase.editTodoItemById(
         id: state.todoItemId, autoPauseSeconds: event.autoPauseSeconds);
     await resumeBloc();
     emit(state.copyWith(
-        todoItem: state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
+        todoItem:
+            state.todoItem.copyWith(autoPauseSeconds: event.autoPauseSeconds)));
   }
 
   void _onSetTodoItemImageEvent(
       SetTodoItemImageEvent event, Emitter<TodoItemBlocState> emit) async {
     emit(state.copyWith(
-        imageFile: Get.find<ServiceImagePluginWork>().checkFileExist(state.todoItem)));
+        imageFile:
+            Get.find<ServiceImagePluginWork>().checkFileExist(state.todoItem)));
   }
 
-  void _onSetTimerActiveEvent(SetTimerActiveEvent event, Emitter<TodoItemBlocState> emit) async {
+  void _onSetTimerActiveEvent(
+      SetTimerActiveEvent event, Emitter<TodoItemBlocState> emit) async {
     emit(state.copyWith(isTimerActive: event.isActive));
   }
 
   void _onSetTimerNeedSongEvent(
       SetTimerNeedSongEvent event, Emitter<TodoItemBlocState> emit) async {
-    if (Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.contains(state.todoItemId)) {
-      Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.remove(state.todoItemId);
+    if (Get.find<ServiceAudioPlayer>()
+        .ignoreTodoItemIdList
+        .contains(state.todoItemId)) {
+      Get.find<ServiceAudioPlayer>()
+          .ignoreTodoItemIdList
+          .remove(state.todoItemId);
     } else {
       Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.add(state.todoItemId);
     }
@@ -170,14 +190,17 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   Future<void> _onChangeItemDateEvent(
       RequestChangeItemDateEvent event, Emitter<TodoItemBlocState> emit) async {
     {
-      DateTime? userInput = await Get.find<ToolShowOverlay>().showUserInputOverlay<DateTime>(
+      DateTime? userInput =
+          await Get.find<ToolShowOverlay>().showUserInputOverlay<DateTime>(
         context: event.buildContext,
         child: ChooseDateWidget(),
       );
       if (userInput != null) {
-        await _daoDatabase.editTodoItemById(id: state.todoItemId, targetDateTime: userInput!);
+        await _daoDatabase.editTodoItemById(
+            id: state.todoItemId, targetDateTime: userInput!);
         await Future.delayed(Duration.zero);
-        emit(state.copyWith(todoItem: state.todoItem.copyWith(targetDateTime: userInput)));
+        emit(state.copyWith(
+            todoItem: state.todoItem.copyWith(targetDateTime: userInput)));
       } else {
         await Future.delayed(Duration.zero);
         event.restoreFocusCallBack?.call();
@@ -188,7 +211,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   Future<void> _onTimerSecondTickEvent(
       TimerSecondTickEvent event, Emitter<TodoItemBlocState> emit) async {
     int remainSeconds = await state.dbTodoItemGetter.timerSeconds;
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: remainSeconds)));
+    emit(state.copyWith(
+        todoItem: state.todoItem.copyWith(timerSeconds: remainSeconds)));
   }
 
   Future<void> _onStopStartTimerEvent(
@@ -198,7 +222,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         .state
         .todoDailyItemList
         .where((element) =>
-            element.targetDateTime != null && element.targetDateTime!.isSameDay(DateTime.now()))
+            element.targetDateTime != null &&
+            element.targetDateTime!.isSameDay(DateTime.now()))
         .toList();
     Log.i(
       'todoDailyItemList ${dailyList.length}',
@@ -220,19 +245,17 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
-    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
+    Future<bool> Function() callBack = () async {
       int remainSeconds = await state.dbTodoItemGetter.timerSeconds;
       int secondSpent = await state.dbTodoItemGetter.secondSpent;
       if (remainSeconds == 0) {
         Get.find<ServiceStreamController>().stopStream(timerIdentifier);
         return false;
       } else {
-        final int appliedSeconds = min(remainSeconds, elapsedSeconds);
         _daoDatabase.editTodoItemById(
-          id: state.todoItemId,
-          timerSeconds: remainSeconds - appliedSeconds,
-          secondsSpent: secondSpent + appliedSeconds,
-        );
+            id: state.todoItemId,
+            timerSeconds: remainSeconds - 1,
+            secondsSpent: secondSpent + 1);
         return true;
       }
     };
@@ -240,7 +263,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     Stream timerStream = Get.find<ServiceStreamController>().addStreamItem(
         identifier: timerIdentifier,
         callBack: callBack,
-        autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
+        autoPauseSeconds:
+            GetPlatform.isDesktop ? await state.dbTodoItemGetter.autoPauseSeconds : 0,
         finishCallBack: _onTimerEnd,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
@@ -248,8 +272,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         this.add(TimerSecondTickEvent());
       }
     });
-    Get.find<ServiceStreamController>()
-        .addStreamListener(subscription: streamSubscription, identifier: timerIdentifier);
+    Get.find<ServiceStreamController>().addStreamListener(
+        subscription: streamSubscription, identifier: timerIdentifier);
     this.add(SetTimerActiveEvent(isActive: true));
     Get.find<ServiceStreamController>()
         .stopStream(stopwatchIdentifier); //останавливаем секундомер если он был
@@ -261,7 +285,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         .state
         .todoDailyItemList
         .where((element) =>
-            element.targetDateTime != null && element.targetDateTime!.isSameDay(DateTime.now()))
+            element.targetDateTime != null &&
+            element.targetDateTime!.isSameDay(DateTime.now()))
         .toList();
     Log.i(
       'todoDailyItemList ${dailyList.length}',
@@ -282,26 +307,18 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
-    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
+    Future<bool> Function() callBack = () async {
       int crntSeconds = await state.dbTodoItemGetter.stopwatchSeconds;
       if (crntSeconds > 2400) {
         Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier);
         _onTimerEnd();
         return false;
       } else {
-        final int nextSeconds = min(2400, crntSeconds + elapsedSeconds);
-        final int appliedSeconds = nextSeconds - crntSeconds;
         int secondSpent = await state.dbTodoItemGetter.secondSpent;
         _daoDatabase.editTodoItemById(
-          id: state.todoItemId,
-          stopwatchSeconds: nextSeconds,
-          secondsSpent: secondSpent + appliedSeconds,
-        );
-        if (nextSeconds >= 2400) {
-          Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier);
-          _onTimerEnd();
-          return false;
-        }
+            id: state.todoItemId,
+            stopwatchSeconds: crntSeconds + 1,
+            secondsSpent: secondSpent + 1);
         return true;
       }
     };
@@ -310,37 +327,42 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         identifier: stopwatchIdentifier,
         callBack: callBack,
         finishCallBack: _onTimerEnd,
-        autoPauseSeconds: await state.dbTodoItemGetter.autoPauseSeconds,
+        autoPauseSeconds:
+            GetPlatform.isDesktop ? await state.dbTodoItemGetter.autoPauseSeconds : 0,
         periodDuration: periodDuration);
     StreamSubscription streamSubscription = timerStream.listen((event) {
       if (event) {
         this.add(StopwatchSecondTickEvent());
       }
     });
-    Get.find<ServiceStreamController>()
-        .addStreamListener(subscription: streamSubscription, identifier: stopwatchIdentifier);
+    Get.find<ServiceStreamController>().addStreamListener(
+        subscription: streamSubscription, identifier: stopwatchIdentifier);
     this.add(SetTimerActiveEvent(isActive: true));
     Get.find<ServiceStreamController>()
         .stopStream(timerIdentifier); //останавливаем таймер если он был
   }
 
-  Future<void> _onStopwatchSecondTickEvent(
-      StopwatchSecondTickEvent event, Emitter<TodoItemBlocState> emit) async {
-    int time = await state.dbTodoItemGetter.stopwatchSeconds;
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: time)));
+  void _onStopwatchSecondTickEvent(
+      StopwatchSecondTickEvent event, Emitter<TodoItemBlocState> emit) {
+    int time = state.todoItem.stopwatchSeconds + 1;
+    emit(state.copyWith(
+        todoItem: state.todoItem.copyWith(stopwatchSeconds: time)));
   }
 
-  void _onChangeTimeModEvent(ChangeTimeModEvent event, Emitter<TodoItemBlocState> emit) {
+  void _onChangeTimeModEvent(
+      ChangeTimeModEvent event, Emitter<TodoItemBlocState> emit) {
     emit(state.copyWith(timerMod: event.timerMod));
   }
 
-  Future<void> _onChangeTimerEvent(ChangeTimerEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onChangeTimerEvent(
+      ChangeTimerEvent event, Emitter<TodoItemBlocState> emit) async {
     int newTimer = state.todoItem.timerSeconds + event.changeNum;
     if (newTimer < 0) {
       newTimer = 0;
     }
     _daoDatabase.editTodoItemById(id: state.todoItemId, timerSeconds: newTimer);
-    emit(state.copyWith(todoItem: state.todoItem.copyWith(timerSeconds: newTimer)));
+    emit(state.copyWith(
+        todoItem: state.todoItem.copyWith(timerSeconds: newTimer)));
   }
 
   Future<void> _onSaveItemChangeEvent(
@@ -365,7 +387,9 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     if (!Get.find<ToolShowOverlay>().isOpen) {
       try {
         await _daoDatabase.editTodoItemById(
-            id: state.todoItemId, title: event.titleText, content: event.descriptionText);
+            id: state.todoItemId,
+            title: event.titleText,
+            content: event.descriptionText);
       } catch (e) {
         print(e);
       }
@@ -374,10 +398,13 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
     }
   }
 
-  Future<void> _onDismissEvent(DismissEvent event, Emitter<TodoItemBlocState> emit) async {
+  Future<void> _onDismissEvent(
+      DismissEvent event, Emitter<TodoItemBlocState> emit) async {
     DateTime dateNow = DateTime.now();
-    Get.find<ServiceStreamController>().removeStreamListener(identifier: timerIdentifier);
-    Get.find<ServiceStreamController>().removeStreamListener(identifier: stopwatchIdentifier);
+    Get.find<ServiceStreamController>()
+        .removeStreamListener(identifier: timerIdentifier);
+    Get.find<ServiceStreamController>()
+        .removeStreamListener(identifier: stopwatchIdentifier);
     if (dateNow.hour < 3) {
       dateNow = dateNow.copyWith(day: dateNow.day - 1);
     }
@@ -414,8 +441,8 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
           Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
         });
       };
-      Get.find<ToolShowToast>()
-          .showWithCallBack(message: 'Задача удаленна.', callback: returnItemCallBack);
+      Get.find<ToolShowToast>().showWithCallBack(
+          message: 'Задача удаленна.', callback: returnItemCallBack);
     }
     Future.delayed(Duration.zero, () {
       Get.find<AllItemControlBloc>().add(LoadAllItemEvent());
@@ -447,8 +474,9 @@ class TodoItemBlocState {
     this.isTimerActive = false,
     this.imageFile,
   })  : todoItemId = todoItem.id,
-        needTimerSong =
-            (!Get.find<ServiceAudioPlayer>().ignoreTodoItemIdList.contains(todoItem.id)),
+        needTimerSong = (!Get.find<ServiceAudioPlayer>()
+            .ignoreTodoItemIdList
+            .contains(todoItem.id)),
         dbTodoItemGetter = DbTodoItemGetter(itemId: todoItem.id) {
     imageFile = Get.find<ServiceImagePluginWork>().checkFileExist(todoItem);
   }
@@ -511,7 +539,9 @@ class SaveItemChangeEvent extends TodoItemBlocEvent {
   bool setChangeMod;
 
   SaveItemChangeEvent(
-      {required this.titleText, required this.descriptionText, this.setChangeMod = false});
+      {required this.titleText,
+      required this.descriptionText,
+      this.setChangeMod = false});
 }
 
 class ChangeModEvent extends TodoItemBlocEvent {
@@ -526,7 +556,9 @@ class RequestChangeItemDateEvent extends TodoItemBlocEvent {
   Function? restoreFocusCallBack;
 
   RequestChangeItemDateEvent(
-      {required this.buildContext, this.userDateTime, this.restoreFocusCallBack});
+      {required this.buildContext,
+      this.userDateTime,
+      this.restoreFocusCallBack});
 }
 
 class SetItemDateEvent extends TodoItemBlocEvent {
