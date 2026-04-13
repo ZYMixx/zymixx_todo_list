@@ -59,7 +59,7 @@ class TodoItemWidget extends StatelessWidget {
               child: Center(
                 child: Icon(
                   Icons.drag_indicator_rounded,
-                  color: Colors.white.withValues(alpha: 0.35),
+                  color: Colors.black.withValues(alpha: 0.45),
                   size: 20,
                 ),
               ),
@@ -244,7 +244,6 @@ class _TodoItemBodyState extends State<TodoItemBody> {
                                         : const TitlePresentWidget(),
                                   ),
                                 ),
-                                // Убрали отдельную цветную полоску из середины — она теперь слева
                                 MyAnimatedCard(
                                   intensity: 0.01,
                                   directionUp: false,
@@ -388,76 +387,87 @@ class TitlePresentWidget extends StatelessWidget {
         Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime);
 
     return Stack(
+      alignment: AlignmentGeometry.center,
       children: [
-        InkWell(
-          onTap: () {
-            bloc.add(ChangeModEvent(isChangeMod: true));
-          },
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: App.inWorkMod ? 2.0 : 8.0,
-              top: App.inWorkMod ? 0.0 : 2.5,
-              bottom: App.inWorkMod ? 0.0 : 1.0,
-              right: todoImageFile != null
-                  ? 25
-                  : App.inWorkMod
-                      ? 4
-                      : 8,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  (title.capStart() ?? '') ?? '',
-                  maxLines: App.inWorkMod ? 2 : null,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15.5,
-                    letterSpacing: -0.2,
-                    height: App.inWorkMod ? 0.7 : 1.1,
-                    color: Colors.black,
-                  ),
+        Expanded(
+          child: Container(
+            height: double.infinity,
+            alignment: AlignmentGeometry.center,
+            child: InkWell(
+              onTap: () {
+                bloc.add(ChangeModEvent(isChangeMod: true));
+              },
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: App.inWorkMod ? 2.0 : 8.0,
+                  top: App.inWorkMod ? 0.0 : 2.5,
+                  bottom: App.inWorkMod ? 0.0 : 1.0,
+                  right: todoImageFile != null
+                      ? 25
+                      : App.inWorkMod
+                          ? 4
+                          : 8,
                 ),
-                if (dateStr != null && !App.inWorkMod)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2.0),
-                    child: DecoratedBox(
-                      decoration: todoImageFile != null
-                          ? BoxDecoration(
-                              border: Border.all(
-                                  color: ToolThemeData.highlightColor
-                                      .withOpacity(0.3),
-                                  width: 0.5),
-                              color: Colors.white.withOpacity(0.3),
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 2,
-                                  spreadRadius: 0,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            )
-                          : const BoxDecoration(),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Text(
-                          dateStr,
-                          style: TextStyle(
-                            color: isSocial
-                                ? ToolThemeData.mainGreenColor
-                                : Colors.black.withOpacity(0.65),
-                            fontWeight: FontWeight.w700,
-                            fontSize: isSocial ? 11 : 10.5,
-                            letterSpacing: 0.1,
-                          ),
+                child: Align(
+                  alignment: AlignmentGeometry.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        (title.capStart() ?? '') ?? '',
+                        maxLines: App.inWorkMod ? 2 : null,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          letterSpacing: -0.1,
+                          height: App.inWorkMod ? 0.8 : 1.1,
+                          color: Colors.black,
                         ),
                       ),
-                    ),
+                      if (dateStr != null && !App.inWorkMod)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 2.0),
+                          child: DecoratedBox(
+                            decoration: todoImageFile != null
+                                ? BoxDecoration(
+                                    border: Border.all(
+                                        color: ToolThemeData.highlightColor
+                                            .withOpacity(0.3),
+                                        width: 0.5),
+                                    color: Colors.white.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(6),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.15),
+                                        blurRadius: 2,
+                                        spreadRadius: 0,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  )
+                                : const BoxDecoration(),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              child: Text(
+                                dateStr,
+                                style: TextStyle(
+                                  color: isSocial
+                                      ? ToolThemeData.mainGreenColor
+                                      : Colors.black.withOpacity(0.65),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: isSocial ? 11 : 10.5,
+                                  letterSpacing: 0.1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-              ],
+                ),
+              ),
             ),
           ),
         ),
@@ -532,6 +542,7 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
 
   late FocusNode _focusNodeTitle;
   late FocusNode _focusNodeDescription;
+  late FocusNode focusNodeRoot;
   TextSelection? _selectionTitle;
   TextSelection? _selectionDescription;
 
@@ -542,9 +553,20 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
     _controllerDescription = TextEditingController();
     _focusNodeTitle = FocusNode();
     _focusNodeDescription = FocusNode();
+    focusNodeRoot = FocusNode();
     _controllerDescription.addListener(() {
       descriptionForSave = _controllerDescription.text;
     });
+  }
+
+  @override
+  void dispose() {
+    _controllerTitle.dispose();
+    _controllerDescription.dispose();
+    _focusNodeTitle.dispose();
+    _focusNodeDescription.dispose();
+    focusNodeRoot.dispose();
+    super.dispose();
   }
 
   void _saveSelection() {
@@ -585,170 +607,249 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
         Get.find<ToolDateFormatter>().formatToMonthDay(targetDateTime) ?? '';
     return Padding(
         padding: const EdgeInsets.only(left: 8.0, bottom: 4.0, right: 2.0),
-        child: Focus(
-          onFocusChange: (focus) {
-            if (focus) {
-              _controllerTitle
-                ..selection = TextSelection(
-                    baseOffset: 0, extentOffset: _controllerTitle.text.length);
-            }
-            if (!focus) {
-              print('focus locc add Event ${_controllerTitle.text.trim()}');
-              //_saveSelection();
-              Future.delayed(Duration.zero, () {
-                bloc.add(
-                  SaveItemChangeEvent(
-                    titleText: _controllerTitle.text.trim(),
-                    descriptionText: descriptionForSave,
-                  ),
-                );
-              });
-            }
-          },
-          child: SingleChildScrollView(
-            physics: const NeverScrollableScrollPhysics(),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: _controllerTitle,
-                  autofocus: true,
-                  maxLines: 1,
-                  focusNode: _focusNodeTitle,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14.5,
-                    letterSpacing: -0.2,
-                  ),
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                    suffixIcon: MyAnimatedCard(
-                      intensity: 0.012,
-                      child: Container(
-                        width: 50,
-                        height: 36,
-                        alignment: Alignment.center,
-                        child: InkWell(
-                          focusNode: FocusNode(skipTraversal: true),
-                          onTap: () => {
-                            _saveSelection(),
-                            bloc
-                              ..add(
-                                SaveItemChangeEvent(
-                                  titleText: _controllerTitle.text.trim(),
-                                  descriptionText: descriptionForSave,
-                                  setChangeMod: true,
+        child: TapRegion(
+            onTapOutside: (event) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: Focus(
+              focusNode: focusNodeRoot,
+              onFocusChange: (focus) {
+                if (focus) {
+                  _controllerTitle
+                    ..selection = TextSelection(
+                        baseOffset: 0,
+                        extentOffset: _controllerTitle.text.length);
+                }
+                if (!focus) {
+                  print('focus locc add Event ${_controllerTitle.text.trim()}');
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    bloc.add(
+                      SaveItemChangeEvent(
+                        titleText: _controllerTitle.text.trim(),
+                        descriptionText: descriptionForSave,
+                      ),
+                    );
+                  });
+                }
+              },
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _controllerTitle,
+                      autofocus: true,
+                      maxLines: 1,
+                      focusNode: _focusNodeTitle,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14.5,
+                        letterSpacing: -0.2,
+                      ),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 4),
+                        suffixIcon: MyAnimatedCard(
+                          intensity: 0.012,
+                          child: Container(
+                            width: 50,
+                            height: 36,
+                            alignment: Alignment.center,
+                            child: InkWell(
+                              focusNode: FocusNode(skipTraversal: true),
+                              onTap: () => {
+                                _saveSelection(),
+                                bloc
+                                  ..add(
+                                    SaveItemChangeEvent(
+                                      titleText: _controllerTitle.text.trim(),
+                                      descriptionText: descriptionForSave,
+                                      setChangeMod: true,
+                                    ),
+                                  )
+                                  ..add(
+                                    RequestChangeItemDateEvent(
+                                        buildContext: context,
+                                        restoreFocusCallBack:
+                                            _restoreSelection),
+                                  )
+                              },
+                              onLongPress: () => bloc
+                                ..add(
+                                  SaveItemChangeEvent(
+                                    titleText: _controllerTitle.text.trim(),
+                                    descriptionText: descriptionForSave,
+                                    setChangeMod: true,
+                                  ),
+                                )
+                                ..add(
+                                  SetItemDateEvent(
+                                      userDateTime: DateTime.now()),
                                 ),
-                              )
-                              ..add(
-                                RequestChangeItemDateEvent(
-                                    buildContext: context,
-                                    restoreFocusCallBack: _restoreSelection),
-                              )
-                          },
-                          onLongPress: () => bloc
-                            ..add(
-                              SaveItemChangeEvent(
-                                titleText: _controllerTitle.text.trim(),
-                                descriptionText: descriptionForSave,
-                                setChangeMod: true,
-                              ),
-                            )
-                            ..add(
-                              SetItemDateEvent(userDateTime: DateTime.now()),
-                            ),
-                          onSecondaryTap: () => bloc
-                            ..add(
-                              SaveItemChangeEvent(
-                                titleText: _controllerTitle.text.trim(),
-                                descriptionText: descriptionForSave,
-                                setChangeMod: true,
-                              ),
-                            )
-                            ..add(
-                              IncreaseItemDateEvent(),
-                            ),
-                          child: Text(
-                            formattedTargetDateTime,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                              letterSpacing: 0.1,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black12,
-                                  offset: Offset(0, 0.5),
-                                  blurRadius: 1.0,
+                              onSecondaryTap: () => bloc
+                                ..add(
+                                  SaveItemChangeEvent(
+                                    titleText: _controllerTitle.text.trim(),
+                                    descriptionText: descriptionForSave,
+                                    setChangeMod: true,
+                                  ),
+                                )
+                                ..add(
+                                  IncreaseItemDateEvent(),
                                 ),
-                              ],
+                              child: Text(
+                                formattedTargetDateTime,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                  letterSpacing: 0.1,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black12,
+                                      offset: Offset(0, 0.5),
+                                      blurRadius: 1.0,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                ScrollbarTheme(
-                  data: ScrollbarThemeData(
-                    thumbColor:
-                        MaterialStateProperty.all<Color>(Colors.black54),
-                    thumbVisibility: MaterialStateProperty.all<bool>(true),
-                    thickness: MaterialStateProperty.all<double>(4),
-                  ),
-                  child: TextField(
-                    controller: _controllerDescription,
-                    focusNode: _focusNodeDescription,
-                    minLines: 2,
-                    selectionControls: MaterialTextSelectionControls(),
-                    maxLines: initialText == '' ? 3 : 8,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 4),
-                      suffixIconConstraints: todoImageFile == null
-                          ? const BoxConstraints.tightFor(width: 35, height: 35)
-                          : const BoxConstraints.tightFor(
-                              width: 45, height: 45),
-                      suffixIcon: (bloc.state.todoItem.title == 'New Title')
-                          ? Container()
-                          : todoImageFile != null
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 4.0),
+                    ScrollbarTheme(
+                      data: ScrollbarThemeData(
+                        thumbColor:
+                            MaterialStateProperty.all<Color>(Colors.black54),
+                        thumbVisibility: MaterialStateProperty.all<bool>(true),
+                        thickness: MaterialStateProperty.all<double>(4),
+                      ),
+                      child: TextField(
+                        controller: _controllerDescription,
+                        focusNode: _focusNodeDescription,
+                        minLines: 2,
+                        selectionControls: MaterialTextSelectionControls(),
+                        maxLines: initialText == '' ? 3 : 8,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 4),
+                          suffixIconConstraints: todoImageFile == null
+                              ? const BoxConstraints.tightFor(
+                                  width: 35, height: 35)
+                              : const BoxConstraints.tightFor(
+                                  width: 45, height: 45),
+                          suffixIcon: (bloc.state.todoItem.title == 'New Title')
+                              ? Container()
+                              : todoImageFile != null
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 4.0),
+                                          child: Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: InkWell(
+                                              onTap: () {
+                                                Get.find<
+                                                        ServiceImagePluginWork>()
+                                                    .openImage(todoImageFile);
+                                              },
+                                              onSecondaryTap: () {},
+                                              onLongPress: () {
+                                                Get.find<
+                                                        ServiceImagePluginWork>()
+                                                    .deleteImage(
+                                                  todoItem: bloc.state.todoItem,
+                                                  updateCallBack: () => bloc.add(
+                                                      SetTodoItemImageEvent()),
+                                                );
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                                child: Opacity(
+                                                  opacity: 0.85,
+                                                  child: AspectRatio(
+                                                    aspectRatio:
+                                                        1.0, // Устанавливаем квадратное соотношение сторон
+                                                    child: FittedBox(
+                                                      fit: BoxFit.cover,
+                                                      child: Image.file(
+                                                        todoImageFile,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Container(
                                       child: Align(
                                         alignment: Alignment.bottomRight,
                                         child: InkWell(
+                                          focusNode:
+                                              FocusNode(skipTraversal: true),
                                           onTap: () {
+                                            //ii image
                                             Get.find<ServiceImagePluginWork>()
-                                                .openImage(todoImageFile);
+                                                .drawImage(
+                                                    title: bloc
+                                                        .state.todoItem.title,
+                                                    id: bloc.state.todoItem.id,
+                                                    updateCallBack: () => bloc.add(
+                                                        SetTodoItemImageEvent()));
+                                            Log.e('ADD NEW IMAGE');
                                           },
-                                          onSecondaryTap: () {},
-                                          onLongPress: () {
+                                          onSecondaryTap: () {
                                             Get.find<ServiceImagePluginWork>()
-                                                .deleteImage(
+                                                .selectAndSetTodoImage(
                                               todoItem: bloc.state.todoItem,
                                               updateCallBack: () => bloc
                                                   .add(SetTodoItemImageEvent()),
                                             );
                                           },
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                            child: Opacity(
-                                              opacity: 0.85,
-                                              child: AspectRatio(
-                                                aspectRatio:
-                                                    1.0, // Устанавливаем квадратное соотношение сторон
-                                                child: FittedBox(
-                                                  fit: BoxFit.cover,
-                                                  child: Image.file(
-                                                    todoImageFile,
+                                          child: Center(
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white
+                                                    .withOpacity(0.08),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                // Объём для кнопки добавления фото
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.15),
+                                                    blurRadius: 3,
+                                                    spreadRadius: 0,
+                                                    offset: const Offset(0, 1),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(1.0),
+                                                child: MyAnimatedCard(
+                                                  intensity: 0.012,
+                                                  child: const ClipOval(
+                                                    child: Opacity(
+                                                      opacity: 0.7,
+                                                      child: Icon(
+                                                        Icons
+                                                            .add_a_photo_outlined,
+                                                        color: Colors.black87,
+                                                        size: 20,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -757,92 +858,27 @@ class _TitleChangeWidgetState extends State<TitleChangeWidget> {
                                         ),
                                       ),
                                     ),
-                                  ],
-                                )
-                              : Container(
-                                  child: Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: InkWell(
-                                      focusNode: FocusNode(skipTraversal: true),
-                                      onTap: () {
-                                        //ii image
-                                        Get.find<ServiceImagePluginWork>()
-                                            .drawImage(
-                                                title:
-                                                    bloc.state.todoItem.title,
-                                                id: bloc.state.todoItem.id,
-                                                updateCallBack: () => bloc.add(
-                                                    SetTodoItemImageEvent()));
-                                        Log.e('ADD NEW IMAGE');
-                                      },
-                                      onSecondaryTap: () {
-                                        Get.find<ServiceImagePluginWork>()
-                                            .selectAndSetTodoImage(
-                                          todoItem: bloc.state.todoItem,
-                                          updateCallBack: () =>
-                                              bloc.add(SetTodoItemImageEvent()),
-                                        );
-                                      },
-                                      child: Center(
-                                        child: DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            color:
-                                                Colors.white.withOpacity(0.08),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            // Объём для кнопки добавления фото
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.15),
-                                                blurRadius: 3,
-                                                spreadRadius: 0,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(1.0),
-                                            child: MyAnimatedCard(
-                                              intensity: 0.012,
-                                              child: const ClipOval(
-                                                child: Opacity(
-                                                  opacity: 0.7,
-                                                  child: Icon(
-                                                    Icons.add_a_photo_outlined,
-                                                    color: Colors.black87,
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                    ),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13.5,
-                      letterSpacing: -0.3,
-                      wordSpacing: -0.3,
-                      height: 1.2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black12,
-                          offset: Offset(0, 0.1),
-                          blurRadius: 1.0,
                         ),
-                      ],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13.5,
+                          letterSpacing: -0.3,
+                          wordSpacing: -0.3,
+                          height: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black12,
+                              offset: Offset(0, 0.1),
+                              blurRadius: 1.0,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ));
+              ),
+            )));
   }
 }
 
