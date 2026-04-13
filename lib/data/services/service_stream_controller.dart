@@ -11,7 +11,7 @@ class ServiceStreamController {
 
   Stream<bool> addStreamItem<T extends Bloc>({
     required String identifier,
-    required Future<bool> Function() callBack,
+    required Future<bool> Function(int elapsedSeconds) callBack,
     required Function() finishCallBack,
     required Duration periodDuration,
     required int autoPauseSeconds,
@@ -96,8 +96,9 @@ class StreamItem<T extends Bloc> {
   Duration periodDuration;
   bool isRun = true;
   int autoPauseSeconds;
-  Future<bool> Function() callBack;
+  Future<bool> Function(int elapsedSeconds) callBack;
   Function finishCallBack;
+  DateTime _lastTickAt = DateTime.now();
 
   StreamItem({
     required this.identifier,
@@ -116,16 +117,26 @@ class StreamItem<T extends Bloc> {
   Stream<bool> callLoop() async* {
     while (isRun) {
       yield await Future.delayed(periodDuration).then((_) async {
-        if (isRun &&
-            (autoPauseSeconds == 0 ||
-                Get.find<ServiceBackgroundKeyListener>().noActionSecondTimer < autoPauseSeconds)) {
-          if (!(await callBack.call())) {
-            finishCallBack.call();
-          }
-          return true;
-        } else {
+        if (!isRun) {
           return false;
         }
+        final bool shouldRunByActivity = !GetPlatform.isDesktop ||
+            autoPauseSeconds == 0 ||
+            Get.find<ServiceBackgroundKeyListener>().noActionSecondTimer < autoPauseSeconds;
+        if (!shouldRunByActivity) {
+          _lastTickAt = DateTime.now();
+          return false;
+        }
+        final DateTime now = DateTime.now();
+        int elapsedSeconds = now.difference(_lastTickAt).inSeconds;
+        if (elapsedSeconds <= 0) {
+          elapsedSeconds = 1;
+        }
+        _lastTickAt = now;
+        if (!(await callBack.call(elapsedSeconds))) {
+            finishCallBack.call();
+        }
+        return true;
       });
     }
   }

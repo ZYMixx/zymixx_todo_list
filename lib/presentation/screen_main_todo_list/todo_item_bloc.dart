@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -106,8 +107,10 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
   }
 
   _onTimerEnd() {
-    if (state.needTimerSong) {
+    if (state.needTimerSong && GetPlatform.isDesktop) {
       Get.find<ServiceAudioPlayer>().playTimerAlert();
+    } else if (GetPlatform.isMobile) {
+      Get.find<ToolShowToast>().show('Таймер завершен');
     }
     this.add(SetTimerActiveEvent(isActive: false));
   }
@@ -217,15 +220,19 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
-    Future<bool> Function() callBack = () async {
+    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
       int remainSeconds = await state.dbTodoItemGetter.timerSeconds;
       int secondSpent = await state.dbTodoItemGetter.secondSpent;
       if (remainSeconds == 0) {
         Get.find<ServiceStreamController>().stopStream(timerIdentifier);
         return false;
       } else {
+        final int appliedSeconds = min(remainSeconds, elapsedSeconds);
         _daoDatabase.editTodoItemById(
-            id: state.todoItemId, timerSeconds: remainSeconds - 1, secondsSpent: secondSpent + 1);
+          id: state.todoItemId,
+          timerSeconds: remainSeconds - appliedSeconds,
+          secondsSpent: secondSpent + appliedSeconds,
+        );
         return true;
       }
     };
@@ -275,16 +282,26 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
       this.add(SetTimerActiveEvent(isActive: false));
       return;
     }
-    Future<bool> Function() callBack = () async {
+    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
       int crntSeconds = await state.dbTodoItemGetter.stopwatchSeconds;
       if (crntSeconds > 2400) {
         Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier);
         _onTimerEnd();
         return false;
       } else {
+        final int nextSeconds = min(2400, crntSeconds + elapsedSeconds);
+        final int appliedSeconds = nextSeconds - crntSeconds;
         int secondSpent = await state.dbTodoItemGetter.secondSpent;
         _daoDatabase.editTodoItemById(
-            id: state.todoItemId, stopwatchSeconds: crntSeconds + 1, secondsSpent: secondSpent + 1);
+          id: state.todoItemId,
+          stopwatchSeconds: nextSeconds,
+          secondsSpent: secondSpent + appliedSeconds,
+        );
+        if (nextSeconds >= 2400) {
+          Get.find<ServiceStreamController>().stopStream(stopwatchIdentifier);
+          _onTimerEnd();
+          return false;
+        }
         return true;
       }
     };
@@ -307,9 +324,9 @@ class TodoItemBloc extends Bloc<TodoItemBlocEvent, TodoItemBlocState> {
         .stopStream(timerIdentifier); //останавливаем таймер если он был
   }
 
-  void _onStopwatchSecondTickEvent(
-      StopwatchSecondTickEvent event, Emitter<TodoItemBlocState> emit) {
-    int time = state.todoItem.stopwatchSeconds + 1;
+  Future<void> _onStopwatchSecondTickEvent(
+      StopwatchSecondTickEvent event, Emitter<TodoItemBlocState> emit) async {
+    int time = await state.dbTodoItemGetter.stopwatchSeconds;
     emit(state.copyWith(todoItem: state.todoItem.copyWith(stopwatchSeconds: time)));
   }
 

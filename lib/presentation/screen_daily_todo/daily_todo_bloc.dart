@@ -128,20 +128,22 @@ class DailyTodoBloc extends Bloc<DailyTodoEvent, DailyTodoState> {
       emit(state.copyWith(activeTimerIdentifier: timerIdentifier));
     }
 
-    Future<bool> Function() callBack = () async {
+    Future<bool> Function(int elapsedSeconds) callBack = (elapsedSeconds) async {
       int remainSeconds = await state.activeDailyItemGetter?.timerSeconds ?? 0;
       if (remainSeconds == 0) {
         Get.find<ServiceStreamController>().stopStream(timerIdentifier);
         return false;
       } else {
         if (await state.activeDailyItemGetter?.autoPauseSeconds == 0){
+          final int nextSeconds = (remainSeconds - elapsedSeconds).clamp(0, remainSeconds).toInt();
           await _daoDatabase.editTodoItemById(
-              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
+              id: completeEvent.itemId, timerSeconds: nextSeconds);
           return true;
         }
         if (Get.find<ServiceStreamController>().isOtherTodoItemRun(AppData.dailyTimerIdentifier)) {
+          final int nextSeconds = (remainSeconds - elapsedSeconds).clamp(0, remainSeconds).toInt();
           await _daoDatabase.editTodoItemById(
-              id: completeEvent.itemId, timerSeconds: remainSeconds - 1);
+              id: completeEvent.itemId, timerSeconds: nextSeconds);
         }
         return true;
       }
